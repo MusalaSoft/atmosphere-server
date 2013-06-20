@@ -6,15 +6,17 @@ import com.musala.atmosphere.commons.sa.IAgentEventSender;
 
 public class AgentEventSender implements IAgentEventSender
 {
-	public AgentEventSender()
-	{
+	private PoolManager poolManagerReference;
 
+	public AgentEventSender(PoolManager poolManager)
+	{
+		poolManagerReference = poolManager;
 	}
 
 	@Override
 	public void deviceListChanged(String agentId) throws RemoteException
 	{
-		// TODO What should happen when deviceListChanged(agentID) was invoked by an agent?
+		poolManagerReference.onAgentDeviceListChanged(agentId);
 	}
 
 }
