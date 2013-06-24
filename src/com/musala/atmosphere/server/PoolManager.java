@@ -154,7 +154,6 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 	@Override
 	public String getDeviceProxyRmiId(DeviceParameters deviceParameters) throws RemoteException
 	{
-		// TODO implement get device proxy rmi id
 		return null;
 	}
 }

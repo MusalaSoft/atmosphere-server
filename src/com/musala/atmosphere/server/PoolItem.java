@@ -90,4 +90,9 @@ public class PoolItem
 	{
 		return deviceProxyRmiString;
 	}
+
+	public DeviceInformation getUnderlyingDeviceInformation()
+	{
+		return deviceInformation;
+	}
 }
