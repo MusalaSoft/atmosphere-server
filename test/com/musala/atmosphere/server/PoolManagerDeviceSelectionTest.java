@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
+import java.util.NoSuchElementException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -101,7 +102,7 @@ public class PoolManagerDeviceSelectionTest
 		poolManager.close();
 	}
 
-	@Test(expected = IndexOutOfBoundsException.class)
+	@Test(expected = NoSuchElementException.class)
 	public void getNotPresentDevice() throws RemoteException
 	{
 		DeviceParameters parameters = new DeviceParameters();
