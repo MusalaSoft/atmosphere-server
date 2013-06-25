@@ -5,6 +5,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,9 +16,11 @@ import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.IClientBuilder;
+import com.musala.atmosphere.commons.sa.DeviceInformation;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
+import com.musala.atmosphere.server.util.DeviceMatchingComparator;
 
 /**
  * Class that is responsible for managing device selection/distribution.
@@ -143,17 +147,51 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 	{
 		List<String> deviceWrappers = agent.getAllDeviceWrappers();
 		Registry agentRegistry = agentManagerRegistry.get(agent);
-		for (String wrapper : deviceWrappers)
+		for (String wrapperRmiId : deviceWrappers)
 		{
-			IWrapDevice deviceWrapper = (IWrapDevice) agentRegistry.lookup(wrapper);
-			PoolItem poolItem = new PoolItem(deviceWrapper, agent, rmiRegistry);
-			poolItems.add(poolItem);
+			IWrapDevice deviceWrapper = (IWrapDevice) agentRegistry.lookup(wrapperRmiId);
+			publishDeviceProxy(deviceWrapper, agent);
 		}
+	}
+
+	private void publishDeviceProxy(IWrapDevice deviceWrapper, IAgentManager onAgent) throws RemoteException
+	{
+		PoolItem poolItem = new PoolItem(deviceWrapper, onAgent, rmiRegistry);
+		poolItems.add(poolItem);
 	}
 
 	@Override
 	public String getDeviceProxyRmiId(DeviceParameters deviceParameters) throws RemoteException
 	{
-		return null;
+		Map<DeviceInformation, PoolItem> freePoolItemsDeviceInfoMap = new HashMap<DeviceInformation, PoolItem>();
+		List<DeviceInformation> freePoolItemsDeviceInfoList = new ArrayList<DeviceInformation>();
+		for (PoolItem poolItem : poolItems)
+		{
+			// TODO Implement pooling mechanism
+			// if(pool.isavail(poolItem) == false) continue;
+			DeviceInformation poolItemDeviceInformation = poolItem.getUnderlyingDeviceInformation();
+			if (DeviceMatchingComparator.isValidMatch(deviceParameters, poolItemDeviceInformation) == false)
+			{
+				continue;
+			}
+
+			freePoolItemsDeviceInfoMap.put(poolItemDeviceInformation, poolItem);
+			freePoolItemsDeviceInfoList.add(poolItemDeviceInformation);
+		}
+
+		if (freePoolItemsDeviceInfoList.size() == 0)
+		{
+			// TODO add logic behind device creation
+		}
+
+		DeviceMatchingComparator matchComparator = new DeviceMatchingComparator(deviceParameters);
+
+		// TODO implement pooling .get
+		DeviceInformation bestMatchDeviceInformation = Collections.max(freePoolItemsDeviceInfoList, matchComparator);
+		PoolItem bestMatchPoolItem = freePoolItemsDeviceInfoMap.get(bestMatchDeviceInformation);
+		String bestMatchDeviceProxyRmiId = bestMatchPoolItem.getDeviceProxyRmiBindingIdentifier();
+
+		return bestMatchDeviceProxyRmiId;
 	}
+
 }
