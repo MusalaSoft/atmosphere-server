@@ -21,7 +21,7 @@ public class ServerMain
 	 */
 	public static void main(String[] args) throws RemoteException, NotBoundException
 	{
-		agentAddressesList.add(new Pair<String, Integer>("localhost", 1990));
+		agentAddressesList.add(new Pair<String, Integer>("localhost", 1090));
 		PoolManager poolManager = new PoolManager(POOLMANAGER_PORT);
 
 		try

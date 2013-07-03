@@ -31,7 +31,7 @@ import com.musala.atmosphere.server.util.DeviceMatchingComparator;
 public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 {
 	/**
-	 * 
+	 * auto-generated serialization version id.
 	 */
 	private static final long serialVersionUID = -3509684187196223780L;
 
@@ -43,18 +43,47 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 
 	private Map<IAgentManager, Registry> agentManagerRegistry = new HashMap<IAgentManager, Registry>();
 
+	private int rmiRegistryPort;
+
 	private Registry rmiRegistry;
 
-	void onAgentDeviceListChanged(String onAgent)
+	private AgentEventSender agentChangeNotifier;
+
+	void onAgentDeviceListChanged(String onAgent, String changedDeviceRmiId, boolean isNowAvailable)
 	{
 		if (agentManagersId.containsKey(onAgent) == false)
 		{
-			// TODO log this severe problem and return - we received an event from an agent with unregistered agentID;
+			LOGGER.warn("Received device state change event from an Agent that is not registered on the PoolManager ("
+					+ onAgent + ").");
 			return;
 		}
 
-		IAgentManager agentManager = agentManagersId.get(onAgent);
-		// TODO implement on device list change event handler
+		// TODO make this more complex - what happens if a device that is allocated to a client is disconnected?
+		for (PoolItem poolItem : poolItems)
+		{
+			if (poolItem.isUnderlyingDeviceWrapperAsArguments(onAgent, changedDeviceRmiId))
+			{
+				if (isNowAvailable)
+				{
+					LOGGER.warn("Received device connected event for a device that is already registered.");
+				}
+				else
+				{
+					poolItem.unbindDeviceProxyFromRmi();
+					poolItems.remove(poolItem);
+				}
+				return;
+			}
+		}
+
+		if (isNowAvailable == false)
+		{
+			LOGGER.warn("Received device disconnected event for a device that was not registered at all.");
+		}
+		else
+		{
+			publishDeviceProxy(changedDeviceRmiId, onAgent);
+		}
 	}
 
 	/**
@@ -70,11 +99,27 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 		// Publish this PoolManager in the RMI registry
 		try
 		{
+			rmiRegistryPort = rmiPort;
 			rmiRegistry = LocateRegistry.createRegistry(rmiPort);
 			String poolManagerRmiPublishString = com.musala.atmosphere.commons.cs.RmiStringConstants.POOL_MANAGER.toString();
 			rmiRegistry.rebind(poolManagerRmiPublishString, this);
 			LOGGER.info("PoolManager instance published in RMI (port " + rmiPort + ") under the identifier '"
 					+ poolManagerRmiPublishString + "'.");
+		}
+		catch (RemoteException e)
+		{
+			close();
+			throw e;
+		}
+
+		// Publish an AgentEventSender in the RMI registry
+		try
+		{
+			agentChangeNotifier = new AgentEventSender(this);
+			String agentChangeNotifierRmiPublishString = RmiStringConstants.AGENT_EVENT_SENDER.toString();
+			rmiRegistry.rebind(agentChangeNotifierRmiPublishString, agentChangeNotifier);
+			LOGGER.info("AgentEventSender instance published in RMI (port " + rmiPort + ") under the identifier '"
+					+ agentChangeNotifierRmiPublishString + "'.");
 		}
 		catch (RemoteException e)
 		{
@@ -126,38 +171,68 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 	 */
 	public void connectToAgent(String ip, int port) throws RemoteException, NotBoundException
 	{
-		IAgentManager agent = connectToAndRegisterAgent(ip, port);
+		String agentId = connectToAndRegisterAgent(ip, port);
 		LOGGER.info("Connection to Agent with address [" + ip + ":" + port + "] established.");
-		publishAllDeviceProxiesForAgent(agent);
+		publishAllDeviceProxiesForAgent(agentId);
 	}
 
-	private IAgentManager connectToAndRegisterAgent(String ip, int port) throws RemoteException, NotBoundException
+	private String connectToAndRegisterAgent(String ip, int port) throws RemoteException, NotBoundException
 	{
+		// Get the agent rmi stub
 		Registry agentRegistry = LocateRegistry.getRegistry(ip, port);
 		IAgentManager agent = (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
-		agentManagersId.put(agent.getAgentId(), agent);
+
+		// Add the agent stub to the agent lists
+		String agentId = agent.getAgentId();
+		agentManagersId.put(agentId, agent);
 		agentManagerRegistry.put(agent, agentRegistry);
-		// TODO register on the agent!
-		// uncomment the following line when proper server IP fetching is implemented.
-		// agent.registerServer(serverIPAddress, rmiRegistry.RMI_PORT);
-		return agent;
+
+		// Register the server for event notifications
+		String serverIpForAgent = agent.getInvokerIpAddress();
+		agent.registerServer(serverIpForAgent, rmiRegistryPort);
+
+		return agentId;
 	}
 
-	private void publishAllDeviceProxiesForAgent(IAgentManager agent) throws RemoteException, NotBoundException
+	private void publishAllDeviceProxiesForAgent(String agentId) throws RemoteException
 	{
+		IAgentManager agent = agentManagersId.get(agentId);
 		List<String> deviceWrappers = agent.getAllDeviceWrappers();
-		Registry agentRegistry = agentManagerRegistry.get(agent);
 		for (String wrapperRmiId : deviceWrappers)
 		{
-			IWrapDevice deviceWrapper = (IWrapDevice) agentRegistry.lookup(wrapperRmiId);
-			publishDeviceProxy(deviceWrapper, agent);
+			publishDeviceProxy(wrapperRmiId, agentId);
 		}
 	}
 
-	private void publishDeviceProxy(IWrapDevice deviceWrapper, IAgentManager onAgent) throws RemoteException
+	private void publishDeviceProxy(String deviceWrapperId, String onAgentId)
 	{
-		PoolItem poolItem = new PoolItem(deviceWrapper, onAgent, rmiRegistry);
-		poolItems.add(poolItem);
+		IAgentManager onAgent = agentManagersId.get(onAgentId);
+		Registry agentRegistry = agentManagerRegistry.get(onAgent);
+		IWrapDevice deviceWrapper = null;
+		try
+		{
+			deviceWrapper = (IWrapDevice) agentRegistry.lookup(deviceWrapperId);
+		}
+		catch (NotBoundException e)
+		{
+			LOGGER.warn("Attempted to get a non-bound device wrapper from an Agent.", e);
+			return;
+		}
+		catch (RemoteException e)
+		{
+			LOGGER.warn("Attempted to get a device wrapper from an Agent that we can not connect to.", e);
+			return;
+		}
+
+		try
+		{
+			PoolItem poolItem = new PoolItem(deviceWrapperId, deviceWrapper, onAgent, rmiRegistry);
+			poolItems.add(poolItem);
+		}
+		catch (RemoteException e)
+		{
+			LOGGER.warn("PoolItem instance creation resulted in a RemoteException.", e);
+		}
 	}
 
 	@Override

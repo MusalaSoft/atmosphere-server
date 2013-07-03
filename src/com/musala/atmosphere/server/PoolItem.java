@@ -29,24 +29,32 @@ public class PoolItem
 
 	private final IAgentManager onAgent;
 
+	private final String onAgentId;
+
+	private final String deviceWrapperAgentRmiId;
+
 	private Registry serverRmiRegistry;
 
 	/**
 	 * Creates a new {@link PoolItem PoolItem} object that wraps a device wrapper in a {@link DeviceProxy DeviceProxy}
 	 * object and publishes it on the server's RMI registry.
 	 * 
+	 * @param deviceWrapperId
+	 *        RMI string identifier on the Agent for the device wrapper stub.
 	 * @param deviceWrapper
 	 *        device to be wrapped in a {@link DeviceProxy DeviceProxy} object.
 	 * @param onAgent
-	 *        the AgentManager that published the {@link IWrapDevice IWrapDevice} we are wrapping.
+	 *        the {@link AgentManager AgentManager} that published the {@link IWrapDevice IWrapDevice} we are wrapping.
 	 * @param serverRmiRegistry
 	 *        RMI registry in which we will publish the newly created {@link DeviceProxy DeviceProxy} wrapper.
 	 * @throws RemoteException
 	 */
-	public PoolItem(IWrapDevice deviceWrapper, IAgentManager onAgent, Registry serverRmiRegistry)
+	public PoolItem(String deviceWrapperId, IWrapDevice deviceWrapper, IAgentManager onAgent, Registry serverRmiRegistry)
 		throws RemoteException
 	{
+		deviceWrapperAgentRmiId = deviceWrapperId;
 		this.onAgent = onAgent;
+		onAgentId = onAgent.getAgentId();
 		deviceProxy = new DeviceProxy(deviceWrapper);
 		deviceInformation = deviceWrapper.getDeviceInformation();
 		this.serverRmiRegistry = serverRmiRegistry;
@@ -62,7 +70,7 @@ public class PoolItem
 	 * 
 	 * @throws RemoteException
 	 */
-	public void unbindDeviceProxyFromRmi() throws RemoteException
+	public void unbindDeviceProxyFromRmi()
 	{
 		try
 		{
@@ -74,12 +82,18 @@ public class PoolItem
 			// nothing to do here.
 			e.printStackTrace();
 		}
+		catch (RemoteException e)
+		{
+			LOGGER.warn("Attempting to unbind a DeviceProxy resulted in a RemoteExcetion.", e);
+			return;
+		}
+
 		LOGGER.info("DeviceProxy with string identifier '" + deviceProxyRmiString + "' unbound from the RMI registry");
 	}
 
-	private String buildDeviceProxyRmiBindingIdentifier() throws RemoteException
+	private String buildDeviceProxyRmiBindingIdentifier()
 	{
-		String rmiIdentifier = onAgent.getAgentId() + " " + deviceInformation.getSerialNumber();
+		String rmiIdentifier = onAgentId + " " + deviceWrapperAgentRmiId;
 		return rmiIdentifier;
 	}
 
@@ -94,5 +108,11 @@ public class PoolItem
 	public DeviceInformation getUnderlyingDeviceInformation()
 	{
 		return deviceInformation;
+	}
+
+	public boolean isUnderlyingDeviceWrapperAsArguments(String onAgentId, String deviceProxyId)
+	{
+		boolean returnValue = onAgentId.equals(this.onAgentId) && deviceProxyId.equals(deviceWrapperAgentRmiId);
+		return returnValue;
 	}
 }
