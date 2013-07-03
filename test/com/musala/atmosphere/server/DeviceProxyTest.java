@@ -195,7 +195,7 @@ public class DeviceProxyTest
 	}
 
 	@Test
-	public void testGetScreenShot() throws RemoteException
+	public void testGetScreenShot() throws RemoteException, CommandFailedException
 	{
 		byte[] testDataResponse = new byte[] {0, 1, 2, 3};
 		when(innerDeviceWrapperMock.getScreenshot()).thenReturn(testDataResponse);
@@ -211,7 +211,7 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testGetScreenShotFailed() throws RemoteException
+	public void testGetScreenShotFailed() throws RemoteException, CommandFailedException
 	{
 		when(innerDeviceWrapperMock.getScreenshot()).thenThrow(new RemoteException());
 
