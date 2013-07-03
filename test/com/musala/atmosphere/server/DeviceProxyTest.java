@@ -197,10 +197,10 @@ public class DeviceProxyTest
 	@Test
 	public void testGetScreenShot() throws RemoteException
 	{
-		Byte[] testDataResponse = new Byte[] {0, 1, 2, 3};
+		byte[] testDataResponse = new byte[] {0, 1, 2, 3};
 		when(innerDeviceWrapperMock.getScreenshot()).thenReturn(testDataResponse);
 
-		Byte[] response = deviceProxy.getScreenshot();
+		byte[] response = deviceProxy.getScreenshot();
 
 		// converting arrays to lists, as assertEquals(array, array) is deprecated.
 		assertEquals(	"Mocked response and actual method response should match.",
