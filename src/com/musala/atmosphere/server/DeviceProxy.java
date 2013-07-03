@@ -157,7 +157,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 
 	// TODO Byte[] will most likely be changed to byte[] when this method is implemented in the AbstractWrapDevice
 	@Override
-	public byte[] getScreenshot() throws RemoteException
+	public byte[] getScreenshot() throws RemoteException, CommandFailedException
 	{
 		try
 		{
