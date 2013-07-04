@@ -4,8 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.junit.After;
@@ -86,14 +88,17 @@ public class PoolManagerDeviceSelectionTest
 		when(mockedDeviceThree.getDeviceInformation()).thenReturn(mockedDeviceInfoThree);
 		when(mockedDeviceFour.getDeviceInformation()).thenReturn(mockedDeviceInfoFour);
 
-		Method publishDeviceProxyMethod = poolManager.getClass().getDeclaredMethod(	"publishDeviceProxy",
-																					IWrapDevice.class,
-																					IAgentManager.class);
-		publishDeviceProxyMethod.setAccessible(true);
-		publishDeviceProxyMethod.invoke(poolManager, mockedDeviceOne, mockedAgentManager);
-		publishDeviceProxyMethod.invoke(poolManager, mockedDeviceTwo, mockedAgentManager);
-		publishDeviceProxyMethod.invoke(poolManager, mockedDeviceThree, mockedAgentManager);
-		publishDeviceProxyMethod.invoke(poolManager, mockedDeviceFour, mockedAgentManager);
+		Field serverRmiRegistryField = poolManager.getClass().getDeclaredField("rmiRegistry");
+		serverRmiRegistryField.setAccessible(true);
+		Registry serverRegistry = (Registry) serverRmiRegistryField.get(poolManager);
+		Field poolManagerPoolItemsList = poolManager.getClass().getDeclaredField("poolItems");
+		poolManagerPoolItemsList.setAccessible(true);
+		List<PoolItem> poolItemsList = (List<PoolItem>) poolManagerPoolItemsList.get(poolManager);
+
+		poolItemsList.add(new PoolItem(DEVICE1_SN, mockedDeviceOne, mockedAgentManager, serverRegistry));
+		poolItemsList.add(new PoolItem(DEVICE2_SN, mockedDeviceTwo, mockedAgentManager, serverRegistry));
+		poolItemsList.add(new PoolItem(DEVICE3_SN, mockedDeviceThree, mockedAgentManager, serverRegistry));
+		poolItemsList.add(new PoolItem(DEVICE4_SN, mockedDeviceFour, mockedAgentManager, serverRegistry));
 	}
 
 	@After
