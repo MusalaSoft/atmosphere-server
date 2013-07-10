@@ -61,12 +61,12 @@ public class DeviceProxyTest
 	}
 
 	@Test
-	public void testGetFreeRam() throws RemoteException
+	public void testGetFreeRam() throws RemoteException, CommandFailedException
 	{
-		int ramAmount = 123;
+		long ramAmount = 123;
 		when(innerDeviceWrapperMock.getFreeRAM()).thenReturn(ramAmount);
 
-		int response = deviceProxy.getFreeRam();
+		long response = deviceProxy.getFreeRam();
 
 		assertEquals("Mocked response and actual method response should match.", ramAmount, response);
 		verify(innerDeviceWrapperMock, times(1)).getFreeRAM();
@@ -74,7 +74,7 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testGetFreeRamFailed() throws RemoteException
+	public void testGetFreeRamFailed() throws RemoteException, CommandFailedException
 	{
 		when(innerDeviceWrapperMock.getFreeRAM()).thenThrow(new RemoteException());
 

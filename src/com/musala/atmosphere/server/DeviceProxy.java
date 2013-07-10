@@ -46,11 +46,11 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public int getFreeRam() throws RemoteException
+	public long getFreeRam() throws RemoteException, CommandFailedException
 	{
 		try
 		{
-			int returnValue = wrappedDevice.getFreeRAM();
+			long returnValue = wrappedDevice.getFreeRAM();
 			return returnValue;
 		}
 		catch (RemoteException e)
