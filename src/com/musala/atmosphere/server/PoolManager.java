@@ -226,7 +226,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 
 		try
 		{
-			PoolItem poolItem = new PoolItem(deviceWrapperId, deviceWrapper, onAgent, rmiRegistry);
+			PoolItem poolItem = new PoolItem(deviceWrapperId, deviceWrapper, onAgent, rmiRegistryPort);
 			poolItems.add(poolItem);
 		}
 		catch (RemoteException e)

@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -88,17 +87,17 @@ public class PoolManagerDeviceSelectionTest
 		when(mockedDeviceThree.getDeviceInformation()).thenReturn(mockedDeviceInfoThree);
 		when(mockedDeviceFour.getDeviceInformation()).thenReturn(mockedDeviceInfoFour);
 
-		Field serverRmiRegistryField = poolManager.getClass().getDeclaredField("rmiRegistry");
-		serverRmiRegistryField.setAccessible(true);
-		Registry serverRegistry = (Registry) serverRmiRegistryField.get(poolManager);
+		Field serverRmiRegistryPortField = poolManager.getClass().getDeclaredField("rmiRegistryPort");
+		serverRmiRegistryPortField.setAccessible(true);
+		int serverRegistryPort = (int) serverRmiRegistryPortField.get(poolManager);
 		Field poolManagerPoolItemsList = poolManager.getClass().getDeclaredField("poolItems");
 		poolManagerPoolItemsList.setAccessible(true);
 		List<PoolItem> poolItemsList = (List<PoolItem>) poolManagerPoolItemsList.get(poolManager);
 
-		poolItemsList.add(new PoolItem(DEVICE1_SN, mockedDeviceOne, mockedAgentManager, serverRegistry));
-		poolItemsList.add(new PoolItem(DEVICE2_SN, mockedDeviceTwo, mockedAgentManager, serverRegistry));
-		poolItemsList.add(new PoolItem(DEVICE3_SN, mockedDeviceThree, mockedAgentManager, serverRegistry));
-		poolItemsList.add(new PoolItem(DEVICE4_SN, mockedDeviceFour, mockedAgentManager, serverRegistry));
+		poolItemsList.add(new PoolItem(DEVICE1_SN, mockedDeviceOne, mockedAgentManager, serverRegistryPort));
+		poolItemsList.add(new PoolItem(DEVICE2_SN, mockedDeviceTwo, mockedAgentManager, serverRegistryPort));
+		poolItemsList.add(new PoolItem(DEVICE3_SN, mockedDeviceThree, mockedAgentManager, serverRegistryPort));
+		poolItemsList.add(new PoolItem(DEVICE4_SN, mockedDeviceFour, mockedAgentManager, serverRegistryPort));
 	}
 
 	@After
@@ -124,7 +123,7 @@ public class PoolManagerDeviceSelectionTest
 		parameters.setRam(128);
 
 		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
-		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + " " + DEVICE1_SN, rmiId);
+		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
 	}
 
 	@Test
@@ -136,7 +135,7 @@ public class PoolManagerDeviceSelectionTest
 		parameters.setResolutionWidth(800);
 
 		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
-		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + " " + DEVICE1_SN, rmiId);
+		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
 	}
 
 	@Test
@@ -146,7 +145,7 @@ public class PoolManagerDeviceSelectionTest
 		parameters.setRam(128);
 
 		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
-		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + " " + DEVICE1_SN, rmiId);
+		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
 	}
 
 	@Test
@@ -156,7 +155,7 @@ public class PoolManagerDeviceSelectionTest
 		parameters.setDpi(240);
 
 		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
-		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + " " + DEVICE2_SN, rmiId);
+		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE2_SN, rmiId);
 	}
 
 	@Test
@@ -167,7 +166,7 @@ public class PoolManagerDeviceSelectionTest
 		parameters.setRam(512);
 
 		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
-		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + " " + DEVICE3_SN, rmiId);
+		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE3_SN, rmiId);
 	}
 
 	@Test
@@ -177,7 +176,7 @@ public class PoolManagerDeviceSelectionTest
 		parameters.setDpi(180);
 
 		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
-		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + " " + DEVICE4_SN, rmiId);
+		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE4_SN, rmiId);
 	}
 
 }

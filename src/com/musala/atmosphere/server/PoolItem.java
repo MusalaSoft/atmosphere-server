@@ -1,8 +1,9 @@
 package com.musala.atmosphere.server;
 
+import java.net.MalformedURLException;
+import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
 
 import org.apache.log4j.Logger;
 
@@ -33,7 +34,7 @@ public class PoolItem
 
 	private final String deviceWrapperAgentRmiId;
 
-	private Registry serverRmiRegistry;
+	private int serverRmiRegistryPort;
 
 	/**
 	 * Creates a new {@link PoolItem PoolItem} object that wraps a device wrapper in a {@link DeviceProxy DeviceProxy}
@@ -49,7 +50,7 @@ public class PoolItem
 	 *        RMI registry in which we will publish the newly created {@link DeviceProxy DeviceProxy} wrapper.
 	 * @throws RemoteException
 	 */
-	public PoolItem(String deviceWrapperId, IWrapDevice deviceWrapper, IAgentManager onAgent, Registry serverRmiRegistry)
+	public PoolItem(String deviceWrapperId, IWrapDevice deviceWrapper, IAgentManager onAgent, int serverRmiRegistryPort)
 		throws RemoteException
 	{
 		deviceWrapperAgentRmiId = deviceWrapperId;
@@ -57,10 +58,20 @@ public class PoolItem
 		onAgentId = onAgent.getAgentId();
 		deviceProxy = new DeviceProxy(deviceWrapper);
 		deviceInformation = deviceWrapper.getDeviceInformation();
-		this.serverRmiRegistry = serverRmiRegistry;
+		this.serverRmiRegistryPort = serverRmiRegistryPort;
 
 		deviceProxyRmiString = buildDeviceProxyRmiBindingIdentifier();
-		serverRmiRegistry.rebind(deviceProxyRmiString, deviceProxy);
+
+		try
+		{
+			Naming.rebind("//localhost:" + serverRmiRegistryPort + "/" + deviceProxyRmiString, deviceProxy);
+		}
+		catch (MalformedURLException e)
+		{
+			throw new RemoteException(	"Exception occured when rebinding the device wrapper. See the enclosed exception.",
+										e);
+		}
+
 		LOGGER.info("DeviceProxy instance published in the RMI registry under the identifier '" + deviceProxyRmiString
 				+ "'");
 	}
@@ -74,7 +85,7 @@ public class PoolItem
 	{
 		try
 		{
-			serverRmiRegistry.unbind(deviceProxyRmiString);
+			Naming.unbind("//localhost:" + serverRmiRegistryPort + "/" + deviceProxyRmiString);
 		}
 		catch (NotBoundException e)
 		{
@@ -84,7 +95,12 @@ public class PoolItem
 		}
 		catch (RemoteException e)
 		{
-			LOGGER.warn("Attempting to unbind a DeviceProxy resulted in a RemoteExcetion.", e);
+			LOGGER.warn("Attempting to unbind a DeviceProxy resulted in a RemoteException.", e);
+			return;
+		}
+		catch (MalformedURLException e)
+		{
+			LOGGER.warn("Unbinding DeviceProxy with id " + deviceProxyRmiString + " failed..", e);
 			return;
 		}
 
@@ -93,7 +109,7 @@ public class PoolItem
 
 	private String buildDeviceProxyRmiBindingIdentifier()
 	{
-		String rmiIdentifier = onAgentId + " " + deviceWrapperAgentRmiId;
+		String rmiIdentifier = onAgentId + "_" + deviceWrapperAgentRmiId;
 		return rmiIdentifier;
 	}
 
