@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -48,6 +49,8 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 	private Registry rmiRegistry;
 
 	private AgentEventSender agentChangeNotifier;
+
+	private ConnectionRequestReceiver connectionRequestReceiver;
 
 	void onAgentDeviceListChanged(String onAgent, String changedDeviceRmiId, boolean isNowAvailable)
 	{
@@ -105,6 +108,12 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 			rmiRegistry.rebind(poolManagerRmiPublishString, this);
 			LOGGER.info("PoolManager instance published in RMI (port " + rmiPort + ") under the identifier '"
 					+ poolManagerRmiPublishString + "'.");
+
+			String connectionRequestReceiverRmiString = RmiStringConstants.CONNECTION_REQUEST_RECEIVER.toString();
+			connectionRequestReceiver = new ConnectionRequestReceiver(this);
+			rmiRegistry.rebind(connectionRequestReceiverRmiString, connectionRequestReceiver);
+			LOGGER.info("Connection request receiver instance published in RMI under the identifier '"
+					+ connectionRequestReceiverRmiString + "'.");
 		}
 		catch (RemoteException e)
 		{
@@ -142,6 +151,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 	 */
 	public void close()
 	{
+		connectionRequestReceiver.close();
 		try
 		{
 			// Close the registry
@@ -269,4 +279,58 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 		return bestMatchDeviceProxyRmiId;
 	}
 
+	/**
+	 * Gets the list of all connected Agent IDs.
+	 * 
+	 * @return List<String> of Agent IDs.
+	 */
+	public List<String> getAllConnectedAgentIds()
+	{
+		List<String> agentIds = new LinkedList<String>();
+
+		for (Entry<String, IAgentManager> idAgentPair : agentManagersId.entrySet())
+		{
+			String agentId = idAgentPair.getKey();
+			agentIds.add(agentId);
+		}
+		return agentIds;
+	}
+
+	/**
+	 * Gets the list of all published {@link DeviceProxy DeviceProxy} instance IDs.
+	 * 
+	 * @return List<String> of device proxy IDs.
+	 */
+	public List<String> getAllDeviceProxyIds()
+	{
+		List<String> deviceProxyIds = new LinkedList<String>();
+
+		for (PoolItem poolItem : poolItems)
+		{
+			String deviceProxyRmiId = poolItem.getDeviceProxyRmiBindingIdentifier();
+			deviceProxyIds.add(deviceProxyRmiId);
+		}
+		return deviceProxyIds;
+	}
+
+	/**
+	 * Checks if a {@link DeviceProxy DeviceProxy} for a specified device ID on a specified Agent is published.
+	 * 
+	 * @param onAgentId
+	 *        device descriptor - the Agent ID of the Agent it is connected to.
+	 * @param onAgentDeviceId
+	 *        device descriptor - the device's ID as is on the Agent.
+	 * @return
+	 */
+	public boolean isSuchDeviceProxyPresent(String onAgentId, String onAgentDeviceId)
+	{
+		for (PoolItem poolItem : poolItems)
+		{
+			if (poolItem.isUnderlyingDeviceWrapperAsArguments(onAgentId, onAgentDeviceId))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }

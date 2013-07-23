@@ -41,7 +41,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -57,7 +57,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -75,7 +75,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -90,7 +90,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -105,7 +105,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -120,7 +120,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -135,7 +135,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -151,7 +151,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -168,7 +168,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -183,7 +183,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -199,7 +199,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -214,7 +214,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 
 	}
@@ -231,7 +231,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -246,7 +246,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -262,7 +262,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -277,7 +277,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 
@@ -293,7 +293,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		{
 			// TODO handle remoteexception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.");
+			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
 }
