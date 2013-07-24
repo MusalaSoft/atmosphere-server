@@ -1,6 +1,8 @@
 package com.musala.atmosphere.server;
 
+import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -157,7 +159,28 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 			// Close the registry
 			if (rmiRegistry != null)
 			{
-				UnicastRemoteObject.unexportObject(rmiRegistry, true);
+				// unexport the poolItems one by one
+				for (PoolItem item : poolItems)
+				{
+					item.unbindDeviceProxyFromRmi();
+				}
+
+				// unexport everything else
+				String[] rmiObjectIds = rmiRegistry.list();
+				for (String rmiObjectId : rmiObjectIds)
+				{
+					Object obj = rmiRegistry.lookup(rmiObjectId);
+					try
+					{
+						rmiRegistry.unbind(rmiObjectId);
+						UnicastRemoteObject.unexportObject((Remote) obj, true);
+					}
+					catch (NoSuchObjectException e)
+					{
+						LOGGER.warn("", e);
+					}
+				}
+
 			}
 		}
 		catch (Exception e)

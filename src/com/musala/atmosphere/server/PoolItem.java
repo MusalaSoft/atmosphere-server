@@ -2,8 +2,10 @@ package com.musala.atmosphere.server;
 
 import java.net.MalformedURLException;
 import java.rmi.Naming;
+import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 import org.apache.log4j.Logger;
 
@@ -85,13 +87,19 @@ public class PoolItem
 	{
 		try
 		{
+			UnicastRemoteObject.unexportObject(deviceProxy, true);
 			Naming.unbind("//localhost:" + serverRmiRegistryPort + "/" + deviceProxyRmiString);
 		}
 		catch (NotBoundException e)
 		{
 			// The device proxy was never registered anyway, so unbinding is 'done'.
 			// nothing to do here.
-			e.printStackTrace();
+			LOGGER.warn("Device proxy not bound to be unbound.", e);
+		}
+		catch (NoSuchObjectException e)
+		{
+			LOGGER.warn("Failed to unexport already unexported Remote object. Probably Agent was closed before the Server.",
+						e);
 		}
 		catch (RemoteException e)
 		{
@@ -103,7 +111,6 @@ public class PoolItem
 			LOGGER.warn("Unbinding DeviceProxy with id " + deviceProxyRmiString + " failed..", e);
 			return;
 		}
-
 		LOGGER.info("DeviceProxy with string identifier '" + deviceProxyRmiString + "' unbound from the RMI registry");
 	}
 
