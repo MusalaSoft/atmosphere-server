@@ -173,7 +173,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setNetworkSpeed(Pair<Integer, Integer> speeds) throws RemoteException
+	public void setNetworkSpeed(Pair<Integer, Integer> speeds) throws RemoteException, CommandFailedException
 	{
 		try
 		{
@@ -236,7 +236,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setBatteryLevel(int level) throws RemoteException
+	public void setBatteryLevel(int level) throws RemoteException, CommandFailedException
 	{
 		try
 		{
@@ -267,7 +267,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setBatteryState(BatteryState state) throws RemoteException
+	public void setBatteryState(BatteryState state) throws RemoteException, CommandFailedException
 	{
 		try
 		{
@@ -282,12 +282,43 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public BatteryState getBatteryState() throws RemoteException
+	public BatteryState getBatteryState() throws RemoteException, CommandFailedException
 	{
 		try
 		{
 			BatteryState returnValue = wrappedDevice.getBatteryState();
 			return returnValue;
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+	}
+
+	@Override
+	public boolean getPowerState() throws RemoteException, CommandFailedException
+	{
+		try
+		{
+			boolean powerState = wrappedDevice.getPowerState();
+			return powerState;
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+	}
+
+	@Override
+	public void setPowerState(boolean state) throws RemoteException, CommandFailedException
+	{
+		try
+		{
+			wrappedDevice.setPowerState(state);
 		}
 		catch (RemoteException e)
 		{

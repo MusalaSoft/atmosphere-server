@@ -219,7 +219,7 @@ public class DeviceProxyTest
 	}
 
 	@Test
-	public void testSetNetworkSpeed() throws RemoteException
+	public void testSetNetworkSpeed() throws RemoteException, CommandFailedException
 	{
 		Pair<Integer, Integer> testInput = new Pair<Integer, Integer>(0, 0);
 
@@ -230,7 +230,7 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testSetNetworkSpeedFailed() throws RemoteException
+	public void testSetNetworkSpeedFailed() throws RemoteException, CommandFailedException
 	{
 		Pair<Integer, Integer> testInput = new Pair<Integer, Integer>(0, 0);
 		Mockito.doThrow(new RemoteException())
@@ -303,7 +303,7 @@ public class DeviceProxyTest
 	}
 
 	@Test
-	public void testSetBatteryLevel() throws RemoteException
+	public void testSetBatteryLevel() throws RemoteException, CommandFailedException
 	{
 		int testInput = 123;
 
@@ -314,7 +314,7 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testSetBatteryLevelFailed() throws RemoteException
+	public void testSetBatteryLevelFailed() throws RemoteException, CommandFailedException
 	{
 		int testInput = 123;
 		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setBatteryLevel(anyInt());
@@ -344,7 +344,7 @@ public class DeviceProxyTest
 	}
 
 	@Test
-	public void testSetBatteryState() throws RemoteException
+	public void testSetBatteryState() throws RemoteException, CommandFailedException
 	{
 		BatteryState testInput = BatteryState.CHARGING;
 
@@ -355,7 +355,7 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testSetBatteryStateFailed() throws RemoteException
+	public void testSetBatteryStateFailed() throws RemoteException, CommandFailedException
 	{
 		BatteryState testInput = BatteryState.CHARGING;
 		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setBatteryState((BatteryState) any());
@@ -364,7 +364,7 @@ public class DeviceProxyTest
 	}
 
 	@Test
-	public void testGetBatteryState() throws RemoteException
+	public void testGetBatteryState() throws RemoteException, CommandFailedException
 	{
 		BatteryState testDataResponse = BatteryState.CHARGING;
 		when(innerDeviceWrapperMock.getBatteryState()).thenReturn(testDataResponse);
@@ -377,11 +377,52 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testGetBatteryStateFailed() throws RemoteException
+	public void testGetBatteryStateFailed() throws RemoteException, CommandFailedException
 	{
 		when(innerDeviceWrapperMock.getBatteryState()).thenThrow(new RemoteException());
 
 		deviceProxy.getBatteryState();
+	}
+
+	@Test
+	public void testSetPowerState() throws CommandFailedException, RemoteException
+	{
+		boolean testInput = false;
+
+		deviceProxy.setPowerState(testInput);
+
+		verify(innerDeviceWrapperMock, times(1)).setPowerState(testInput);
+		verifyNoMoreInteractions(innerDeviceWrapperMock);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testSetPowerStateFailed() throws RemoteException, CommandFailedException
+	{
+		boolean testInput = false;
+		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setPowerState((Boolean) any());
+
+		deviceProxy.setPowerState(testInput);
+	}
+
+	@Test
+	public void testGetPowerState() throws RemoteException, CommandFailedException
+	{
+		boolean testDataResponse = false;
+		when(innerDeviceWrapperMock.getPowerState()).thenReturn(testDataResponse);
+
+		boolean response = deviceProxy.getPowerState();
+
+		assertEquals("Expected response and method response should match.", testDataResponse, response);
+		verify(innerDeviceWrapperMock, times(1)).getPowerState();
+		verifyNoMoreInteractions(innerDeviceWrapperMock);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testGetPowerStateFailed() throws RemoteException, CommandFailedException
+	{
+		when(innerDeviceWrapperMock.getPowerState()).thenThrow(new RemoteException());
+
+		deviceProxy.getPowerState();
 	}
 
 }
