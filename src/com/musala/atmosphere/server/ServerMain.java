@@ -6,12 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.musala.atmosphere.commons.Pair;
+import com.musala.atmosphere.server.util.ServerPropertiesLoader;
 
 public class ServerMain
 {
-	// TODO extract to config file
-	private final static int POOLMANAGER_PORT = 1980;
-
 	private static final List<Pair<String, Integer>> agentAddressesList = new LinkedList<Pair<String, Integer>>();
 
 	/**
@@ -21,8 +19,7 @@ public class ServerMain
 	 */
 	public static void main(String[] args) throws RemoteException, NotBoundException
 	{
-		agentAddressesList.add(new Pair<String, Integer>("localhost", 1090));
-		PoolManager poolManager = new PoolManager(POOLMANAGER_PORT);
+		PoolManager poolManager = new PoolManager(ServerPropertiesLoader.getPoolManagerPort());
 
 		try
 		{
@@ -49,5 +46,4 @@ public class ServerMain
 			poolManager.close();
 		}
 	}
-
 }

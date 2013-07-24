@@ -16,13 +16,11 @@ import com.musala.atmosphere.commons.Pair;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
+import com.musala.atmosphere.server.util.ServerPropertiesLoader;
 
 public class Server implements Runnable
 {
 	private static final Logger LOGGER = Logger.getLogger(Server.class.getCanonicalName());
-
-	// TODO extract to config file
-	private static final int DEFAULT_POOLMANAGER_RMI_PORT = 1980;
 
 	private static final List<Pair<String, Integer>> agentAddressesList = new LinkedList<Pair<String, Integer>>();
 
@@ -35,14 +33,14 @@ public class Server implements Runnable
 	private ServerState serverState;
 
 	/**
-	 * Instantiates a Server object on port {@value #DEFAULT_POOLMANAGER_RMI_PORT}
+	 * Instantiates a Server object on loaded from config file port.
 	 * 
 	 * @throws RemoteException
 	 */
 	public Server() throws RemoteException
 	{
 		serverState = ServerState.SERVER_CREATED;
-		poolManagerPort = DEFAULT_POOLMANAGER_RMI_PORT;
+		poolManagerPort = ServerPropertiesLoader.getPoolManagerPort();
 		poolManager = new PoolManager(poolManagerPort);
 		LOGGER.info("Server instance created succesfully on RMI port " + poolManagerPort);
 	}
