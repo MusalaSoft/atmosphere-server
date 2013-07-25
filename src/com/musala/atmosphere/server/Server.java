@@ -1,12 +1,10 @@
 package com.musala.atmosphere.server;
 
 import java.io.IOException;
-import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,7 +16,7 @@ import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.server.util.ServerPropertiesLoader;
 
-public class Server implements Runnable
+public class Server
 {
 	private static final Logger LOGGER = Logger.getLogger(Server.class.getCanonicalName());
 
@@ -32,6 +30,37 @@ public class Server implements Runnable
 
 	private ServerState serverState;
 
+	private class InnerRunThread implements Runnable
+	{
+		/**
+		 * Runs the Server.
+		 */
+		@Override
+		public void run()
+		{
+			serverState = ServerState.SERVER_RUNNING;
+
+			LOGGER.info("Running the server...");
+
+			try
+			{
+				while (serverState == ServerState.SERVER_RUNNING)
+				{
+					Thread.sleep(1000);
+				}
+			}
+			catch (InterruptedException e)
+			{
+				LOGGER.error("Something has interrupted the server thread.", e);
+				Thread.currentThread().interrupt();
+			}
+			finally
+			{
+				stop();
+			}
+		}
+	}
+
 	/**
 	 * Instantiates a Server object on loaded from config file port.
 	 * 
@@ -39,10 +68,7 @@ public class Server implements Runnable
 	 */
 	public Server() throws RemoteException
 	{
-		serverState = ServerState.SERVER_CREATED;
-		poolManagerPort = ServerPropertiesLoader.getPoolManagerPort();
-		poolManager = new PoolManager(poolManagerPort);
-		LOGGER.info("Server instance created succesfully on RMI port " + poolManagerPort);
+		this(ServerPropertiesLoader.getPoolManagerPort());
 	}
 
 	/**
@@ -62,53 +88,26 @@ public class Server implements Runnable
 
 	/**
 	 * Starts the Server thread.
+	 * 
+	 * @param blocking
+	 *        true if this call should block while the Server is running, false otherwise.
 	 */
-	private void startServerThread()
+	public void startServerThread(boolean blocking)
 	{
-		serverState = ServerState.SERVER_RUNNING;
-		serverThread = new Thread(this, "ServerThread " + poolManagerPort);
+		InnerRunThread innerThread = new InnerRunThread();
+		serverThread = new Thread(innerThread, "ServerRunThread");
 		serverThread.start();
-	}
-
-	/**
-	 * Runs the Server.
-	 */
-	@Override
-	public void run()
-	{
-		if (serverState == ServerState.SERVER_CREATED)
-		{
-			this.startServerThread();
-			return;
-		}
-
-		LOGGER.info("Running the server...");
-
-		try
-		{
-			while (serverState == ServerState.SERVER_RUNNING)
-			{
-				Thread.sleep(1000);
-			}
-		}
-		catch (InterruptedException e)
-		{
-			LOGGER.error("Something has interrupted the server thread.", e);
-			Thread.currentThread().interrupt();
-		}
-		finally
+		if (blocking)
 		{
 			try
 			{
-				this.stop();
+				serverThread.join();
 			}
 			catch (InterruptedException e)
 			{
-				LOGGER.error("Something interrupted server thread while trying to be stopped.", e);
-				Thread.currentThread().interrupt();
+				LOGGER.warn("Failed to join with RunWait thread (blocking run).", e);
 			}
 		}
-
 	}
 
 	/**
@@ -116,46 +115,48 @@ public class Server implements Runnable
 	 * 
 	 * @throws InterruptedException
 	 */
-	public void stop() throws InterruptedException
+	public void stop()
 	{
 		if (serverState != ServerState.SERVER_STOPPED)
 		{
 			serverState = ServerState.SERVER_STOPPED;
-			serverThread.join();
 			poolManager.close();
 		}
 		else
 		{
+			// TODO CHANGE to out.print when implemented.
 			LOGGER.info("The server is already stopped.");
 		}
 	}
 
-	/**
-	 * Adds new Agent to the Server.
-	 * 
-	 * @param agentIp
-	 *        - IP of the agent
-	 * @param agentPort
-	 *        - number of Port, under which the agent is published in the RMI Registry.
-	 */
-	public void addAgentToServer(String agentIp, int agentPort)
-	{
-		try
-		{
-			poolManager.connectToAgent(agentIp, agentPort);
-			agentAddressesList.add(new Pair<String, Integer>(agentIp, agentPort));
-			LOGGER.info("Added Agent on ip: \"" + agentIp + "\" on port: \"" + agentPort + "\" to the Server");
-		}
-		catch (RemoteException e)
-		{
-			LOGGER.error("Could not connect Server to Agent [" + agentIp + ":" + agentPort
-					+ "]. Probably no Agent is created on given ip and port.", e);
-		}
-		catch (NotBoundException e)
-		{
-			LOGGER.error("You are trying to connect to something that is not Agent.", e);
-		}
-	}
+	// FIXME vlado should decide if this code is worth keeping
+	//
+	// /**
+	// * Adds new Agent to the Server.
+	// *
+	// * @param agentIp
+	// * - IP of the agent
+	// * @param agentPort
+	// * - number of Port, under which the agent is published in the RMI Registry.
+	// */
+	// public void addAgentToServer(String agentIp, int agentPort)
+	// {
+	// try
+	// {
+	// poolManager.connectToAgent(agentIp, agentPort);
+	// agentAddressesList.add(new Pair<String, Integer>(agentIp, agentPort));
+	// LOGGER.info("Added Agent on ip: \"" + agentIp + "\" on port: \"" + agentPort + "\" to the Server");
+	// }
+	// catch (RemoteException e)
+	// {
+	// LOGGER.error("Could not connect Server to Agent [" + agentIp + ":" + agentPort
+	// + "]. Probably no Agent is created on given ip and port.", e);
+	// }
+	// catch (NotBoundException e)
+	// {
+	// LOGGER.error("You are trying to connect to something that is not Agent.", e);
+	// }
+	// }
 
 	/**
 	 * Creates emulator with given DeviceParameters on the least loaded emulator. <b><u>NOTE: This is beta version, so
@@ -209,18 +210,17 @@ public class Server implements Runnable
 		throws NotBoundException,
 			IOException
 	{
-		LOGGER.info("Creating emulator on agent[" + agentIp + ":" + agentRmiPort + "]...");
 		Registry agentRegistry = LocateRegistry.getRegistry(agentIp, agentRmiPort);
 		IAgentManager agent = (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
 
 		com.musala.atmosphere.commons.sa.DeviceParameters wrappedDeviceParameters = new com.musala.atmosphere.commons.sa.DeviceParameters();
 		wrappedDeviceParameters.setDpi(deviceParameters.getDpi());
 		wrappedDeviceParameters.setRam(deviceParameters.getRam());
-
 		int resolutionWidth = deviceParameters.getResolutionWidth();
 		int resolutionHeight = deviceParameters.getResolutionHeight();
 		wrappedDeviceParameters.setResolution(new Pair<Integer, Integer>(resolutionWidth, resolutionHeight));
 
+		LOGGER.info("Creating emulator on agent [" + agentIp + ":" + agentRmiPort + "]...");
 		agent.createAndStartEmulator(wrappedDeviceParameters);
 	}
 
@@ -236,26 +236,13 @@ public class Server implements Runnable
 	}
 
 	/**
-	 * This method gets all devices that are attached to its agents and return their device ID's.
+	 * Gets all devices that are attached to its agents and return their device ID's.
 	 * 
-	 * @return - List of Strings, where each one is a serial number of some device, which is attached to some of the
-	 *         server's Agents.
-	 * @throws AccessException
-	 * @throws RemoteException
-	 * @throws NotBoundException
+	 * @return - List of {@link DeviceProxy DeviceProxy} RMI binding identifiers.
 	 */
-	public List<String> getAllAccessibleDevices() throws AccessException, RemoteException, NotBoundException
+	public List<String> getAllAccessibleDevices()
 	{
-		List<String> allDeviceIds = new ArrayList<String>();
-
-		for (Pair<String, Integer> agentAdress : agentAddressesList)
-		{
-			String currentAgentIp = agentAdress.getKey();
-			Integer currentAgentPort = agentAdress.getValue();
-			Registry agentRegistry = LocateRegistry.getRegistry(currentAgentIp, currentAgentPort);
-			IAgentManager agent = (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
-			allDeviceIds.addAll(agent.getAllDeviceWrappers());
-		}
+		List<String> allDeviceIds = poolManager.getAllDeviceProxyIds();
 		return allDeviceIds;
 	}
 
@@ -279,6 +266,7 @@ public class Server implements Runnable
 	 */
 	private int findLeastUsedAgent()
 	{
+		// FIXME genius
 		if (agentAddressesList.isEmpty())
 		{
 			throw new RuntimeException("No available agents to create emulators on.");
@@ -289,7 +277,7 @@ public class Server implements Runnable
 	public static void main(String[] args) throws NotBoundException, IOException, InterruptedException
 	{
 		Server server = new Server();
-		server.run();
+		server.startServerThread(true); // blocking
 		// server.stop();
 	}
 

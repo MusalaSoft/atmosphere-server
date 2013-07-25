@@ -108,7 +108,7 @@ public class ConnectionRequestReceiver extends UnicastRemoteObject implements IC
 		}
 		catch (ServerNotActiveException e)
 		{
-			LOGGER.error("The local Java VM invoed postConnectionRequest(...).", e);
+			LOGGER.error("The local Java VM invoked postConnectionRequest(...).", e);
 		}
 
 	}

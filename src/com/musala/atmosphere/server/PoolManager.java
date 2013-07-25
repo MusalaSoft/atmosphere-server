@@ -153,7 +153,10 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 	 */
 	public void close()
 	{
-		connectionRequestReceiver.close();
+		if (connectionRequestReceiver != null)
+		{
+			connectionRequestReceiver.close();
+		}
 		try
 		{
 			// Close the registry
