@@ -9,8 +9,8 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.musala.atmosphere.commons.Pair;
@@ -35,10 +35,10 @@ public class PoolManagerDeviceSelectionTest
 
 	private final static String DEVICE4_SN = "mockdevice4";
 
-	private PoolManager poolManager;
+	private static PoolManager poolManager;
 
-	@Before
-	public void setUp() throws Exception
+	@BeforeClass
+	public static void setUp() throws Exception
 	{
 		poolManager = new PoolManager(POOL_MANAGER_RMI_PORT);
 
@@ -100,8 +100,8 @@ public class PoolManagerDeviceSelectionTest
 		poolItemsList.add(new PoolItem(DEVICE4_SN, mockedDeviceFour, mockedAgentManager, serverRegistryPort));
 	}
 
-	@After
-	public void tearDown() throws Exception
+	@AfterClass
+	public static void tearDown() throws Exception
 	{
 		poolManager.close();
 	}

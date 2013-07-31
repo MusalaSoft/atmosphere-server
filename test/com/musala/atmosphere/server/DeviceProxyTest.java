@@ -3,6 +3,7 @@ package com.musala.atmosphere.server;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -399,7 +400,7 @@ public class DeviceProxyTest
 	public void testSetPowerStateFailed() throws RemoteException, CommandFailedException
 	{
 		boolean testInput = false;
-		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setPowerState((Boolean) any());
+		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setPowerState(anyBoolean());
 
 		deviceProxy.setPowerState(testInput);
 	}
