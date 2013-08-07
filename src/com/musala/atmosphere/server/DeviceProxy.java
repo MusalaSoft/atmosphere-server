@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.musala.atmosphere.commons.BatteryState;
 import com.musala.atmosphere.commons.CommandFailedException;
+import com.musala.atmosphere.commons.DeviceOrientation;
 import com.musala.atmosphere.commons.Pair;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
@@ -22,7 +23,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 {
 	private static final long serialVersionUID = -2645952387036199816L;
 
-	private IWrapDevice wrappedDevice;
+	private final IWrapDevice wrappedDevice;
 
 	public DeviceProxy(IWrapDevice deviceToWrap) throws RemoteException
 	{
@@ -322,15 +323,14 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
-	
-	public void setAirplaneMode(boolean airplaneMode)
-			throws CommandFailedException,
-			RemoteException
+
+	@Override
+	public void setAirplaneMode(boolean airplaneMode) throws CommandFailedException, RemoteException
 	{
 		try
 		{
@@ -338,7 +338,22 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed", e);
+		}
+	}
+
+	@Override
+	public void setOrientation(DeviceOrientation deviceOrientation) throws CommandFailedException, RemoteException
+	{
+		try
+		{
+			wrappedDevice.setOrientation(deviceOrientation);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed", e);
 		}
