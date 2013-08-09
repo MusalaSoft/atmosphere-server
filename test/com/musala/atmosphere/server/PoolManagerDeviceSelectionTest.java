@@ -120,6 +120,7 @@ public class PoolManagerDeviceSelectionTest
 
 		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
 		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
+		poolManager.releaseDevice(rmiId);
 	}
 
 	@Test
@@ -132,6 +133,7 @@ public class PoolManagerDeviceSelectionTest
 
 		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
 		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
+		poolManager.releaseDevice(rmiId);
 	}
 
 	@Test
@@ -142,6 +144,7 @@ public class PoolManagerDeviceSelectionTest
 
 		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
 		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
+		poolManager.releaseDevice(rmiId);
 	}
 
 	@Test
