@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.musala.atmosphere.commons.BatteryState;
 import com.musala.atmosphere.commons.CommandFailedException;
+import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.DeviceOrientation;
 import com.musala.atmosphere.commons.Pair;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
@@ -24,6 +25,8 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	private static final long serialVersionUID = -2645952387036199816L;
 
 	private final IWrapDevice wrappedDevice;
+
+	private DeviceInformation deviceInformation;
 
 	public DeviceProxy(IWrapDevice deviceToWrap) throws RemoteException
 	{
@@ -342,6 +345,17 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed", e);
 		}
+	}
+
+	public DeviceInformation getDeviceInformation() throws RemoteException
+	{
+		deviceInformation = wrappedDevice.getDeviceInformation();
+		return deviceInformation;
+	}
+
+	public void setDeviceInformation(DeviceInformation information)
+	{
+		deviceInformation = information;
 	}
 
 	@Override

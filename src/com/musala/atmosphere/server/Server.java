@@ -14,6 +14,7 @@ import com.musala.atmosphere.commons.Pair;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
+import com.musala.atmosphere.server.pool.PoolManager;
 import com.musala.atmosphere.server.util.ServerPropertiesLoader;
 
 public class Server
@@ -22,7 +23,7 @@ public class Server
 
 	private static final List<Pair<String, Integer>> agentAddressesList = new LinkedList<Pair<String, Integer>>();
 
-	private PoolManager poolManager;
+	private ServerManager serverManager;
 
 	private int poolManagerPort;
 
@@ -82,7 +83,7 @@ public class Server
 	{
 		serverState = ServerState.SERVER_CREATED;
 		poolManagerPort = serverRmiPort;
-		poolManager = new PoolManager(poolManagerPort);
+		serverManager = new ServerManager(poolManagerPort);
 		LOGGER.info("Server instance created succesfully on RMI port " + poolManagerPort);
 	}
 
@@ -120,7 +121,7 @@ public class Server
 		if (serverState != ServerState.SERVER_STOPPED)
 		{
 			serverState = ServerState.SERVER_STOPPED;
-			poolManager.close();
+			serverManager.close();
 		}
 		else
 		{
@@ -242,7 +243,9 @@ public class Server
 	 */
 	public List<String> getAllAccessibleDevices()
 	{
+		PoolManager poolManager = PoolManager.getInstance(serverManager);
 		List<String> allDeviceIds = poolManager.getAllDeviceProxyIds();
+
 		return allDeviceIds;
 	}
 

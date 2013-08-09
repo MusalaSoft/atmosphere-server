@@ -4,22 +4,21 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
 import java.rmi.RemoteException;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.Pair;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceOs;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
-import com.musala.atmosphere.commons.sa.DeviceInformation;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
+import com.musala.atmosphere.server.pool.PoolManager;
 
 public class PoolManagerDeviceSelectionTest
 {
@@ -35,12 +34,16 @@ public class PoolManagerDeviceSelectionTest
 
 	private final static String DEVICE4_SN = "mockdevice4";
 
+	private static ServerManager serverManager;
+
 	private static PoolManager poolManager;
 
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
-		poolManager = new PoolManager(POOL_MANAGER_RMI_PORT);
+		serverManager = new ServerManager(POOL_MANAGER_RMI_PORT);
+
+		poolManager = PoolManager.getInstance(serverManager);
 
 		IAgentManager mockedAgentManager = mock(IAgentManager.class);
 		when(mockedAgentManager.getAgentId()).thenReturn(AGENT_ID);
@@ -87,23 +90,16 @@ public class PoolManagerDeviceSelectionTest
 		when(mockedDeviceThree.getDeviceInformation()).thenReturn(mockedDeviceInfoThree);
 		when(mockedDeviceFour.getDeviceInformation()).thenReturn(mockedDeviceInfoFour);
 
-		Field serverRmiRegistryPortField = poolManager.getClass().getDeclaredField("rmiRegistryPort");
-		serverRmiRegistryPortField.setAccessible(true);
-		int serverRegistryPort = (int) serverRmiRegistryPortField.get(poolManager);
-		Field poolManagerPoolItemsList = poolManager.getClass().getDeclaredField("poolItems");
-		poolManagerPoolItemsList.setAccessible(true);
-		List<PoolItem> poolItemsList = (List<PoolItem>) poolManagerPoolItemsList.get(poolManager);
-
-		poolItemsList.add(new PoolItem(DEVICE1_SN, mockedDeviceOne, mockedAgentManager, serverRegistryPort));
-		poolItemsList.add(new PoolItem(DEVICE2_SN, mockedDeviceTwo, mockedAgentManager, serverRegistryPort));
-		poolItemsList.add(new PoolItem(DEVICE3_SN, mockedDeviceThree, mockedAgentManager, serverRegistryPort));
-		poolItemsList.add(new PoolItem(DEVICE4_SN, mockedDeviceFour, mockedAgentManager, serverRegistryPort));
+		poolManager.addDevice(DEVICE1_SN, mockedDeviceOne, mockedAgentManager, POOL_MANAGER_RMI_PORT);
+		poolManager.addDevice(DEVICE2_SN, mockedDeviceTwo, mockedAgentManager, POOL_MANAGER_RMI_PORT);
+		poolManager.addDevice(DEVICE3_SN, mockedDeviceThree, mockedAgentManager, POOL_MANAGER_RMI_PORT);
+		poolManager.addDevice(DEVICE4_SN, mockedDeviceFour, mockedAgentManager, POOL_MANAGER_RMI_PORT);
 	}
 
 	@AfterClass
 	public static void tearDown() throws Exception
 	{
-		poolManager.close();
+		serverManager.close();
 	}
 
 	@Test(expected = NoSuchElementException.class)

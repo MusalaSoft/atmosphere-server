@@ -12,18 +12,18 @@ public class AgentEventSender extends UnicastRemoteObject implements IAgentEvent
 	 */
 	private static final long serialVersionUID = 3349681803074360222L;
 
-	private PoolManager poolManagerReference;
+	private ServerManager serverManager;
 
-	public AgentEventSender(PoolManager poolManager) throws RemoteException
+	public AgentEventSender(ServerManager serverManager) throws RemoteException
 	{
-		poolManagerReference = poolManager;
+		this.serverManager = serverManager;
 	}
 
 	@Override
 	public void deviceListChanged(String agentId, String changedDeviceRmiId, boolean isNowAvailable)
 		throws RemoteException
 	{
-		poolManagerReference.onAgentDeviceListChanged(agentId, changedDeviceRmiId, isNowAvailable);
+		serverManager.onAgentDeviceListChanged(agentId, changedDeviceRmiId, isNowAvailable);
 	}
 
 }

@@ -2,10 +2,10 @@ package com.musala.atmosphere.server.util;
 
 import java.util.Comparator;
 
+import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceOs;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
-import com.musala.atmosphere.commons.sa.DeviceInformation;
 
 public class DeviceMatchingComparator implements Comparator<DeviceInformation>
 {

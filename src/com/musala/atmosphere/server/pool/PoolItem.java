@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server;
+package com.musala.atmosphere.server.pool;
 
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -9,13 +9,15 @@ import java.rmi.server.UnicastRemoteObject;
 
 import org.apache.log4j.Logger;
 
-import com.musala.atmosphere.commons.sa.DeviceInformation;
+import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
+import com.musala.atmosphere.server.DeviceProxy;
+import com.musala.atmosphere.server.ServerManager;
 
 /**
  * The {@link PoolItem PoolItem} object is a managing container for a {@link DeviceProxy DeviceProxy} instance. It is
- * used by the {@link PoolManager PoolManager} as a pooling object.
+ * used by the {@link ServerManager PoolManager} as a pooling object.
  * 
  * @author georgi.gaydarov
  * 
@@ -30,6 +32,8 @@ public class PoolItem
 
 	private DeviceInformation deviceInformation;
 
+	private boolean availability = true; // Device is available on creation.
+
 	private final IAgentManager onAgent;
 
 	private final String onAgentId;
@@ -43,13 +47,14 @@ public class PoolItem
 	 * object and publishes it on the server's RMI registry.
 	 * 
 	 * @param deviceWrapperId
-	 *        RMI string identifier on the Agent for the device wrapper stub.
+	 *        - RMI string identifier on the Agent for the device wrapper stub.
 	 * @param deviceWrapper
-	 *        device to be wrapped in a {@link DeviceProxy DeviceProxy} object.
+	 *        - device to be wrapped in a {@link DeviceProxy DeviceProxy} object.
 	 * @param onAgent
-	 *        the {@link AgentManager AgentManager} that published the {@link IWrapDevice IWrapDevice} we are wrapping.
+	 *        - the {@link AgentManager AgentManager} that published the {@link IWrapDevice IWrapDevice} we are
+	 *        wrapping.
 	 * @param serverRmiRegistry
-	 *        RMI registry in which we will publish the newly created {@link DeviceProxy DeviceProxy} wrapper.
+	 *        - RMI registry in which we will publish the newly created {@link DeviceProxy DeviceProxy} wrapper.
 	 * @throws RemoteException
 	 */
 	public PoolItem(String deviceWrapperId, IWrapDevice deviceWrapper, IAgentManager onAgent, int serverRmiRegistryPort)
@@ -59,7 +64,9 @@ public class PoolItem
 		this.onAgent = onAgent;
 		onAgentId = onAgent.getAgentId();
 		deviceProxy = new DeviceProxy(deviceWrapper);
+
 		deviceInformation = deviceWrapper.getDeviceInformation();
+
 		this.serverRmiRegistryPort = serverRmiRegistryPort;
 
 		deviceProxyRmiString = buildDeviceProxyRmiBindingIdentifier();
@@ -75,7 +82,7 @@ public class PoolItem
 		}
 
 		LOGGER.info("DeviceProxy instance published in the RMI registry under the identifier '" + deviceProxyRmiString
-				+ "'");
+				+ "'.");
 	}
 
 	/**
@@ -87,8 +94,10 @@ public class PoolItem
 	{
 		try
 		{
-			UnicastRemoteObject.unexportObject(deviceProxy, true);
 			Naming.unbind("//localhost:" + serverRmiRegistryPort + "/" + deviceProxyRmiString);
+			UnicastRemoteObject.unexportObject(deviceProxy, true);
+			LOGGER.info("DeviceProxy with string identifier '" + deviceProxyRmiString
+					+ "' unbound from the RMI registry.");
 		}
 		catch (NotBoundException e)
 		{
@@ -104,14 +113,11 @@ public class PoolItem
 		catch (RemoteException e)
 		{
 			LOGGER.warn("Attempting to unbind a DeviceProxy resulted in a RemoteException.", e);
-			return;
 		}
 		catch (MalformedURLException e)
 		{
-			LOGGER.warn("Unbinding DeviceProxy with id " + deviceProxyRmiString + " failed..", e);
-			return;
+			LOGGER.warn("Unbinding DeviceProxy with id " + deviceProxyRmiString + " failed.", e);
 		}
-		LOGGER.info("DeviceProxy with string identifier '" + deviceProxyRmiString + "' unbound from the RMI registry");
 	}
 
 	private String buildDeviceProxyRmiBindingIdentifier()
@@ -133,9 +139,38 @@ public class PoolItem
 		return deviceInformation;
 	}
 
-	public boolean isUnderlyingDeviceWrapperAsArguments(String onAgentId, String deviceProxyId)
+	/**
+	 * Checks whether the current device is corresponding to an actual device on the agent.
+	 * 
+	 * @param agentId
+	 *        - the agent on which the real device is plugged.
+	 * @param deviceProxyId
+	 *        - the proxy id of the device connected on the agent.
+	 * @return True if the device actually exists on the agent, false if not.
+	 */
+	public boolean isCorrespondingTo(String agentId, String deviceProxyId)
 	{
-		boolean returnValue = onAgentId.equals(this.onAgentId) && deviceProxyId.equals(deviceWrapperAgentRmiId);
-		return returnValue;
+		boolean isCurrentDeviceOnTheSameAgent = agentId.equals(onAgentId);
+		boolean isTheSameDeviceProxy = deviceProxyId.equals(deviceWrapperAgentRmiId);
+
+		boolean isCorresponding = isCurrentDeviceOnTheSameAgent && isTheSameDeviceProxy;
+
+		return isCorresponding;
 	}
+
+	/**
+	 * Check whether a device is available for allocation to a Client.
+	 * 
+	 * @return - True if the device is available in the pool, false if the device is already allocated.
+	 */
+	public boolean isAvailable()
+	{
+		return availability;
+	}
+
+	void setAvailability(boolean availability)
+	{
+		this.availability = availability;
+	}
+
 }

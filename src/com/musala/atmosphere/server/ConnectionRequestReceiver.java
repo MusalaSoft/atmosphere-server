@@ -30,7 +30,7 @@ public class ConnectionRequestReceiver extends UnicastRemoteObject implements IC
 
 	private static final int CONNECTION_CYCLE_WAIT = 1000;
 
-	private PoolManager commandedPool;
+	private ServerManager commandedPool;
 
 	private Thread connectingThread;
 
@@ -39,14 +39,14 @@ public class ConnectionRequestReceiver extends UnicastRemoteObject implements IC
 	private List<Pair<String, Integer>> connectionQueue = new CopyOnWriteArrayList<Pair<String, Integer>>();
 
 	/**
-	 * Constructs a new request receiver, that commands a passed {@link PoolManager PoolManager} to connect to a remote
+	 * Constructs a new request receiver, that commands a passed {@link ServerManager PoolManager} to connect to a remote
 	 * Agent.
 	 * 
 	 * @param poolToCommand
-	 *        {@link PoolManager PoolManager} instance that will be commanded.
+	 *        {@link ServerManager PoolManager} instance that will be commanded.
 	 * @throws RemoteException
 	 */
-	public ConnectionRequestReceiver(PoolManager poolToCommand) throws RemoteException
+	public ConnectionRequestReceiver(ServerManager poolToCommand) throws RemoteException
 	{
 		commandedPool = poolToCommand;
 		connectingThread = new Thread(new Runnable()
