@@ -39,11 +39,11 @@ public class ConnectionRequestReceiver extends UnicastRemoteObject implements IC
 	private List<Pair<String, Integer>> connectionQueue = new CopyOnWriteArrayList<Pair<String, Integer>>();
 
 	/**
-	 * Constructs a new request receiver, that commands a passed {@link ServerManager PoolManager} to connect to a remote
-	 * Agent.
+	 * Constructs a new request receiver, that commands a passed {@link ServerManager ServerManager} to connect to a
+	 * remote Agent.
 	 * 
 	 * @param poolToCommand
-	 *        {@link ServerManager PoolManager} instance that will be commanded.
+	 *        {@link ServerManager ServerManager} instance that will be commanded.
 	 * @throws RemoteException
 	 */
 	public ConnectionRequestReceiver(ServerManager poolToCommand) throws RemoteException
@@ -110,7 +110,6 @@ public class ConnectionRequestReceiver extends UnicastRemoteObject implements IC
 		{
 			LOGGER.error("The local Java VM invoked postConnectionRequest(...).", e);
 		}
-
 	}
 
 }

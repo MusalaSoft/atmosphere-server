@@ -134,7 +134,6 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 		{
 			poolItem.unbindDeviceProxyFromRmi();
 		}
-		System.out.println("All poolItems unexported.");
 	}
 
 	/**
