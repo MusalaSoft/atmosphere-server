@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.Pair;
+import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceOs;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
@@ -109,73 +110,82 @@ public class PoolManagerDeviceSelectionTest
 		parameters.setOs(DeviceOs.JELLY_BEAN_MR1_4_2_1);
 		parameters.setRam(256);
 
-		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
+		poolManager.allocateDevice(parameters);
 	}
 
 	@Test
-	public void getPresentDeviceFirstTestOne() throws RemoteException
+	public void getPresentDeviceFirstTestOne() throws Exception
 	{
 		DeviceParameters parameters = new DeviceParameters();
 		parameters.setRam(128);
 
-		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
+		DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+		String rmiId = deviceDescriptor.getProxyRmiId();
 		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
-		poolManager.releaseDevice(rmiId);
+		poolManager.releaseDevice(deviceDescriptor);
 	}
 
 	@Test
-	public void getPresentDeviceFirstTestTwo() throws RemoteException
+	public void getPresentDeviceFirstTestTwo() throws Exception
 	{
 		DeviceParameters parameters = new DeviceParameters();
 		parameters.setDeviceType(DeviceType.EMULATOR_PREFERRED);
 		parameters.setResolutionHeight(600);
 		parameters.setResolutionWidth(800);
 
-		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
+		DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+		String rmiId = deviceDescriptor.getProxyRmiId();
 		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
-		poolManager.releaseDevice(rmiId);
+		poolManager.releaseDevice(deviceDescriptor);
 	}
 
 	@Test
-	public void getPresentDeviceFirstTestThree() throws RemoteException
+	public void getPresentDeviceFirstTestThree() throws Exception
 	{
 		DeviceParameters parameters = new DeviceParameters();
 		parameters.setRam(128);
 
-		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
+		DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+		String rmiId = deviceDescriptor.getProxyRmiId();
 		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
-		poolManager.releaseDevice(rmiId);
+		poolManager.releaseDevice(deviceDescriptor);
 	}
 
 	@Test
-	public void getPresentDeviceSecond() throws RemoteException
+	public void getPresentDeviceSecond() throws Exception
 	{
 		DeviceParameters parameters = new DeviceParameters();
 		parameters.setDpi(240);
 
-		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
+		DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+		String rmiId = deviceDescriptor.getProxyRmiId();
 		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE2_SN, rmiId);
+		poolManager.releaseDevice(deviceDescriptor);
 	}
 
 	@Test
-	public void getPresentDeviceThird() throws RemoteException
+	public void getPresentDeviceThird() throws Exception
 	{
 		DeviceParameters parameters = new DeviceParameters();
 		parameters.setDeviceType(DeviceType.DEVICE_ONLY);
 		parameters.setRam(512);
 
-		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
+		DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+		String rmiId = deviceDescriptor.getProxyRmiId();
 		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE3_SN, rmiId);
+		poolManager.releaseDevice(deviceDescriptor);
 	}
 
 	@Test
-	public void getPresentDeviceFourth() throws RemoteException
+	public void getPresentDeviceFourth() throws Exception
 	{
 		DeviceParameters parameters = new DeviceParameters();
 		parameters.setDpi(180);
 
-		String rmiId = poolManager.getDeviceProxyRmiId(parameters);
+		DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+		String rmiId = deviceDescriptor.getProxyRmiId();
 		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE4_SN, rmiId);
+		poolManager.releaseDevice(deviceDescriptor);
 	}
 
 }

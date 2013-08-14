@@ -12,11 +12,14 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.DeviceInformation;
+import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
+import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.IClientBuilder;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.server.DeviceProxy;
+import com.musala.atmosphere.server.PasskeyAuthority;
 import com.musala.atmosphere.server.ServerManager;
 import com.musala.atmosphere.server.util.DeviceMatchingComparator;
 
@@ -116,9 +119,12 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 			}
 			else
 			{
-				LOGGER.info("PoolItem disconnected and removed.");
+				DeviceProxy removedProxy = poolItem.getUnderlyingDeviceProxy();
+				PasskeyAuthority.getInstance().removeDevice(removedProxy);
 				poolItem.unbindDeviceProxyFromRmi();
 				poolItems.remove(poolItem);
+
+				LOGGER.info("PoolItem disconnected and removed.");
 				return;
 			}
 		}
@@ -164,7 +170,8 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 	}
 
 	@Override
-	public synchronized String getDeviceProxyRmiId(DeviceParameters deviceParameters) throws RemoteException
+	public synchronized DeviceAllocationInformation allocateDevice(DeviceParameters deviceParameters)
+		throws RemoteException
 	{
 		Map<DeviceInformation, PoolItem> freePoolItemsDeviceInfoMap = new HashMap<DeviceInformation, PoolItem>();
 		List<DeviceInformation> freePoolItemsDeviceInfoList = new ArrayList<DeviceInformation>();
@@ -189,19 +196,26 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 			// TODO add logic behind device creation
 			LOGGER.warn("No available devices found.");
 		}
+
 		DeviceMatchingComparator matchComparator = new DeviceMatchingComparator(deviceParameters);
 		DeviceInformation bestMatchDeviceInformation = Collections.max(freePoolItemsDeviceInfoList, matchComparator);
 		PoolItem bestMatchPoolItem = freePoolItemsDeviceInfoMap.get(bestMatchDeviceInformation);
 		String bestMatchDeviceProxyRmiId = bestMatchPoolItem.getDeviceProxyRmiBindingIdentifier();
 
 		bestMatchPoolItem.setAvailability(false);
-		return bestMatchDeviceProxyRmiId;
+		DeviceProxy selectedPoolItemDeviceProxy = bestMatchPoolItem.getUnderlyingDeviceProxy();
+		long devicePasskey = PasskeyAuthority.getInstance().getPasskey(selectedPoolItemDeviceProxy);
+
+		DeviceAllocationInformation allocatedDeviceDescriptor = new DeviceAllocationInformation(bestMatchDeviceProxyRmiId,
+																								devicePasskey);
+
+		return allocatedDeviceDescriptor;
 	}
 
 	/**
 	 * Gets the list of all published {@link DeviceProxy DeviceProxy} instance IDs.
 	 * 
-	 * @return List<String> of all device proxy IDs preswent in the device pool.
+	 * @return List<String> of all device proxy IDs present in the device pool.
 	 */
 	public List<String> getAllDeviceProxyIds()
 	{
@@ -215,18 +229,25 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 	}
 
 	@Override
-	public void releaseDevice(String rmiId) throws RemoteException
+	public void releaseDevice(DeviceAllocationInformation allocatedDeviceDescriptor)
+		throws RemoteException,
+			InvalidPasskeyException
 	{
-
+		String rmiId = allocatedDeviceDescriptor.getProxyRmiId();
+		long passkey = allocatedDeviceDescriptor.getProxyPasskey();
 		for (PoolItem poolItem : poolItems)
 		{
 			if (poolItem.getDeviceProxyRmiBindingIdentifier().equals(rmiId))
 			{
+				DeviceProxy releasedDeviceProxy = poolItem.getUnderlyingDeviceProxy();
+				PasskeyAuthority.getInstance().validatePasskey(releasedDeviceProxy, passkey);
+
 				poolItem.setAvailability(true);
+				PasskeyAuthority.getInstance().renewPasskey(releasedDeviceProxy);
+
 				LOGGER.info("Released device with rmi id " + rmiId);
 				break;
 			}
 		}
 	}
-
 }

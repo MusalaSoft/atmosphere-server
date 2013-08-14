@@ -32,20 +32,23 @@ public class DeviceProxyTest
 
 	private DeviceProxy deviceProxy;
 
+	private long proxyPasskey;
+
 	@Before
 	public void setUpClass() throws Exception
 	{
 		innerDeviceWrapperMock = mock(IWrapDevice.class);
 		deviceProxy = new DeviceProxy(innerDeviceWrapperMock);
+		proxyPasskey = PasskeyAuthority.getInstance().getPasskey(deviceProxy);
 	}
 
 	@Test
-	public void testExecuteShellCommand() throws RemoteException, CommandFailedException
+	public void testExecuteShellCommand() throws Exception
 	{
 		when(innerDeviceWrapperMock.executeShellCommand(anyString())).then(returnsFirstArg());
 
 		String inputCommand = "abc";
-		String response = deviceProxy.executeShellCommand(inputCommand);
+		String response = deviceProxy.executeShellCommand(inputCommand, proxyPasskey);
 
 		assertEquals("Input did not match expected response.", inputCommand, response);
 		verify(innerDeviceWrapperMock, times(1)).executeShellCommand(inputCommand);
@@ -53,21 +56,21 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = CommandFailedException.class)
-	public void testExecuteShellCommandFailed() throws RemoteException, CommandFailedException
+	public void testExecuteShellCommandFailed() throws Exception
 	{
 		when(innerDeviceWrapperMock.executeShellCommand(anyString())).thenThrow(new CommandFailedException());
 
 		String inputCommand = "abc";
-		deviceProxy.executeShellCommand(inputCommand);
+		deviceProxy.executeShellCommand(inputCommand, proxyPasskey);
 	}
 
 	@Test
-	public void testGetFreeRam() throws RemoteException, CommandFailedException
+	public void testGetFreeRam() throws Exception
 	{
 		long ramAmount = 123;
 		when(innerDeviceWrapperMock.getFreeRAM()).thenReturn(ramAmount);
 
-		long response = deviceProxy.getFreeRam();
+		long response = deviceProxy.getFreeRam(proxyPasskey);
 
 		assertEquals("Mocked response and actual method response should match.", ramAmount, response);
 		verify(innerDeviceWrapperMock, times(1)).getFreeRAM();
@@ -75,20 +78,20 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testGetFreeRamFailed() throws RemoteException, CommandFailedException
+	public void testGetFreeRamFailed() throws Exception
 	{
 		when(innerDeviceWrapperMock.getFreeRAM()).thenThrow(new RemoteException());
 
-		deviceProxy.getFreeRam();
+		deviceProxy.getFreeRam(proxyPasskey);
 	}
 
 	@Test
-	public void testExecuteSequenceOfShellCommands() throws RemoteException, CommandFailedException
+	public void testExecuteSequenceOfShellCommands() throws Exception
 	{
 		when(innerDeviceWrapperMock.executeSequenceOfShellCommands((List<String>) any())).then(returnsFirstArg());
 
 		List<String> inputCommand = Arrays.asList(new String[] {"abc", "cde"});
-		List<String> response = deviceProxy.executeSequenceOfShellCommands(inputCommand);
+		List<String> response = deviceProxy.executeSequenceOfShellCommands(inputCommand, proxyPasskey);
 
 		assertEquals("Input and response should match.", inputCommand, response);
 		verify(innerDeviceWrapperMock, times(1)).executeSequenceOfShellCommands(inputCommand);
@@ -96,91 +99,83 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testExecuteSequenceOfShellCommandsFailed() throws RemoteException, CommandFailedException
+	public void testExecuteSequenceOfShellCommandsFailed() throws Exception
 	{
 		when(innerDeviceWrapperMock.executeSequenceOfShellCommands((List<String>) any())).thenThrow(new RemoteException());
 
 		List<String> inputCommand = Arrays.asList(new String[] {"abc", "cde"});
-		deviceProxy.executeSequenceOfShellCommands(inputCommand);
+		deviceProxy.executeSequenceOfShellCommands(inputCommand, proxyPasskey);
 	}
 
 	@Test
-	public void testInitApkInstall() throws RemoteException, IOException
+	public void testInitApkInstall() throws Exception
 	{
-		deviceProxy.initApkInstall();
+		deviceProxy.initApkInstall(proxyPasskey);
 
 		verify(innerDeviceWrapperMock, times(1)).initAPKInstall();
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testInitApkInstallFailed() throws RemoteException, IOException
+	public void testInitApkInstallFailed() throws Exception
 	{
 		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).initAPKInstall();
 
-		deviceProxy.initApkInstall();
+		deviceProxy.initApkInstall(proxyPasskey);
 	}
 
 	@Test
-	public void testAppendToApk() throws RemoteException, IOException
+	public void testAppendToApk() throws Exception
 	{
 		byte[] testBytes = new byte[] {0, 1, 2, 3};
-		deviceProxy.appendToApk(testBytes);
+		deviceProxy.appendToApk(testBytes, proxyPasskey);
 
 		verify(innerDeviceWrapperMock, times(1)).appendToAPK(testBytes);
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
 	@Test(expected = IOException.class)
-	public void testAppendToApkFailed() throws RemoteException, IOException
+	public void testAppendToApkFailed() throws Exception
 	{
 		byte[] testBytes = new byte[] {0, 1, 2, 3};
 		Mockito.doThrow(new IOException()).when(innerDeviceWrapperMock).appendToAPK((byte[]) any());
 
-		deviceProxy.appendToApk(testBytes);
+		deviceProxy.appendToApk(testBytes, proxyPasskey);
 	}
 
 	@Test
-	public void testBuildAndInstallApk() throws IOException, CommandFailedException
+	public void testBuildAndInstallApk() throws Exception
 	{
-		deviceProxy.buildAndInstallApk();
+		deviceProxy.buildAndInstallApk(proxyPasskey);
 
 		verify(innerDeviceWrapperMock, times(1)).buildAndInstallAPK();
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
 	@Test(expected = IOException.class)
-	public void testBuildAndInstallApkFailed() throws RemoteException, IOException, CommandFailedException
+	public void testBuildAndInstallApkFailed() throws Exception
 	{
 		Mockito.doThrow(new IOException()).when(innerDeviceWrapperMock).buildAndInstallAPK();
 
-		deviceProxy.buildAndInstallApk();
+		deviceProxy.buildAndInstallApk(proxyPasskey);
 	}
 
 	@Test
-	public void testDiscardApk() throws RemoteException, IOException
+	public void testDiscardApk() throws Exception
 	{
-		deviceProxy.discardApk();
+		deviceProxy.discardApk(proxyPasskey);
 
 		verify(innerDeviceWrapperMock, times(1)).discardAPK();
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
-	@Test(expected = IOException.class)
-	public void testDiscardApkFailed() throws RemoteException, IOException
-	{
-		Mockito.doThrow(new IOException()).when(innerDeviceWrapperMock).discardAPK();
-
-		deviceProxy.discardApk();
-	}
-
 	@Test
-	public void testGetUiXml() throws RemoteException, CommandFailedException
+	public void testGetUiXml() throws Exception
 	{
 		String testDataResponse = "testresponse";
 		when(innerDeviceWrapperMock.getUiXml()).thenReturn(testDataResponse);
 
-		String response = deviceProxy.getUiXml();
+		String response = deviceProxy.getUiXml(proxyPasskey);
 
 		assertEquals("Mocked response and actual method response should match.", testDataResponse, response);
 		verify(innerDeviceWrapperMock, times(1)).getUiXml();
@@ -188,20 +183,20 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = CommandFailedException.class)
-	public void testGetUiXmlFailed() throws RemoteException, CommandFailedException
+	public void testGetUiXmlFailed() throws Exception
 	{
 		when(innerDeviceWrapperMock.getUiXml()).thenThrow(new CommandFailedException());
 
-		deviceProxy.getUiXml();
+		deviceProxy.getUiXml(proxyPasskey);
 	}
 
 	@Test
-	public void testGetScreenShot() throws RemoteException, CommandFailedException
+	public void testGetScreenShot() throws Exception
 	{
 		byte[] testDataResponse = new byte[] {0, 1, 2, 3};
 		when(innerDeviceWrapperMock.getScreenshot()).thenReturn(testDataResponse);
 
-		byte[] response = deviceProxy.getScreenshot();
+		byte[] response = deviceProxy.getScreenshot(proxyPasskey);
 
 		// converting arrays to lists, as assertEquals(array, array) is deprecated.
 		assertEquals(	"Mocked response and actual method response should match.",
@@ -212,42 +207,42 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testGetScreenShotFailed() throws RemoteException, CommandFailedException
+	public void testGetScreenShotFailed() throws Exception
 	{
 		when(innerDeviceWrapperMock.getScreenshot()).thenThrow(new RemoteException());
 
-		deviceProxy.getScreenshot();
+		deviceProxy.getScreenshot(proxyPasskey);
 	}
 
 	@Test
-	public void testSetNetworkSpeed() throws RemoteException, CommandFailedException
+	public void testSetNetworkSpeed() throws Exception
 	{
 		Pair<Integer, Integer> testInput = new Pair<Integer, Integer>(0, 0);
 
-		deviceProxy.setNetworkSpeed(testInput);
+		deviceProxy.setNetworkSpeed(testInput, proxyPasskey);
 
 		verify(innerDeviceWrapperMock, times(1)).setNetworkSpeed(testInput);
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testSetNetworkSpeedFailed() throws RemoteException, CommandFailedException
+	public void testSetNetworkSpeedFailed() throws Exception
 	{
 		Pair<Integer, Integer> testInput = new Pair<Integer, Integer>(0, 0);
 		Mockito.doThrow(new RemoteException())
 				.when(innerDeviceWrapperMock)
 				.setNetworkSpeed((Pair<Integer, Integer>) any());
 
-		deviceProxy.setNetworkSpeed(testInput);
+		deviceProxy.setNetworkSpeed(testInput, proxyPasskey);
 	}
 
 	@Test
-	public void testGetNetworkSpeed() throws RemoteException
+	public void testGetNetworkSpeed() throws Exception
 	{
 		Pair<Integer, Integer> testDataResponse = new Pair<Integer, Integer>(0, 0);
 		when(innerDeviceWrapperMock.getNetworkSpeed()).thenReturn(testDataResponse);
 
-		Pair<Integer, Integer> response = deviceProxy.getNetworkSpeed();
+		Pair<Integer, Integer> response = deviceProxy.getNetworkSpeed(proxyPasskey);
 
 		assertEquals("Mocked response and actual method response should match.", testDataResponse, response);
 		verify(innerDeviceWrapperMock, times(1)).getNetworkSpeed();
@@ -255,40 +250,40 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testGetNetworkSpeedFailed() throws RemoteException
+	public void testGetNetworkSpeedFailed() throws Exception
 	{
 		when(innerDeviceWrapperMock.getNetworkSpeed()).thenThrow(new RemoteException());
 
-		deviceProxy.getNetworkSpeed();
+		deviceProxy.getNetworkSpeed(proxyPasskey);
 	}
 
 	@Test
-	public void testSetNetworkLatency() throws RemoteException
+	public void testSetNetworkLatency() throws Exception
 	{
 		int testInput = 123;
 
-		deviceProxy.setNetworkLatency(testInput);
+		deviceProxy.setNetworkLatency(testInput, proxyPasskey);
 
 		verify(innerDeviceWrapperMock, times(1)).setNetworkLatency(testInput);
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testSetNetworkLatencyFailed() throws RemoteException
+	public void testSetNetworkLatencyFailed() throws Exception
 	{
 		int testInput = 123;
 		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setNetworkLatency(anyInt());
 
-		deviceProxy.setNetworkLatency(testInput);
+		deviceProxy.setNetworkLatency(testInput, proxyPasskey);
 	}
 
 	@Test
-	public void testGetNetworkLatency() throws RemoteException
+	public void testGetNetworkLatency() throws Exception
 	{
 		int testDataResponse = 123;
 		when(innerDeviceWrapperMock.getNetworkLatency()).thenReturn(testDataResponse);
 
-		int response = deviceProxy.getNetworkLatency();
+		int response = deviceProxy.getNetworkLatency(proxyPasskey);
 
 		assertEquals("Input and response should match.", testDataResponse, response);
 		verify(innerDeviceWrapperMock, times(1)).getNetworkLatency();
@@ -296,40 +291,40 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testGetNetworkLatencyFailed() throws RemoteException
+	public void testGetNetworkLatencyFailed() throws Exception
 	{
 		when(innerDeviceWrapperMock.getNetworkLatency()).thenThrow(new RemoteException());
 
-		deviceProxy.getNetworkLatency();
+		deviceProxy.getNetworkLatency(proxyPasskey);
 	}
 
 	@Test
-	public void testSetBatteryLevel() throws RemoteException, CommandFailedException
+	public void testSetBatteryLevel() throws Exception
 	{
 		int testInput = 123;
 
-		deviceProxy.setBatteryLevel(testInput);
+		deviceProxy.setBatteryLevel(testInput, proxyPasskey);
 
 		verify(innerDeviceWrapperMock, times(1)).setBatteryLevel(testInput);
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testSetBatteryLevelFailed() throws RemoteException, CommandFailedException
+	public void testSetBatteryLevelFailed() throws Exception
 	{
 		int testInput = 123;
 		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setBatteryLevel(anyInt());
 
-		deviceProxy.setBatteryLevel(testInput);
+		deviceProxy.setBatteryLevel(testInput, proxyPasskey);
 	}
 
 	@Test
-	public void testGetBatteryLevel() throws RemoteException, CommandFailedException
+	public void testGetBatteryLevel() throws Exception
 	{
 		int testDataResponse = 123;
 		when(innerDeviceWrapperMock.getBatteryLevel()).thenReturn(testDataResponse);
 
-		int response = deviceProxy.getBatteryLevel();
+		int response = deviceProxy.getBatteryLevel(proxyPasskey);
 
 		assertEquals("Expected response and method response should match.", testDataResponse, response);
 		verify(innerDeviceWrapperMock, times(1)).getBatteryLevel();
@@ -337,40 +332,40 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testGetBatteryLevelFailed() throws RemoteException, CommandFailedException
+	public void testGetBatteryLevelFailed() throws Exception
 	{
 		when(innerDeviceWrapperMock.getBatteryLevel()).thenThrow(new RemoteException());
 
-		deviceProxy.getBatteryLevel();
+		deviceProxy.getBatteryLevel(proxyPasskey);
 	}
 
 	@Test
-	public void testSetBatteryState() throws RemoteException, CommandFailedException
+	public void testSetBatteryState() throws Exception
 	{
 		BatteryState testInput = BatteryState.CHARGING;
 
-		deviceProxy.setBatteryState(testInput);
+		deviceProxy.setBatteryState(testInput, proxyPasskey);
 
 		verify(innerDeviceWrapperMock, times(1)).setBatteryState(testInput);
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testSetBatteryStateFailed() throws RemoteException, CommandFailedException
+	public void testSetBatteryStateFailed() throws Exception
 	{
 		BatteryState testInput = BatteryState.CHARGING;
 		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setBatteryState((BatteryState) any());
 
-		deviceProxy.setBatteryState(testInput);
+		deviceProxy.setBatteryState(testInput, proxyPasskey);
 	}
 
 	@Test
-	public void testGetBatteryState() throws RemoteException, CommandFailedException
+	public void testGetBatteryState() throws Exception
 	{
 		BatteryState testDataResponse = BatteryState.CHARGING;
 		when(innerDeviceWrapperMock.getBatteryState()).thenReturn(testDataResponse);
 
-		BatteryState response = deviceProxy.getBatteryState();
+		BatteryState response = deviceProxy.getBatteryState(proxyPasskey);
 
 		assertEquals("Expected response and method response should match.", testDataResponse, response);
 		verify(innerDeviceWrapperMock, times(1)).getBatteryState();
@@ -378,40 +373,40 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testGetBatteryStateFailed() throws RemoteException, CommandFailedException
+	public void testGetBatteryStateFailed() throws Exception
 	{
 		when(innerDeviceWrapperMock.getBatteryState()).thenThrow(new RemoteException());
 
-		deviceProxy.getBatteryState();
+		deviceProxy.getBatteryState(proxyPasskey);
 	}
 
 	@Test
-	public void testSetPowerState() throws CommandFailedException, RemoteException
+	public void testSetPowerState() throws Exception
 	{
 		boolean testInput = false;
 
-		deviceProxy.setPowerState(testInput);
+		deviceProxy.setPowerState(testInput, proxyPasskey);
 
 		verify(innerDeviceWrapperMock, times(1)).setPowerState(testInput);
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testSetPowerStateFailed() throws RemoteException, CommandFailedException
+	public void testSetPowerStateFailed() throws Exception
 	{
 		boolean testInput = false;
 		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setPowerState(anyBoolean());
 
-		deviceProxy.setPowerState(testInput);
+		deviceProxy.setPowerState(testInput, proxyPasskey);
 	}
 
 	@Test
-	public void testGetPowerState() throws RemoteException, CommandFailedException
+	public void testGetPowerState() throws Exception
 	{
 		boolean testDataResponse = false;
 		when(innerDeviceWrapperMock.getPowerState()).thenReturn(testDataResponse);
 
-		boolean response = deviceProxy.getPowerState();
+		boolean response = deviceProxy.getPowerState(proxyPasskey);
 
 		assertEquals("Expected response and method response should match.", testDataResponse, response);
 		verify(innerDeviceWrapperMock, times(1)).getPowerState();
@@ -419,11 +414,11 @@ public class DeviceProxyTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testGetPowerStateFailed() throws RemoteException, CommandFailedException
+	public void testGetPowerStateFailed() throws Exception
 	{
 		when(innerDeviceWrapperMock.getPowerState()).thenThrow(new RemoteException());
 
-		deviceProxy.getPowerState();
+		deviceProxy.getPowerState(proxyPasskey);
 	}
 
 }

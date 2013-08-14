@@ -10,6 +10,7 @@ import com.musala.atmosphere.commons.CommandFailedException;
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.DeviceOrientation;
 import com.musala.atmosphere.commons.Pair;
+import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 
@@ -34,8 +35,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public String executeShellCommand(String command) throws RemoteException, CommandFailedException
+	public String executeShellCommand(String command, long invocationPasskey)
+		throws RemoteException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			String returnValue = wrappedDevice.executeShellCommand(command);
@@ -50,8 +56,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public long getFreeRam() throws RemoteException, CommandFailedException
+	public long getFreeRam(long invocationPasskey)
+		throws RemoteException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			long returnValue = wrappedDevice.getFreeRAM();
@@ -66,10 +77,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public List<String> executeSequenceOfShellCommands(List<String> commands)
+	public List<String> executeSequenceOfShellCommands(List<String> commands, long invocationPasskey)
 		throws RemoteException,
-			CommandFailedException
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			List<String> returnValue = wrappedDevice.executeSequenceOfShellCommands(commands);
@@ -84,8 +98,10 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void initApkInstall() throws RemoteException, IOException
+	public void initApkInstall(long invocationPasskey) throws RemoteException, IOException, InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			wrappedDevice.initAPKInstall();
@@ -99,8 +115,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void appendToApk(byte[] bytes) throws RemoteException, IOException
+	public void appendToApk(byte[] bytes, long invocationPasskey)
+		throws RemoteException,
+			IOException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			wrappedDevice.appendToAPK(bytes);
@@ -114,8 +135,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void buildAndInstallApk() throws IOException, CommandFailedException
+	public void buildAndInstallApk(long invocationPasskey)
+		throws IOException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			wrappedDevice.buildAndInstallAPK();
@@ -129,8 +155,10 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void discardApk() throws RemoteException, IOException
+	public void discardApk(long invocationPasskey) throws RemoteException, InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			wrappedDevice.discardAPK();
@@ -144,8 +172,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public String getUiXml() throws RemoteException, CommandFailedException
+	public String getUiXml(long invocationPasskey)
+		throws RemoteException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			String returnValue = wrappedDevice.getUiXml();
@@ -159,10 +192,14 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 	}
 
-	// TODO Byte[] will most likely be changed to byte[] when this method is implemented in the AbstractWrapDevice
 	@Override
-	public byte[] getScreenshot() throws RemoteException, CommandFailedException
+	public byte[] getScreenshot(long invocationPasskey)
+		throws RemoteException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			byte[] returnValue = wrappedDevice.getScreenshot();
@@ -177,8 +214,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setNetworkSpeed(Pair<Integer, Integer> speeds) throws RemoteException, CommandFailedException
+	public void setNetworkSpeed(Pair<Integer, Integer> speeds, long invocationPasskey)
+		throws RemoteException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			wrappedDevice.setNetworkSpeed(speeds);
@@ -192,8 +234,12 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public Pair<Integer, Integer> getNetworkSpeed() throws RemoteException
+	public Pair<Integer, Integer> getNetworkSpeed(long invocationPasskey)
+		throws RemoteException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			Pair<Integer, Integer> returnValue = wrappedDevice.getNetworkSpeed();
@@ -208,8 +254,10 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setNetworkLatency(int latency) throws RemoteException
+	public void setNetworkLatency(int latency, long invocationPasskey) throws RemoteException, InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			wrappedDevice.setNetworkLatency(latency);
@@ -224,8 +272,10 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public int getNetworkLatency() throws RemoteException
+	public int getNetworkLatency(long invocationPasskey) throws RemoteException, InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			int returnValue = wrappedDevice.getNetworkLatency();
@@ -240,8 +290,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setBatteryLevel(int level) throws RemoteException, CommandFailedException
+	public void setBatteryLevel(int level, long invocationPasskey)
+		throws RemoteException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			wrappedDevice.setBatteryLevel(level);
@@ -255,8 +310,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public int getBatteryLevel() throws RemoteException, CommandFailedException
+	public int getBatteryLevel(long invocationPasskey)
+		throws RemoteException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			int returnValue = wrappedDevice.getBatteryLevel();
@@ -271,8 +331,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setBatteryState(BatteryState state) throws RemoteException, CommandFailedException
+	public void setBatteryState(BatteryState state, long invocationPasskey)
+		throws RemoteException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			wrappedDevice.setBatteryState(state);
@@ -286,8 +351,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public BatteryState getBatteryState() throws RemoteException, CommandFailedException
+	public BatteryState getBatteryState(long invocationPasskey)
+		throws RemoteException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			BatteryState returnValue = wrappedDevice.getBatteryState();
@@ -302,8 +372,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public boolean getPowerState() throws RemoteException, CommandFailedException
+	public boolean getPowerState(long invocationPasskey)
+		throws RemoteException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			boolean powerState = wrappedDevice.getPowerState();
@@ -318,8 +393,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setPowerState(boolean state) throws RemoteException, CommandFailedException
+	public void setPowerState(boolean state, long invocationPasskey)
+		throws RemoteException,
+			CommandFailedException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			wrappedDevice.setPowerState(state);
@@ -333,8 +413,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setAirplaneMode(boolean airplaneMode) throws CommandFailedException, RemoteException
+	public void setAirplaneMode(boolean airplaneMode, long invocationPasskey)
+		throws CommandFailedException,
+			RemoteException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			wrappedDevice.setAirplaneMode(airplaneMode);
@@ -347,8 +432,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 	}
 
-	public DeviceInformation getDeviceInformation() throws RemoteException
+	@Override
+	public DeviceInformation getDeviceInformation(long invocationPasskey)
+		throws RemoteException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		deviceInformation = wrappedDevice.getDeviceInformation();
 		return deviceInformation;
 	}
@@ -359,8 +449,13 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setOrientation(DeviceOrientation deviceOrientation) throws CommandFailedException, RemoteException
+	public void setOrientation(DeviceOrientation deviceOrientation, long invocationPasskey)
+		throws CommandFailedException,
+			RemoteException,
+			InvalidPasskeyException
 	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
 			wrappedDevice.setOrientation(deviceOrientation);

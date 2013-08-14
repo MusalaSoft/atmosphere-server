@@ -173,4 +173,14 @@ public class PoolItem
 		this.availability = availability;
 	}
 
+	/**
+	 * Returns the underlying {@link DeviceProxy DeviceProxy} instance that is responsible for redirecting request.
+	 * 
+	 * @return the {@link DeviceProxy DeviceProxy} instance.
+	 */
+	public DeviceProxy getUnderlyingDeviceProxy()
+	{
+		return deviceProxy;
+	}
+
 }
