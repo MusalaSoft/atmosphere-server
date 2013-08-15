@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 
 /**
+ * A {@link DeviceProxy DeviceProxy} passkey validating authority.
  * 
  * @author georgi.gaydarov
  * 
@@ -21,9 +22,11 @@ public class PasskeyAuthority
 
 	private static PasskeyAuthority authorityInstance = new PasskeyAuthority();
 
+	private final Random generator;
+
 	private PasskeyAuthority()
 	{
-
+		generator = new Random();
 		LOGGER.info("PasskeyAuthority instance created.");
 	}
 
@@ -79,13 +82,17 @@ public class PasskeyAuthority
 	 */
 	public void renewPasskey(DeviceProxy proxy)
 	{
-		Random generator = new Random();
-		long initialRandomValue = generator.nextLong();
-		Random seededGenerator = new Random(initialRandomValue);
-		long secondRandomValue = seededGenerator.nextLong();
-		long generatedKey = initialRandomValue ^ secondRandomValue;
+		long oldKey = getPasskey(proxy);
+		long newKey = 0;
+		do
+		{
+			long initialRandomValue = generator.nextLong();
+			Random seededGenerator = new Random(initialRandomValue);
+			long secondRandomValue = seededGenerator.nextLong();
+			newKey = initialRandomValue ^ secondRandomValue;
+		} while (newKey == oldKey);
 
-		proxyKeys.put(proxy, generatedKey);
+		proxyKeys.put(proxy, newKey);
 	}
 
 	/**
