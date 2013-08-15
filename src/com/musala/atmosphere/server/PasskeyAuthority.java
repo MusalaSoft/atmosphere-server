@@ -82,7 +82,11 @@ public class PasskeyAuthority
 	 */
 	public void renewPasskey(DeviceProxy proxy)
 	{
-		long oldKey = getPasskey(proxy);
+		long oldKey = 0;
+		if (proxyKeys.containsKey(proxy))
+		{
+			oldKey = getPasskey(proxy);
+		}
 		long newKey = 0;
 		do
 		{
