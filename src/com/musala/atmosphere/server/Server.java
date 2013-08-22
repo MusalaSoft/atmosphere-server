@@ -3,64 +3,34 @@ package com.musala.atmosphere.server;
 import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.Pair;
-import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
-import com.musala.atmosphere.commons.sa.IAgentManager;
-import com.musala.atmosphere.commons.sa.RmiStringConstants;
-import com.musala.atmosphere.server.pool.PoolManager;
+import com.musala.atmosphere.commons.sa.ConsoleControl;
+import com.musala.atmosphere.server.command.ServerCommand;
+import com.musala.atmosphere.server.command.ServerCommandFactory;
+import com.musala.atmosphere.server.command.ServerConsoleCommands;
+import com.musala.atmosphere.server.state.ServerState;
+import com.musala.atmosphere.server.state.StoppedServer;
 import com.musala.atmosphere.server.util.ServerPropertiesLoader;
 
 public class Server
 {
-	private static final Logger LOGGER = Logger.getLogger(Server.class.getCanonicalName());
 
-	private static final List<Pair<String, Integer>> agentAddressesList = new LinkedList<Pair<String, Integer>>();
+	private static final Logger LOGGER = Logger.getLogger(Server.class.getCanonicalName());
 
 	private ServerManager serverManager;
 
-	private int poolManagerPort;
+	private ConsoleControl serverConsole;
 
-	private volatile Thread serverThread;
+	private ServerCommandFactory commandFactory;
 
-	private ServerState serverState;
+	private ServerState currentServerState;
 
-	private class InnerRunThread implements Runnable
-	{
-		/**
-		 * Runs the Server.
-		 */
-		@Override
-		public void run()
-		{
-			serverState = ServerState.SERVER_RUNNING;
+	private int serverRmiPort;
 
-			LOGGER.info("Running the server...");
-
-			try
-			{
-				while (serverState == ServerState.SERVER_RUNNING)
-				{
-					Thread.sleep(1000);
-				}
-			}
-			catch (InterruptedException e)
-			{
-				LOGGER.error("Something has interrupted the server thread.", e);
-				Thread.currentThread().interrupt();
-			}
-			finally
-			{
-				stop();
-			}
-		}
-	}
+	private boolean closed;
 
 	/**
 	 * Instantiates a Server object on loaded from config file port.
@@ -75,213 +45,176 @@ public class Server
 	/**
 	 * Instantiates a Server object on given port.
 	 * 
-	 * @param serverRmiPort
+	 * @param serverPort
 	 *        - port on which the Pool Manager of the Server will be published in RMI.
 	 * @throws RemoteException
 	 */
-	public Server(int serverRmiPort) throws RemoteException
+	public Server(int serverPort) throws RemoteException
 	{
-		serverState = ServerState.SERVER_CREATED;
-		poolManagerPort = serverRmiPort;
-		serverManager = new ServerManager(poolManagerPort);
-		LOGGER.info("Server instance created succesfully on RMI port " + poolManagerPort);
+		serverManager = new ServerManager(serverRmiPort);
+		currentServerState = new StoppedServer(this);
+
+		serverConsole = new ConsoleControl();
+		commandFactory = new ServerCommandFactory(this);
+
+		serverRmiPort = serverPort;
+		closed = false;
+		LOGGER.info("Server instance created succesfully on RMI port " + serverRmiPort);
 	}
 
 	/**
-	 * Starts the Server thread.
+	 * Sets the state of the server.
 	 * 
-	 * @param blocking
-	 *        true if this call should block while the Server is running, false otherwise.
+	 * @param newState
 	 */
-	public void startServerThread(boolean blocking)
+	public void setState(ServerState newState)
 	{
-		InnerRunThread innerThread = new InnerRunThread();
-		serverThread = new Thread(innerThread, "ServerRunThread");
-		serverThread.start();
-		if (blocking)
-		{
-			try
-			{
-				serverThread.join();
-			}
-			catch (InterruptedException e)
-			{
-				LOGGER.warn("Failed to join with RunWait thread (blocking run).", e);
-			}
-		}
+		this.currentServerState = newState;
 	}
 
 	/**
-	 * Stops the Server.
-	 * 
-	 * @throws InterruptedException
+	 * Starts the Server thread, only if it is not already running.
+	 */
+	public void run()
+	{
+		currentServerState.run();
+	}
+
+	/**
+	 * Stops the Server if it's running.
 	 */
 	public void stop()
 	{
-		if (serverState != ServerState.SERVER_STOPPED)
+		currentServerState.stop();
+	}
+
+	/**
+	 * Releases all resources, used by the server and marks it as closed. After that the Server is no longer available
+	 * and should be started again in order to be used.
+	 */
+	public void exit()
+	{
+		serverManager.close();
+		closed = true;
+	}
+
+	/**
+	 * Writes string to the server's console output.
+	 * 
+	 * @param message
+	 *        - the message that will be written
+	 */
+	public void writeToConsole(String message)
+	{
+		currentServerState.writeToConsole(message);
+	}
+
+	/**
+	 * Writes line to the server's console output.
+	 * 
+	 * @param message
+	 *        - the message that will be written
+	 */
+	public void writeLineToConsole(String message)
+	{
+		currentServerState.writeLineToConsole(message);
+	}
+
+	/**
+	 * Executes passed shell command from the user into the console of given Server.
+	 * 
+	 * @param passedShellCommand
+	 *        - the shell command that the managing Server person wants to execute
+	 * @throws IOException
+	 */
+	private void parseAndExecuteShellCommand(String passedShellCommand) throws IOException
+	{
+		if (passedShellCommand != null)
 		{
-			serverState = ServerState.SERVER_STOPPED;
-			serverManager.close();
+			Pair<String, String[]> parsedCommand = ConsoleControl.parseShellCommand(passedShellCommand);
+			String command = parsedCommand.getKey();
+			String[] params = parsedCommand.getValue();
+
+			if (!command.isEmpty())
+			{
+				executeShellCommand(command, params);
+			}
 		}
 		else
 		{
-			// TODO CHANGE to out.print when implemented.
-			LOGGER.info("The server is already stopped.");
+			LOGGER.error("Error in console: trying to execute 'null' as a command.");
+			throw new IllegalArgumentException("Command passed to server is 'null'");
 		}
 	}
 
-	// FIXME vlado should decide if this code is worth keeping
-	//
-	// /**
-	// * Adds new Agent to the Server.
-	// *
-	// * @param agentIp
-	// * - IP of the agent
-	// * @param agentPort
-	// * - number of Port, under which the agent is published in the RMI Registry.
-	// */
-	// public void addAgentToServer(String agentIp, int agentPort)
-	// {
-	// try
-	// {
-	// poolManager.connectToAgent(agentIp, agentPort);
-	// agentAddressesList.add(new Pair<String, Integer>(agentIp, agentPort));
-	// LOGGER.info("Added Agent on ip: \"" + agentIp + "\" on port: \"" + agentPort + "\" to the Server");
-	// }
-	// catch (RemoteException e)
-	// {
-	// LOGGER.error("Could not connect Server to Agent [" + agentIp + ":" + agentPort
-	// + "]. Probably no Agent is created on given ip and port.", e);
-	// }
-	// catch (NotBoundException e)
-	// {
-	// LOGGER.error("You are trying to connect to something that is not Agent.", e);
-	// }
-	// }
-
 	/**
-	 * Creates emulator with given DeviceParameters on the least loaded emulator. <b><u>NOTE: This is beta version, so
-	 * emulator will be created on the first Agent in the <b><i>agentAdressesList</i></b> on the Server.</u></b>
+	 * Evaluates given command with the passed parameters.
 	 * 
-	 * @param deviceParameters
-	 *        - parameters of the requested emulator
-	 * @throws NotBoundException
-	 *         - when there is something on the RMI IP and Port, but it's not agent
-	 * @throws IOException
-	 *         - when there is problem while creating and starting emulator
+	 * @param commandName
+	 * @param params
+	 *        - arguments, passed to the command.
 	 */
-	public void createEmulator(DeviceParameters deviceParameters) throws NotBoundException, IOException
+	private void executeShellCommand(String commandName, String[] params)
 	{
-		int leastUsedAgent = findLeastUsedAgent();
+		ServerConsoleCommands command = ServerConsoleCommands.findCommand(commandName);
 
-		String agentIp = agentAddressesList.get(leastUsedAgent).getKey();
-		int agentPort = agentAddressesList.get(leastUsedAgent).getValue();
-		Registry agentRegistry = LocateRegistry.getRegistry(agentIp, agentPort);
-
-		IAgentManager agent = (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
-
-		com.musala.atmosphere.commons.sa.DeviceParameters wrappedDeviceParameters = new com.musala.atmosphere.commons.sa.DeviceParameters();
-		wrappedDeviceParameters.setDpi(deviceParameters.getDpi());
-		wrappedDeviceParameters.setRam(deviceParameters.getRam());
-		int resolutionWidth = deviceParameters.getResolutionWidth();
-		int resolutionHeight = deviceParameters.getResolutionHeight();
-		wrappedDeviceParameters.setResolution(new Pair<Integer, Integer>(resolutionWidth, resolutionHeight));
-
-		agent.createAndStartEmulator(wrappedDeviceParameters);
-	}
-
-	/**
-	 * Creates emulator with given DeviceParameters on Agent with ip <b><i>agentIp</i></b> on port
-	 * <b><i>agentRmiPort</i></b>. Exception is thrown, if no such agent exists. <b><i>NOTE: FOR NOW IT CAN ONLY CREATE
-	 * EMULATORS ON LOCALHOST; IN ORDER TO CREATE EMULATORS ON OTHER AGENTS, A SYNCRONIZATION IN CONSTANTS FOR EMULATOR
-	 * CONSOLE COMMANDS NEEDS TO BE DONE</i></b>
-	 * 
-	 * @param agentIp
-	 *        - IP of the agent
-	 * @param agentRmiPort
-	 *        - number of port, under which the agent is published in RMI
-	 * @param deviceParameters
-	 *        - parameters of the requested emulator
-	 * @throws NotBoundException
-	 *         - when there is something on the RMI IP and Port, but it's not agent.
-	 * @throws IOException
-	 *         - when there is problem while creating and starting emulator.
-	 */
-	public void createEmulatorOnAgent(String agentIp, int agentRmiPort, DeviceParameters deviceParameters)
-		throws NotBoundException,
-			IOException
-	{
-		Registry agentRegistry = LocateRegistry.getRegistry(agentIp, agentRmiPort);
-		IAgentManager agent = (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
-
-		com.musala.atmosphere.commons.sa.DeviceParameters wrappedDeviceParameters = new com.musala.atmosphere.commons.sa.DeviceParameters();
-		wrappedDeviceParameters.setDpi(deviceParameters.getDpi());
-		wrappedDeviceParameters.setRam(deviceParameters.getRam());
-		int resolutionWidth = deviceParameters.getResolutionWidth();
-		int resolutionHeight = deviceParameters.getResolutionHeight();
-		wrappedDeviceParameters.setResolution(new Pair<Integer, Integer>(resolutionWidth, resolutionHeight));
-
-		LOGGER.info("Creating emulator on agent [" + agentIp + ":" + agentRmiPort + "]...");
-		agent.createAndStartEmulator(wrappedDeviceParameters);
-	}
-
-	/**
-	 * Gets all Agent's connection information - IPs and ports.
-	 * 
-	 * @return - List<> with Pairs of type <String,Integer> which stands for <ip, rmi port> for each Agent, attached to
-	 *         the Server.
-	 */
-	public List<Pair<String, Integer>> getAgentAdressesList()
-	{
-		return agentAddressesList;
-	}
-
-	/**
-	 * Gets all devices that are attached to its agents and return their device ID's.
-	 * 
-	 * @return - List of {@link DeviceProxy DeviceProxy} RMI binding identifiers.
-	 */
-	public List<String> getAllAccessibleDevices()
-	{
-		PoolManager poolManager = PoolManager.getInstance(serverManager);
-		List<String> allDeviceIds = poolManager.getAllDeviceProxyIds();
-
-		return allDeviceIds;
-	}
-
-	/**
-	 * Gets the port under which the PoolManager of the Server is published in RMI. The Client should use this value as
-	 * a port in his test class annotation.
-	 * 
-	 * @return - int, which is the Port, under which the Pool Manager is registered in RMI.
-	 */
-	public int getPoolManagerPort()
-	{
-		return poolManagerPort;
-	}
-
-	/**
-	 * Finds with benchmarking the best-for-emulator-creation Agent , attached to this Server, and returns its index in
-	 * the agentAdressesList.
-	 * 
-	 * @return - index of the least loaded with emulators Agent, or throws RuntimeException if no Agents are attached to
-	 *         the Server.
-	 */
-	private int findLeastUsedAgent()
-	{
-		// FIXME genius
-		if (agentAddressesList.isEmpty())
+		if (command == null)
 		{
-			throw new RuntimeException("No available agents to create emulators on.");
+			currentServerState.writeLineToConsole("No such command. Type 'help' to retrieve list of available commands.");
+			return;
 		}
-		return 0;
+
+		ServerCommand executableCommand = commandFactory.getCommandInstance(command);
+		executableCommand.execute(params);
+	}
+
+	/**
+	 * Reads one line from the server's console. For more information see
+	 * {@link com.musala.atmosphere.server.ServerConsole#readLine() ServerConsole.readLine()}
+	 * 
+	 * @return - the first line in the console buffer as a String.
+	 * @throws IOException
+	 *         - when an error occurs when trying to read from console
+	 */
+	public String readCommandFromConsole() throws IOException
+	{
+		String command = serverConsole.readCommand();
+		return command;
+	}
+
+	/**
+	 * 
+	 * @return - true, if the server is killed, false otherwise.
+	 */
+	private boolean isClosed()
+	{
+		return closed;
 	}
 
 	public static void main(String[] args) throws NotBoundException, IOException, InterruptedException
 	{
-		Server server = new Server();
-		server.startServerThread(true); // blocking
-		// server.stop();
-	}
+		// First we check if we have been passed an argument which specifies RMI port for the Server to be ran at.
+		int portToCreateServerOn = ServerPropertiesLoader.getPoolManagerPort();
+		if (args.length == 1)
+		{
+			String passedRmiPort = args[0];
+			try
+			{
+				portToCreateServerOn = Integer.parseInt(passedRmiPort);
+			}
+			catch (NumberFormatException e)
+			{
+				LOGGER.warn("Error while trying to parse given port: argument is not a number.", e);
+			}
+		}
 
+		// and then we create instance of the Server and run it
+		Server localServer = new Server(portToCreateServerOn);
+		localServer.run();
+		do
+		{
+			String passedShellCommand = localServer.readCommandFromConsole();
+			localServer.parseAndExecuteShellCommand(passedShellCommand);
+		} while (!localServer.isClosed());
+	}
 }
