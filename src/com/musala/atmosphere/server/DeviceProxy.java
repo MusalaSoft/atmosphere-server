@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.musala.atmosphere.commons.BatteryState;
 import com.musala.atmosphere.commons.CommandFailedException;
+import com.musala.atmosphere.commons.DeviceAcceleration;
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.DeviceOrientation;
 import com.musala.atmosphere.commons.Pair;
@@ -459,6 +460,26 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		try
 		{
 			wrappedDevice.setOrientation(deviceOrientation);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed", e);
+		}
+	}
+
+	@Override
+	public void setAcceleration(DeviceAcceleration deviceAcceleration, long invocationPasskey)
+		throws CommandFailedException,
+			RemoteException,
+			InvalidPasskeyException
+	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		try
+		{
+			wrappedDevice.setAcceleration(deviceAcceleration);
 		}
 		catch (RemoteException e)
 		{
