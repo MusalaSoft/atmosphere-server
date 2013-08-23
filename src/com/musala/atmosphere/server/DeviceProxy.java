@@ -450,7 +450,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setOrientation(DeviceOrientation deviceOrientation, long invocationPasskey)
+	public void setDeviceOrientation(DeviceOrientation deviceOrientation, long invocationPasskey)
 		throws CommandFailedException,
 			RemoteException,
 			InvalidPasskeyException
@@ -459,7 +459,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
-			wrappedDevice.setOrientation(deviceOrientation);
+			wrappedDevice.setDeviceOrientation(deviceOrientation);
 		}
 		catch (RemoteException e)
 		{
@@ -467,6 +467,28 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed", e);
 		}
+	}
+
+	@Override
+	public DeviceOrientation getDeviceOrientation(long invocationPasskey)
+		throws InvalidPasskeyException,
+			CommandFailedException,
+			RemoteException
+	{
+		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		try
+		{
+			DeviceOrientation deviceOrientation = wrappedDevice.getDeviceOrientation();
+			return deviceOrientation;
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remoteexception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+
 	}
 
 	@Override
