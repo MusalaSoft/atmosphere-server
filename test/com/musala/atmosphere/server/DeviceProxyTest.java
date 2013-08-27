@@ -24,6 +24,7 @@ import org.mockito.Mockito;
 import com.musala.atmosphere.commons.BatteryState;
 import com.musala.atmosphere.commons.CommandFailedException;
 import com.musala.atmosphere.commons.Pair;
+import com.musala.atmosphere.commons.ScreenOrientation;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 
 public class DeviceProxyTest
@@ -421,4 +422,57 @@ public class DeviceProxyTest
 		deviceProxy.getPowerState(proxyPasskey);
 	}
 
+	@Test
+	public void testSetScreenOrientation() throws Exception
+	{
+		ScreenOrientation screentOrientation = ScreenOrientation.LANDSCAPE;
+
+		deviceProxy.setScreenOrientation(screentOrientation, proxyPasskey);
+
+		verify(innerDeviceWrapperMock, times(1)).setScreenOrientation(screentOrientation);
+		verifyNoMoreInteractions(innerDeviceWrapperMock);
+	}
+
+	// FIXME This RuntimeException is temporary and should be removed when the failed logic is implemented.
+	@Test(expected = RuntimeException.class)
+	public void testSetScreenOrientationFailed() throws Exception
+	{
+		ScreenOrientation screentOrientation = ScreenOrientation.LANDSCAPE;
+		Mockito.doThrow(new RemoteException())
+				.when(innerDeviceWrapperMock)
+				.setScreenOrientation(any(ScreenOrientation.class));
+
+		deviceProxy.setScreenOrientation(screentOrientation, proxyPasskey);
+	}
+
+	@Test
+	public void testSetAutoRotationOn() throws Exception
+	{
+		boolean autoRotation = true;
+
+		deviceProxy.setAutoRotation(autoRotation, proxyPasskey);
+
+		verify(innerDeviceWrapperMock, times(1)).setAutoRotation(autoRotation);
+		verifyNoMoreInteractions(innerDeviceWrapperMock);
+	}
+
+	@Test
+	public void testSetAutoRotationOff() throws Exception
+	{
+		boolean autoRotation = false;
+
+		deviceProxy.setAutoRotation(autoRotation, proxyPasskey);
+
+		verify(innerDeviceWrapperMock, times(1)).setAutoRotation(autoRotation);
+		verifyNoMoreInteractions(innerDeviceWrapperMock);
+	}
+
+	// FIXME This RuntimeException is temporary and should be removed when the failed logic is implemented.
+	@Test(expected = RuntimeException.class)
+	public void testSetAutoRotationFailed() throws Exception
+	{
+		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setAutoRotation(anyBoolean());
+
+		deviceProxy.setAutoRotation(false, proxyPasskey);
+	}
 }

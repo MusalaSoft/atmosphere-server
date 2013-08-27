@@ -11,6 +11,7 @@ import com.musala.atmosphere.commons.DeviceAcceleration;
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.DeviceOrientation;
 import com.musala.atmosphere.commons.Pair;
+import com.musala.atmosphere.commons.ScreenOrientation;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
@@ -30,9 +31,12 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 
 	private DeviceInformation deviceInformation;
 
+	private PasskeyAuthority passkeyAuthority;
+
 	public DeviceProxy(IWrapDevice deviceToWrap) throws RemoteException
 	{
 		wrappedDevice = deviceToWrap;
+		passkeyAuthority = PasskeyAuthority.getInstance();
 	}
 
 	@Override
@@ -41,7 +45,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -62,7 +65,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -83,7 +85,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -101,7 +102,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	@Override
 	public void initApkInstall(long invocationPasskey) throws RemoteException, IOException, InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -178,7 +178,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -199,7 +198,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -220,7 +218,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -239,7 +236,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		throws RemoteException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -257,7 +253,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	@Override
 	public void setNetworkLatency(int latency, long invocationPasskey) throws RemoteException, InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -275,7 +270,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	@Override
 	public int getNetworkLatency(long invocationPasskey) throws RemoteException, InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -296,7 +290,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -316,7 +309,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -337,7 +329,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -357,7 +348,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -378,7 +368,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -399,7 +388,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -419,7 +407,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			RemoteException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -438,7 +425,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		throws RemoteException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		deviceInformation = wrappedDevice.getDeviceInformation();
 		return deviceInformation;
@@ -455,7 +441,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			RemoteException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -489,6 +474,42 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			throw new RuntimeException("Connection to device failed.", e);
 		}
 
+	}
+
+	@Override
+	public void setScreenOrientation(ScreenOrientation screenOrientation, long invocationPasskey)
+		throws RemoteException,
+			InvalidPasskeyException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		try
+		{
+			wrappedDevice.setScreenOrientation(screenOrientation);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed", e);
+		}
+	}
+
+	@Override
+	public void setAutoRotation(boolean autoRotation, long invocationPasskey)
+		throws RemoteException,
+			InvalidPasskeyException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		try
+		{
+			wrappedDevice.setAutoRotation(autoRotation);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed", e);
+		}
 	}
 
 	@Override
