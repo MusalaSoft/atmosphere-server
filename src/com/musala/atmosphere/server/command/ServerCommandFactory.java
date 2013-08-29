@@ -3,8 +3,8 @@ package com.musala.atmosphere.server.command;
 import com.musala.atmosphere.server.Server;
 
 /**
- * A factory which is instantiated with an server associated to it. For a given ServerConsoleCommand enum value it
- * returns the proper instance of command which should be used by this server.
+ * A {@link ServerCommand ServerCommand} factory. Builds a {@link ServerCommand ServerCommand} For a given
+ * {@link ServerConsoleCommands ServerConsoleCommands} enumeration value.
  * 
  * @author vladimir.vladimirov
  * 
@@ -21,7 +21,7 @@ public class ServerCommandFactory
 	/**
 	 * 
 	 * @param consoleCommand
-	 * @return - instance of ServerCommand which is associated with the passed consoleCommand.
+	 * @return {@link ServerCommand ServerCommand} instance associated with the passed consoleCommand.
 	 */
 	public ServerCommand getCommandInstance(ServerConsoleCommands consoleCommand)
 	{

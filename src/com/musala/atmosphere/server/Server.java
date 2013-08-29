@@ -34,7 +34,7 @@ public class Server
 	private boolean closed;
 
 	/**
-	 * Instantiates a Server object on loaded from config file port.
+	 * Creates a Server component bound on specified in the properties file port.
 	 * 
 	 * @throws RemoteException
 	 */
@@ -44,7 +44,7 @@ public class Server
 	}
 
 	/**
-	 * Instantiates a Server object on given port.
+	 * Creates a Server component bound on given port.
 	 * 
 	 * @param serverPort
 	 *        - port on which the Pool Manager of the Server will be published in RMI.
@@ -53,28 +53,28 @@ public class Server
 	public Server(int serverPort) throws RemoteException
 	{
 		serverManager = new ServerManager(serverRmiPort);
-		currentServerState = new StoppedServer(this);
+		setState(new StoppedServer(this));
 
 		serverConsole = new ConsoleControl();
 		commandFactory = new ServerCommandFactory(this);
 
 		serverRmiPort = serverPort;
 		closed = false;
-		LOGGER.info("Server instance created succesfully on RMI port " + serverRmiPort);
+		LOGGER.info("Server instance created succesfully.");
 	}
 
 	/**
-	 * Sets the state of the server.
+	 * Sets the server state.
 	 * 
 	 * @param newState
 	 */
 	public void setState(ServerState newState)
 	{
-		this.currentServerState = newState;
+		currentServerState = newState;
 	}
 
 	/**
-	 * Starts the Server thread, only if it is not already running.
+	 * Starts the Server thread if it is not already running.
 	 */
 	public void run()
 	{
@@ -90,7 +90,7 @@ public class Server
 	}
 
 	/**
-	 * Releases all resources, used by the server and marks it as closed. After that the Server is no longer available
+	 * Releases all resources used by the server and marks it as closed. After that the Server is no longer available
 	 * and should be started again in order to be used.
 	 */
 	public void exit()
@@ -100,10 +100,10 @@ public class Server
 	}
 
 	/**
-	 * Writes string to the server's console output.
+	 * Prints a string to the Server's console output.
 	 * 
 	 * @param message
-	 *        - the message that will be written
+	 *        - the message to be printed.
 	 */
 	public void writeToConsole(String message)
 	{
@@ -111,10 +111,10 @@ public class Server
 	}
 
 	/**
-	 * Writes line to the server's console output.
+	 * Prints a line to the Server's console output.
 	 * 
 	 * @param message
-	 *        - the message that will be written
+	 *        - the message to be printed.
 	 */
 	public void writeLineToConsole(String message)
 	{
@@ -122,38 +122,36 @@ public class Server
 	}
 
 	/**
-	 * Executes passed shell command from the user into the console of given Server.
+	 * Executes a passed command from the console.
 	 * 
 	 * @param passedShellCommand
-	 *        - the shell command that the managing Server person wants to execute
+	 *        - the passed shell command.
 	 * @throws IOException
 	 */
 	private void parseAndExecuteShellCommand(String passedShellCommand) throws IOException
 	{
-		if (passedShellCommand != null)
+		if (passedShellCommand == null)
 		{
-			Pair<String, String[]> parsedCommand = ConsoleControl.parseShellCommand(passedShellCommand);
-			String command = parsedCommand.getKey();
-			String[] params = parsedCommand.getValue();
-
-			if (!command.isEmpty())
-			{
-				executeShellCommand(command, params);
-			}
+			throw new IllegalArgumentException("Shell command passed for execution can not be 'null'.");
 		}
-		else
+
+		Pair<String, String[]> parsedCommand = ConsoleControl.parseShellCommand(passedShellCommand);
+		String command = parsedCommand.getKey();
+		String[] params = parsedCommand.getValue();
+
+		if (!command.isEmpty())
 		{
-			LOGGER.error("Error in console: trying to execute 'null' as a command.");
-			throw new IllegalArgumentException("Command passed to server is 'null'");
+			executeShellCommand(command, params);
 		}
 	}
 
 	/**
-	 * Evaluates given command with the passed parameters.
+	 * Evaluates a passed command and calls the appropriate Server method.
 	 * 
 	 * @param commandName
+	 *        - command for execution.
 	 * @param params
-	 *        - arguments, passed to the command.
+	 *        - passed command arguments.
 	 */
 	private void executeShellCommand(String commandName, String[] params)
 	{
@@ -161,7 +159,7 @@ public class Server
 
 		if (command == null)
 		{
-			currentServerState.writeLineToConsole("No such command. Type 'help' to retrieve list of available commands.");
+			currentServerState.writeLineToConsole("Unknown command. Use 'help' to retrieve list of available commands.");
 			return;
 		}
 
@@ -173,9 +171,9 @@ public class Server
 	 * Reads one line from the server's console. For more information see
 	 * {@link com.musala.atmosphere.server.ServerConsole#readLine() ServerConsole.readLine()}
 	 * 
-	 * @return - the first line in the console buffer as a String.
+	 * @return the first line in the console buffer as a String.
 	 * @throws IOException
-	 *         - when an error occurs when trying to read from console
+	 *         - when a console reading error occurs.
 	 */
 	public String readCommandFromConsole() throws IOException
 	{
@@ -185,7 +183,7 @@ public class Server
 
 	/**
 	 * 
-	 * @return - true, if the server is killed, false otherwise.
+	 * @return true if the server is closed, false otherwise.
 	 */
 	private boolean isClosed()
 	{
@@ -194,22 +192,27 @@ public class Server
 
 	public static void main(String[] args) throws NotBoundException, IOException, InterruptedException
 	{
-		// First we check if we have been passed an argument which specifies RMI port for the Server to be ran at.
-		int portToCreateServerOn = ServerPropertiesLoader.getPoolManagerPort();
-		if (args.length == 1)
+		// Check if an argument which specifies a port for the Server was passed.
+		int portToCreateServerOn = 0;
+		try
 		{
-			String passedRmiPort = args[0];
-			try
+			if (args.length == 1)
 			{
+				String passedRmiPort = args[0];
 				portToCreateServerOn = Integer.parseInt(passedRmiPort);
 			}
-			catch (NumberFormatException e)
+			else
 			{
-				LOGGER.warn("Error while trying to parse given port: argument is not a number.", e);
+				portToCreateServerOn = ServerPropertiesLoader.getPoolManagerPort();
 			}
 		}
+		catch (NumberFormatException e)
+		{
+			String errorMessage = "Parsing passed port resulted in an exception.";
+			LOGGER.fatal(errorMessage, e);
+			throw new RuntimeException(errorMessage, e);
+		}
 
-		// and then we create instance of the Server and run it
 		Server localServer = new Server(portToCreateServerOn);
 		localServer.run();
 		do

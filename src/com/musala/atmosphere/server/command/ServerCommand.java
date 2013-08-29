@@ -10,8 +10,8 @@ import com.musala.atmosphere.server.Server;
  */
 public abstract class ServerCommand
 {
-	private static final String ILLEGAL_ARGUMENTS_MESSAGE = "Illegal arguments for command. "
-			+ "Use command 'help' for more information.";
+	private static final String ILLEGAL_ARGUMENTS_MESSAGE = "Illegal command arguments. "
+			+ "Use 'help' for more information.";
 
 	protected Server server;
 
@@ -32,7 +32,6 @@ public abstract class ServerCommand
 		}
 	}
 
-	// Those methods are different for each command.
 	protected abstract boolean verifyParams(String[] params);
 
 	protected abstract void executeCommand(String[] params);

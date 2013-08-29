@@ -6,7 +6,7 @@ import com.musala.atmosphere.commons.sa.ConsoleControl;
 import com.musala.atmosphere.server.Server;
 
 /**
- * Common class for all ServerStates.
+ * Common class for all Server states.
  * 
  * @author vladimir.vladimirov
  * 
@@ -24,10 +24,10 @@ public abstract class ServerState
 	}
 
 	/**
-	 * Writes string to the server's console output.
+	 * Prints a string to the Server's console output.
 	 * 
 	 * @param message
-	 *        - the message that will be written
+	 *        - the message to be printed.
 	 */
 	public void writeToConsole(String message)
 	{
@@ -35,10 +35,10 @@ public abstract class ServerState
 	}
 
 	/**
-	 * Writes line to the server's console output.
+	 * Prints a line to the server's console output.
 	 * 
 	 * @param message
-	 *        - the message that will be written
+	 *        - the message to be printed.
 	 */
 	public void writeLineToConsole(String message)
 	{
@@ -50,7 +50,7 @@ public abstract class ServerState
 	 * 
 	 * @return - the first line in the console buffer as a String.
 	 * @throws IOException
-	 *         - when an error occurs when trying to read from console
+	 *         - if a console reading error occurs.
 	 */
 	public String readCommandFromConsole() throws IOException
 	{

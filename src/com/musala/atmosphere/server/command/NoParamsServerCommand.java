@@ -3,7 +3,7 @@ package com.musala.atmosphere.server.command;
 import com.musala.atmosphere.server.Server;
 
 /**
- * Common class for all servers which require no parameters. The logic for the verification is the same for all of them.
+ * Common class for all server commands that require no parameters.
  * 
  * @author vladimir.vladimirov
  * 
@@ -22,9 +22,6 @@ public abstract class NoParamsServerCommand extends ServerCommand
 		{
 			return false;
 		}
-		else
-		{
-			return true;
-		}
+		return true;
 	}
 }

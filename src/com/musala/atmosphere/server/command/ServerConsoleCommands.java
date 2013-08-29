@@ -11,9 +11,8 @@ import java.util.List;
  */
 public enum ServerConsoleCommands
 {
-	SERVER_RUN("run",   "run",  "Runs the created Server on localhost."),
-	SERVER_HELP("help", "help", "Prints all usable commands for manipulating the server."),
-	SERVER_STOP("exit", "exit", "Stops and terminates the currently running server process.");
+	SERVER_RUN("run", "run", "Runs the Server."), SERVER_HELP("help", "help", "Prints all available commands."), SERVER_STOP(
+			"exit", "exit", "Stops and closes the currently running Server component.");
 
 	private String command;
 
@@ -29,20 +28,15 @@ public enum ServerConsoleCommands
 	}
 
 	/**
-	 * Gets the command of given ServerConsoleCommand element.
-	 * 
-	 * @return
+	 * @return the current command string.
 	 */
 	public String getCommand()
-
 	{
 		return command;
 	}
 
 	/**
-	 * Gets the description of given ServerConsoleCommand.
-	 * 
-	 * @return - description of the given ServerConsoleCommand.
+	 * @return current command description string.
 	 */
 	public String getDescription()
 	{
@@ -50,9 +44,7 @@ public enum ServerConsoleCommands
 	}
 
 	/**
-	 * Gets the syntax for given ServerConsoleCommand.
-	 * 
-	 * @return - syntax of the given ServerConsoleCommand.
+	 * @return syntax of the current command as a string.
 	 */
 	public String getSyntax()
 	{
@@ -72,17 +64,17 @@ public enum ServerConsoleCommands
 		{
 			String description = currentCommand.getDescription();
 			String syntax = currentCommand.getSyntax();
-			String currentCommandInfo = String.format("%-15s %s", syntax, description);
+			String currentCommandInfo = String.format("%-25s %s", syntax, description);
 			allCommandsFullInformation.add(currentCommandInfo);
 		}
 		return allCommandsFullInformation;
 	}
 
 	/**
-	 * Search for command by given command name. Returns null if it is not found.
+	 * Searches for command by given command name. Returns null if no corresponding command is not found.
 	 * 
 	 * @param commandName
-	 * @return
+	 * @return a {@link ServerConsoleCommands ServerConsoleCommands} instance.
 	 */
 	public static ServerConsoleCommands findCommand(String commandName)
 	{
