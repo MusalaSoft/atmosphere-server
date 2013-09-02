@@ -53,7 +53,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -73,7 +73,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -93,7 +93,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -109,7 +109,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -121,7 +121,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			IOException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -129,7 +128,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -141,7 +140,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -149,7 +147,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -158,7 +156,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	@Override
 	public void discardApk(long invocationPasskey) throws RemoteException, InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -166,7 +163,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -186,7 +183,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -206,7 +203,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -225,7 +222,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -244,7 +241,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -260,7 +257,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -278,7 +275,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -297,7 +294,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -317,7 +314,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -336,7 +333,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -430,11 +427,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		return deviceInformation;
 	}
 
-	public void setDeviceInformation(DeviceInformation information)
-	{
-		deviceInformation = information;
-	}
-
 	@Override
 	public void setDeviceOrientation(DeviceOrientation deviceOrientation, long invocationPasskey)
 		throws CommandFailedException,
@@ -460,7 +452,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			RemoteException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -469,7 +460,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -518,7 +509,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			RemoteException,
 			InvalidPasskeyException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -538,7 +528,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException,
 			RemoteException
 	{
-		PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
 		try
 		{
@@ -547,7 +536,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
