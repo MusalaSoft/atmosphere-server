@@ -7,9 +7,11 @@ import java.util.List;
 
 import com.musala.atmosphere.commons.BatteryState;
 import com.musala.atmosphere.commons.CommandFailedException;
+import com.musala.atmosphere.commons.ConnectionType;
 import com.musala.atmosphere.commons.DeviceAcceleration;
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.DeviceOrientation;
+import com.musala.atmosphere.commons.MobileDataState;
 import com.musala.atmosphere.commons.Pair;
 import com.musala.atmosphere.commons.ScreenOrientation;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
@@ -543,4 +545,63 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 
 	}
 
+	@Override
+	public void setMobileDataState(MobileDataState state, long invocationPasskey)
+		throws InvalidPasskeyException,
+			CommandFailedException,
+			RemoteException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		try
+		{
+			wrappedDevice.setMobileDataState(state);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle RemotException (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+
+	}
+
+	@Override
+	public ConnectionType getConnectionType(long invocationPasskey)
+		throws InvalidPasskeyException,
+			RemoteException,
+			CommandFailedException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		try
+		{
+			ConnectionType connectionType = wrappedDevice.getConnectionType();
+			return connectionType;
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remoteexception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+	}
+
+	@Override
+	public MobileDataState getMobileDataState(long invocationPasskey)
+		throws InvalidPasskeyException,
+			CommandFailedException,
+			RemoteException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		try
+		{
+			MobileDataState state = wrappedDevice.getMobileDataState();
+			return state;
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remoteexception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+	}
 }
