@@ -42,6 +42,8 @@ public class DeviceMatchingComparator implements Comparator<DeviceInformation>
 		DeviceType requiredDeviceType = neededDeviceParameters.getDeviceType();
 		int requiredDeviceDpi = neededDeviceParameters.getDpi();
 		DeviceOs requiredDeviceOs = neededDeviceParameters.getOs();
+		String requiredDeviceModel = neededDeviceParameters.getModel();
+		String requiredDeviceSerialNumber = neededDeviceParameters.getSerialNumber();
 		int requiredDeviceRam = neededDeviceParameters.getRam();
 		int requiredDeviceResH = neededDeviceParameters.getResolutionHeight();
 		int requiredDeviceResW = neededDeviceParameters.getResolutionWidth();
@@ -52,15 +54,23 @@ public class DeviceMatchingComparator implements Comparator<DeviceInformation>
 			{
 				if (matchDeviceInformation.isEmulator())
 				{
-					result = 0;
+					return 0;
 				}
 			}
 			else if (requiredDeviceType == DeviceType.EMULATOR_ONLY)
 			{
-				if (matchDeviceInformation.isEmulator() == false)
+				if (!matchDeviceInformation.isEmulator())
 				{
-					result = 0;
+					return 0;
 				}
+			}
+		}
+
+		if (requiredDeviceOs != DeviceParameters.DEVICE_OS_NO_PREFERENCE)
+		{
+			if (!requiredDeviceOs.toString().equals(matchDeviceInformation.getOS()))
+			{
+				return 0;
 			}
 		}
 
@@ -68,7 +78,7 @@ public class DeviceMatchingComparator implements Comparator<DeviceInformation>
 		{
 			if (requiredDeviceDpi != matchDeviceInformation.getDpi())
 			{
-				result = 0;
+				return 0;
 			}
 		}
 
@@ -76,7 +86,7 @@ public class DeviceMatchingComparator implements Comparator<DeviceInformation>
 		{
 			if (requiredDeviceRam != matchDeviceInformation.getRam())
 			{
-				result = 0;
+				return 0;
 			}
 		}
 
@@ -84,7 +94,7 @@ public class DeviceMatchingComparator implements Comparator<DeviceInformation>
 		{
 			if (requiredDeviceResH != matchDeviceInformation.getResolution().getKey())
 			{
-				result = 0;
+				return 0;
 			}
 		}
 
@@ -92,21 +102,39 @@ public class DeviceMatchingComparator implements Comparator<DeviceInformation>
 		{
 			if (requiredDeviceResW != matchDeviceInformation.getResolution().getValue())
 			{
-				result = 0;
+				return 0;
 			}
 		}
 
-		if (requiredDeviceOs != DeviceParameters.DEVICE_OS_NO_PREFERENCE)
+		if (!requiredDeviceSerialNumber.equals(DeviceParameters.SERIALNUMBER_NO_PREFERENCE))
 		{
-			if (requiredDeviceOs.toString().equals(matchDeviceInformation.getOS()) == false)
+			if (!requiredDeviceSerialNumber.equals(matchDeviceInformation.getSerialNumber()))
 			{
-				result = 0;
+				return 0;
+			}
+		}
+
+		if (!requiredDeviceModel.equals(DeviceParameters.MODEL_NO_PREFERENCE))
+		{
+			if (!requiredDeviceModel.equals(matchDeviceInformation.getModel()))
+			{
+				return 0;
 			}
 		}
 
 		return result;
 	}
 
+	/**
+	 * Checks whether a given {@link DeviceInformation} is a valid match for given {@link DeviceParameters}.
+	 * 
+	 * @param neededDeviceParameters
+	 *        - {@link DeviceParameters} that need to be matched.
+	 * @param availableDeviceInformation
+	 *        - {@link DeviceInformation} that is compared to the {@link DeviceParameters}.
+	 * @return - True if the {@link DeviceInformation} is a valid match to the {@link DeviceParameters}. False
+	 *         otherwise.
+	 */
 	public static boolean isValidMatch(	DeviceParameters neededDeviceParameters,
 										DeviceInformation availableDeviceInformation)
 	{

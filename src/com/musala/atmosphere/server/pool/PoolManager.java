@@ -181,7 +181,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 			{
 				DeviceInformation poolItemDeviceInformation = poolItem.getUnderlyingDeviceInformation();
 
-				if (DeviceMatchingComparator.isValidMatch(deviceParameters, poolItemDeviceInformation) == false)
+				if (!DeviceMatchingComparator.isValidMatch(deviceParameters, poolItemDeviceInformation))
 				{
 					continue;
 				}
