@@ -11,7 +11,7 @@ public class ServerPropertiesLoaderTest
 	public void test()
 	{
 		int poolManagerPort = 0;
-		poolManagerPort = ServerPropertiesLoader.getPoolManagerPort();
+		poolManagerPort = ServerPropertiesLoader.getPoolManagerRmiPort();
 		assertNotSame("Returns property.", 0, poolManagerPort);
 	}
 }

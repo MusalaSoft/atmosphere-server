@@ -1,6 +1,7 @@
 package com.musala.atmosphere.server.util;
 
 import com.musala.atmosphere.commons.PropertiesLoader;
+import com.musala.atmosphere.server.pool.PoolManager;
 
 /**
  * Reads server properties from server properties config file.
@@ -24,13 +25,13 @@ public class ServerPropertiesLoader
 	}
 
 	/**
-	 * Returns the Pool Manager Port from the server config file.
+	 * Returns the PoolManager RMI port from the server config file.
 	 * 
-	 * @return
+	 * @return - the porn on which the {@link PoolManager} is published in RMI.
 	 */
-	public static int getPoolManagerPort()
+	public static int getPoolManagerRmiPort()
 	{
-		String returnValueString = getPropertyString(ServerProperties.POOLMANAGER_PORT);
+		String returnValueString = getPropertyString(ServerProperties.POOL_MANAGER_RMI_PORT);
 		int returnValue = Integer.parseInt(returnValueString);
 		return returnValue;
 	}

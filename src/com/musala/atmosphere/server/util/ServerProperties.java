@@ -8,7 +8,7 @@ package com.musala.atmosphere.server.util;
  */
 public enum ServerProperties
 {
-	POOLMANAGER_PORT("poolmanager.port");
+	POOL_MANAGER_RMI_PORT("pool.manager.rmi.port");
 
 	private String value;
 

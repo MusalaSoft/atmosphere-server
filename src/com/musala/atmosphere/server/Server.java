@@ -40,7 +40,7 @@ public class Server
 	 */
 	public Server() throws RemoteException
 	{
-		this(ServerPropertiesLoader.getPoolManagerPort());
+		this(ServerPropertiesLoader.getPoolManagerRmiPort());
 	}
 
 	/**
@@ -52,13 +52,13 @@ public class Server
 	 */
 	public Server(int serverPort) throws RemoteException
 	{
+		serverRmiPort = serverPort;
 		serverManager = new ServerManager(serverRmiPort);
 		setState(new StoppedServer(this));
 
 		serverConsole = new ConsoleControl();
 		commandFactory = new ServerCommandFactory(this);
 
-		serverRmiPort = serverPort;
 		closed = false;
 		LOGGER.info("Server instance created succesfully.");
 	}
@@ -203,7 +203,7 @@ public class Server
 			}
 			else
 			{
-				portToCreateServerOn = ServerPropertiesLoader.getPoolManagerPort();
+				portToCreateServerOn = ServerPropertiesLoader.getPoolManagerRmiPort();
 			}
 		}
 		catch (NumberFormatException e)
