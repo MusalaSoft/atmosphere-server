@@ -27,7 +27,7 @@ public class ServerPropertiesLoader
 	/**
 	 * Returns the PoolManager RMI port from the server config file.
 	 * 
-	 * @return - the porn on which the {@link PoolManager} is published in RMI.
+	 * @return - the port on which the {@link PoolManager} is published in RMI.
 	 */
 	public static int getPoolManagerRmiPort()
 	{
