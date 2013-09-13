@@ -43,7 +43,7 @@ public class ServerManager
 
 	private ConnectionRequestReceiver connectionRequestReceiver;
 
-	private PoolManager poolManager = PoolManager.getInstance(this);
+	private PoolManager poolManager = PoolManager.getInstance();
 
 	void onAgentDeviceListChanged(String onAgent, String changedDeviceRmiId, boolean isConnected)
 	{

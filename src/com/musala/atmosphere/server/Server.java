@@ -11,7 +11,7 @@ import com.musala.atmosphere.commons.sa.ConsoleControl;
 import com.musala.atmosphere.server.command.ServerCommand;
 import com.musala.atmosphere.server.command.ServerCommandFactory;
 import com.musala.atmosphere.server.command.ServerConsoleCommands;
-import com.musala.atmosphere.server.pool.PoolManager;
+import com.musala.atmosphere.server.pool.ClientRequestMonitor;
 import com.musala.atmosphere.server.state.ServerState;
 import com.musala.atmosphere.server.state.StoppedServer;
 import com.musala.atmosphere.server.util.ServerPropertiesLoader;
@@ -95,6 +95,9 @@ public class Server
 	 */
 	public void exit()
 	{
+		ClientRequestMonitor deviceMonitor = ClientRequestMonitor.getInstance();
+		deviceMonitor.stop();
+
 		serverManager.close();
 		closed = true;
 	}
@@ -130,18 +133,21 @@ public class Server
 	 */
 	private void parseAndExecuteShellCommand(String passedShellCommand) throws IOException
 	{
-		if (passedShellCommand == null)
+		if (passedShellCommand != null)
 		{
-			throw new IllegalArgumentException("Shell command passed for execution can not be 'null'.");
+			Pair<String, String[]> parsedCommand = ConsoleControl.parseShellCommand(passedShellCommand);
+			String command = parsedCommand.getKey();
+			String[] params = parsedCommand.getValue();
+
+			if (!command.isEmpty())
+			{
+				executeShellCommand(command, params);
+			}
 		}
-
-		Pair<String, String[]> parsedCommand = ConsoleControl.parseShellCommand(passedShellCommand);
-		String command = parsedCommand.getKey();
-		String[] params = parsedCommand.getValue();
-
-		if (!command.isEmpty())
+		else
 		{
-			executeShellCommand(command, params);
+			LOGGER.error("Error in console: trying to execute 'null' as a command.");
+			throw new IllegalArgumentException("Command passed to server is 'null'");
 		}
 	}
 

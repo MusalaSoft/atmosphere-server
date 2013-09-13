@@ -8,7 +8,9 @@ package com.musala.atmosphere.server.util;
  */
 public enum ServerProperties
 {
-	POOL_MANAGER_RMI_PORT("pool.manager.rmi.port");
+	POOL_MANAGER_RMI_PORT("pool.manager.rmi.port"),
+	DEVICE_REQUEST_TIMEOUT("device.request.timeout"),
+	DEVICE_UPDATE_TIME("device.update.timeout");
 
 	private String value;
 

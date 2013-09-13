@@ -17,6 +17,7 @@ import com.musala.atmosphere.commons.ScreenOrientation;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
+import com.musala.atmosphere.server.pool.ClientRequestMonitor;
 
 /**
  * The DeviceProxy object is used in RMI. It reroutes invocations of it's methods (by the {@link IClientDevice
@@ -35,6 +36,8 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 
 	private PasskeyAuthority passkeyAuthority;
 
+	private ClientRequestMonitor timeoutMonitor = ClientRequestMonitor.getInstance();
+
 	public DeviceProxy(IWrapDevice deviceToWrap) throws RemoteException
 	{
 		wrappedDevice = deviceToWrap;
@@ -48,6 +51,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			String returnValue = wrappedDevice.executeShellCommand(command);
@@ -68,6 +72,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			long returnValue = wrappedDevice.getFreeRAM();
@@ -88,6 +93,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			List<String> returnValue = wrappedDevice.executeSequenceOfShellCommands(commands);
@@ -105,6 +111,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	public void initApkInstall(long invocationPasskey) throws RemoteException, IOException, InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.initAPKInstall();
@@ -124,6 +131,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.appendToAPK(bytes);
@@ -143,6 +151,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.buildAndInstallAPK();
@@ -159,6 +168,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	public void discardApk(long invocationPasskey) throws RemoteException, InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.discardAPK();
@@ -178,6 +188,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			String returnValue = wrappedDevice.getUiXml();
@@ -198,6 +209,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			byte[] returnValue = wrappedDevice.getScreenshot();
@@ -218,6 +230,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.setNetworkSpeed(speeds);
@@ -236,6 +249,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			Pair<Integer, Integer> returnValue = wrappedDevice.getNetworkSpeed();
@@ -253,6 +267,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	public void setNetworkLatency(int latency, long invocationPasskey) throws RemoteException, InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.setNetworkLatency(latency);
@@ -270,6 +285,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	public int getNetworkLatency(long invocationPasskey) throws RemoteException, InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			int returnValue = wrappedDevice.getNetworkLatency();
@@ -290,6 +306,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.setBatteryLevel(level);
@@ -309,6 +326,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			int returnValue = wrappedDevice.getBatteryLevel();
@@ -329,6 +347,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.setBatteryState(state);
@@ -348,6 +367,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			BatteryState returnValue = wrappedDevice.getBatteryState();
@@ -368,6 +388,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			boolean powerState = wrappedDevice.getPowerState();
@@ -388,6 +409,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.setPowerState(state);
@@ -407,6 +429,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.setAirplaneMode(airplaneMode);
@@ -425,6 +448,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		deviceInformation = wrappedDevice.getDeviceInformation();
 		return deviceInformation;
 	}
@@ -436,6 +460,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.setDeviceOrientation(deviceOrientation);
@@ -455,6 +480,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			RemoteException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			DeviceOrientation deviceOrientation = wrappedDevice.getDeviceOrientation();
@@ -475,6 +501,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.setScreenOrientation(screenOrientation);
@@ -493,6 +520,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.setAutoRotation(autoRotation);
@@ -512,6 +540,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			InvalidPasskeyException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.setAcceleration(deviceAcceleration);
@@ -531,6 +560,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			RemoteException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			DeviceAcceleration deviceAcceleration = wrappedDevice.getDeviceAcceleration();
@@ -552,6 +582,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			RemoteException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			wrappedDevice.setMobileDataState(state);
@@ -572,6 +603,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			CommandFailedException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			ConnectionType connectionType = wrappedDevice.getConnectionType();
@@ -592,6 +624,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			RemoteException
 	{
 		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
 			MobileDataState state = wrappedDevice.getMobileDataState();

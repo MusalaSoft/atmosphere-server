@@ -44,7 +44,7 @@ public class PoolManagerDeviceSelectionTest
 	{
 		serverManager = new ServerManager(POOL_MANAGER_RMI_PORT);
 
-		poolManager = PoolManager.getInstance(serverManager);
+		poolManager = PoolManager.getInstance();
 
 		IAgentManager mockedAgentManager = mock(IAgentManager.class);
 		when(mockedAgentManager.getAgentId()).thenReturn(AGENT_ID);
@@ -81,7 +81,7 @@ public class PoolManagerDeviceSelectionTest
 		DeviceInformation mockedDeviceInfoFour = new DeviceInformation();
 		mockedDeviceInfoFour.setSerialNumber(DEVICE4_SN);
 		mockedDeviceInfoFour.setOs("4.0.1");
-		mockedDeviceInfoFour.setEmulator(false);
+		mockedDeviceInfoFour.setEmulator(true);
 		mockedDeviceInfoFour.setRam(512);
 		mockedDeviceInfoFour.setResolution(new Pair<>(200, 200));
 		mockedDeviceInfoFour.setDpi(180);
@@ -159,8 +159,8 @@ public class PoolManagerDeviceSelectionTest
 
 		DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
 		String rmiId = deviceDescriptor.getProxyRmiId();
-		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE2_SN, rmiId);
 		poolManager.releaseDevice(deviceDescriptor);
+		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE2_SN, rmiId);
 	}
 
 	@Test
@@ -172,20 +172,21 @@ public class PoolManagerDeviceSelectionTest
 
 		DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
 		String rmiId = deviceDescriptor.getProxyRmiId();
-		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE3_SN, rmiId);
 		poolManager.releaseDevice(deviceDescriptor);
+		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE3_SN, rmiId);
 	}
 
 	@Test
 	public void getPresentDeviceFourth() throws Exception
 	{
 		DeviceParameters parameters = new DeviceParameters();
+		parameters.setDeviceType(DeviceType.EMULATOR_ONLY);
 		parameters.setDpi(180);
 
 		DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
 		String rmiId = deviceDescriptor.getProxyRmiId();
-		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE4_SN, rmiId);
 		poolManager.releaseDevice(deviceDescriptor);
+		assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE4_SN, rmiId);
 	}
 
 }
