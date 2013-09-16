@@ -6,6 +6,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -13,6 +14,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +28,8 @@ import com.musala.atmosphere.commons.CommandFailedException;
 import com.musala.atmosphere.commons.Pair;
 import com.musala.atmosphere.commons.ScreenOrientation;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
+import com.musala.atmosphere.server.pool.ClientRequestMonitor;
+import com.musala.atmosphere.server.util.SingletonMocker;
 
 public class DeviceProxyTest
 {
@@ -38,9 +42,19 @@ public class DeviceProxyTest
 	@Before
 	public void setUpClass() throws Exception
 	{
+		// mock the ClientRequestMonitor singleton
+		ClientRequestMonitor mockMonitor = SingletonMocker.mockSingleton(ClientRequestMonitor.class);
+		doNothing().when(mockMonitor).restartTimerForDevice((DeviceProxy) any());
+
+		// instantiate the mocked device
 		innerDeviceWrapperMock = mock(IWrapDevice.class);
 		deviceProxy = new DeviceProxy(innerDeviceWrapperMock);
 		proxyPasskey = PasskeyAuthority.getInstance().getPasskey(deviceProxy);
+
+		// set proxy's ClientRequestMonitor field with the mocked monitor
+		Field deviceProxyMonitorField = DeviceProxy.class.getDeclaredField("timeoutMonitor");
+		deviceProxyMonitorField.setAccessible(true);
+		deviceProxyMonitorField.set(deviceProxy, mockMonitor);
 	}
 
 	@Test
@@ -86,6 +100,7 @@ public class DeviceProxyTest
 		deviceProxy.getFreeRam(proxyPasskey);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testExecuteSequenceOfShellCommands() throws Exception
 	{
@@ -99,6 +114,7 @@ public class DeviceProxyTest
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test(expected = RuntimeException.class)
 	public void testExecuteSequenceOfShellCommandsFailed() throws Exception
 	{
@@ -226,6 +242,7 @@ public class DeviceProxyTest
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test(expected = RuntimeException.class)
 	public void testSetNetworkSpeedFailed() throws Exception
 	{
