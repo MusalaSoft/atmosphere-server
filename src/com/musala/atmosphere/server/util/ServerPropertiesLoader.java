@@ -1,6 +1,6 @@
 package com.musala.atmosphere.server.util;
 
-import com.musala.atmosphere.commons.PropertiesLoader;
+import com.musala.atmosphere.commons.util.PropertiesLoader;
 import com.musala.atmosphere.server.pool.PoolManager;
 
 /**

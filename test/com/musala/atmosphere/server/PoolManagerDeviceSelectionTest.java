@@ -12,13 +12,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.musala.atmosphere.commons.DeviceInformation;
-import com.musala.atmosphere.commons.Pair;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceOs;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
+import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.pool.PoolManager;
 
 public class PoolManagerDeviceSelectionTest

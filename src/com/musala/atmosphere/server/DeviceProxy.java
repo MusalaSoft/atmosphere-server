@@ -12,11 +12,10 @@ import com.musala.atmosphere.commons.DeviceAcceleration;
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.DeviceOrientation;
 import com.musala.atmosphere.commons.MobileDataState;
-import com.musala.atmosphere.commons.Pair;
-import com.musala.atmosphere.commons.ScreenOrientation;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
+import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
 
 /**
@@ -423,26 +422,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setAirplaneMode(boolean airplaneMode, long invocationPasskey)
-		throws CommandFailedException,
-			RemoteException,
-			InvalidPasskeyException
-	{
-		passkeyAuthority.validatePasskey(this, invocationPasskey);
-		timeoutMonitor.restartTimerForDevice(this);
-		try
-		{
-			wrappedDevice.setAirplaneMode(airplaneMode);
-		}
-		catch (RemoteException e)
-		{
-			// TODO handle remote exception (the server should know the connection is bad)
-			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed", e);
-		}
-	}
-
-	@Override
 	public DeviceInformation getDeviceInformation(long invocationPasskey)
 		throws RemoteException,
 			InvalidPasskeyException
@@ -493,44 +472,6 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			throw new RuntimeException("Connection to device failed.", e);
 		}
 
-	}
-
-	@Override
-	public void setScreenOrientation(ScreenOrientation screenOrientation, long invocationPasskey)
-		throws RemoteException,
-			InvalidPasskeyException
-	{
-		passkeyAuthority.validatePasskey(this, invocationPasskey);
-		timeoutMonitor.restartTimerForDevice(this);
-		try
-		{
-			wrappedDevice.setScreenOrientation(screenOrientation);
-		}
-		catch (RemoteException e)
-		{
-			// TODO handle remote exception (the server should know the connection is bad)
-			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed", e);
-		}
-	}
-
-	@Override
-	public void setAutoRotation(boolean autoRotation, long invocationPasskey)
-		throws RemoteException,
-			InvalidPasskeyException
-	{
-		passkeyAuthority.validatePasskey(this, invocationPasskey);
-		timeoutMonitor.restartTimerForDevice(this);
-		try
-		{
-			wrappedDevice.setAutoRotation(autoRotation);
-		}
-		catch (RemoteException e)
-		{
-			// TODO handle remote exception (the server should know the connection is bad)
-			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed", e);
-		}
 	}
 
 	@Override

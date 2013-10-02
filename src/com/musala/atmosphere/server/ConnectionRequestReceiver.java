@@ -10,8 +10,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.log4j.Logger;
 
-import com.musala.atmosphere.commons.Pair;
 import com.musala.atmosphere.commons.sa.IConnectionRequestReceiver;
+import com.musala.atmosphere.commons.util.Pair;
 
 /**
  * 

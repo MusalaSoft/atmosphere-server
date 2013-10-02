@@ -6,8 +6,8 @@ import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
 
-import com.musala.atmosphere.commons.Pair;
 import com.musala.atmosphere.commons.sa.ConsoleControl;
+import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.command.ServerCommand;
 import com.musala.atmosphere.server.command.ServerCommandFactory;
 import com.musala.atmosphere.server.command.ServerConsoleCommands;
