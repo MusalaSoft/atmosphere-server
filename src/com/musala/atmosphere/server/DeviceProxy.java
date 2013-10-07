@@ -64,6 +64,29 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 	}
 
+	/**
+	 * Validates whether a communication to the ATMOSPHERE service is available.
+	 * 
+	 * @return - true if communication is available; false otherwise.
+	 */
+	@Override
+	public boolean validateServiceCommunication(long invocationPasskey) throws RemoteException, InvalidPasskeyException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
+		try
+		{
+			boolean returnValue = wrappedDevice.validateServiceCommunication();
+			return returnValue;
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+	}
+
 	@Override
 	public long getFreeRam(long invocationPasskey)
 		throws RemoteException,
