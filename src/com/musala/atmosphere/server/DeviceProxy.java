@@ -578,4 +578,25 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			throw new RuntimeException("Connection to device failed.", e);
 		}
 	}
+
+	@Override
+	public void setWiFi(boolean state, long invocationPasskey)
+		throws InvalidPasskeyException,
+			CommandFailedException,
+			RemoteException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
+		try
+		{
+			wrappedDevice.setWiFi(state);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+
+	}
 }
