@@ -231,12 +231,10 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 		PoolItem poolItem = rmiIdToPoolItem.get(rmiId);
 		if (poolItem != null)
 		{
-			{
-				DeviceProxy releasedDeviceProxy = poolItem.getUnderlyingDeviceProxy();
-				PasskeyAuthority.getInstance().validatePasskey(releasedDeviceProxy, passkey);
+			DeviceProxy releasedDeviceProxy = poolItem.getUnderlyingDeviceProxy();
+			PasskeyAuthority.getInstance().validatePasskey(releasedDeviceProxy, passkey);
 
-				releasePoolItem(rmiId);
-			}
+			releasePoolItem(rmiId);
 		}
 	}
 

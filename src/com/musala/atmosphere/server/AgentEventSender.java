@@ -5,6 +5,11 @@ import java.rmi.server.UnicastRemoteObject;
 
 import com.musala.atmosphere.commons.sa.IAgentEventSender;
 
+/**
+ * 
+ * @author georgi.gaydarov
+ * 
+ */
 public class AgentEventSender extends UnicastRemoteObject implements IAgentEventSender
 {
 	/**

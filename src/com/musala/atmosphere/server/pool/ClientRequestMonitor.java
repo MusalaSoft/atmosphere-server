@@ -20,20 +20,19 @@ public class ClientRequestMonitor
 {
 	private static final Logger LOGGER = Logger.getLogger(ClientRequestMonitor.class.getCanonicalName());
 
-	private ConcurrentHashMap<DeviceProxy, Long> proxyToTimeout;
+	private static ConcurrentHashMap<DeviceProxy, Long> proxyToTimeout = new ConcurrentHashMap<DeviceProxy, Long>();
 
-	private ConcurrentHashMap<DeviceProxy, String> proxyToRmiId;
+	private static ConcurrentHashMap<DeviceProxy, String> proxyToRmiId = new ConcurrentHashMap<DeviceProxy, String>();
 
 	private Thread monitorThread;
 
-	private boolean isRunning = false;
+	private static ClientRequestMonitor monitorInstance;
 
-	private static final ClientRequestMonitor monitorInstance = new ClientRequestMonitor();
-
-	private PoolManager poolManager = PoolManager.getInstance();
+	private static PoolManager poolManager;
 
 	private ClientRequestMonitor()
 	{
+		poolManager = PoolManager.getInstance();
 		registerAvailableDevices();
 		startMonitorThread();
 		LOGGER.info("ClientRequestMonitor instance created successfully.");
@@ -42,26 +41,32 @@ public class ClientRequestMonitor
 	/**
 	 * Gets the current instance of the {@link ClientRequestMonitor ClientRequestMonitor}.
 	 * 
-	 * @return - the only Instance of the ClientRequestMonitor.
+	 * @return the only Instance of the ClientRequestMonitor.
 	 */
 	public static ClientRequestMonitor getInstance()
 	{
+		if (monitorInstance == null)
+		{
+			synchronized (ClientRequestMonitor.class)
+			{
+				if (monitorInstance == null)
+				{
+					monitorInstance = new ClientRequestMonitor();
+				}
+			}
+		}
 		return monitorInstance;
 	}
 
 	private void registerAvailableDevices()
 	{
-		proxyToTimeout = new ConcurrentHashMap<DeviceProxy, Long>();
-		proxyToRmiId = new ConcurrentHashMap<DeviceProxy, String>();
-
 		// get all available devices' RMI identifiers
-		PoolManager poolManager = PoolManager.getInstance();
 		List<String> allDevicesRmiIdentifiers = poolManager.getAllUnderlyingDeviceProxyIds();
 
 		// registering devices to the ClientRequestMonitor
 		for (String deviceRmiIdentifier : allDevicesRmiIdentifiers)
 		{
-			DeviceProxy deviceProxy = getProxyByRmiId(deviceRmiIdentifier);
+			DeviceProxy deviceProxy = poolManager.getUnderlyingDeviceProxy(deviceRmiIdentifier);
 			proxyToTimeout.put(deviceProxy, 0L);
 			proxyToRmiId.put(deviceProxy, deviceRmiIdentifier);
 		}
@@ -69,16 +74,9 @@ public class ClientRequestMonitor
 
 	private void startMonitorThread()
 	{
-		isRunning = true;
 		InnerRunnable innerThread = new InnerRunnable();
-		monitorThread = new Thread(innerThread, "ClientRequestMonitorThread");
+		monitorThread = new Thread(innerThread, "ClientRequestMonitor Thread");
 		monitorThread.start();
-	}
-
-	private DeviceProxy getProxyByRmiId(String deviceRmiId)
-	{
-		DeviceProxy deviceProxy = poolManager.getUnderlyingDeviceProxy(deviceRmiId);
-		return deviceProxy;
 	}
 
 	/**
@@ -89,7 +87,7 @@ public class ClientRequestMonitor
 	 */
 	void registerDevice(String poolItemRmiIdentifier)
 	{
-		DeviceProxy deviceProxy = getProxyByRmiId(poolItemRmiIdentifier);
+		DeviceProxy deviceProxy = poolManager.getUnderlyingDeviceProxy(poolItemRmiIdentifier);
 		proxyToTimeout.putIfAbsent(deviceProxy, 0L);
 		proxyToRmiId.putIfAbsent(deviceProxy, poolItemRmiIdentifier);
 
@@ -104,20 +102,20 @@ public class ClientRequestMonitor
 	 */
 	void unregisterDevice(String poolItemRmiIdentifier)
 	{
-		DeviceProxy deviceProxy = getProxyByRmiId(poolItemRmiIdentifier);
-		boolean isDeviceProxyPresent = (proxyToTimeout.contains(deviceProxy) && proxyToRmiId.contains(deviceProxy));
-		if (isDeviceProxyPresent)
+		DeviceProxy deviceProxy = poolManager.getUnderlyingDeviceProxy(poolItemRmiIdentifier);
+		boolean isDeviceProxyRegistered = (proxyToTimeout.contains(deviceProxy) && proxyToRmiId.contains(deviceProxy));
+		if (isDeviceProxyRegistered)
 		{
-			LOGGER.info("ClientRequestMonitor lost connection to device: " + poolItemRmiIdentifier);
+			proxyToTimeout.remove(deviceProxy);
+			proxyToRmiId.remove(deviceProxy);
+			LOGGER.info("ClientRequestMonitor unregistered device: " + poolItemRmiIdentifier);
 		}
 		else
 		{
 			// it was not found in some of the maps for a reason
 			LOGGER.error("Trying to unregister device " + poolItemRmiIdentifier
-					+ " which was not registered for monitoring properly.");
+					+ " which was not registered for monitoring.");
 		}
-		proxyToTimeout.remove(deviceProxy);
-		proxyToRmiId.remove(deviceProxy);
 	}
 
 	/**
@@ -142,7 +140,7 @@ public class ClientRequestMonitor
 	{
 		try
 		{
-			isRunning = false;
+			InnerRunnable.setTerminateFlag(true);
 			monitorThread.join();
 			LOGGER.info("ClientRequestMonitor stopped successfully.");
 		}
@@ -154,10 +152,11 @@ public class ClientRequestMonitor
 
 	/**
 	 * 
-	 * @return - true, if the ClientRequestMonitor is running, false otherwise.
+	 * @return true if the ClientRequestMonitor is running, false otherwise.
 	 */
 	public boolean isRunning()
 	{
+		boolean isRunning = monitorThread.isAlive();
 		return isRunning;
 	}
 
@@ -168,24 +167,41 @@ public class ClientRequestMonitor
 	 * @author vladimir.vladimirov
 	 * 
 	 */
-	private class InnerRunnable implements Runnable
+	private static class InnerRunnable implements Runnable
 	{
+		private final int DEVICE_REQUEST_TIMEOUT = ServerPropertiesLoader.getDeviceRequestTimeout();
+
+		private final int DEVICE_UPDATE_SLEEP = ServerPropertiesLoader.getDeviceUpdateTime();
+
+		private static boolean terminateFlag = false;
+
 		@Override
 		public void run()
 		{
 			try
 			{
-				while (isRunning)
+				while (!terminateFlag)
 				{
-					Thread.sleep(ServerPropertiesLoader.getDeviceUpdateTime());
+					Thread.sleep(DEVICE_UPDATE_SLEEP);
 					updateTimeoutValues();
 				}
 			}
 			catch (InterruptedException e)
 			{
 				LOGGER.error("Monitor thread was interrupted.", e);
-				throw new RuntimeException("ClientRequestMonitor thread was interrupted");
+				throw new RuntimeException("ClientRequestMonitor thread was interrupted.");
 			}
+		}
+
+		/**
+		 * Sets the termination flag on this runnable.
+		 * 
+		 * @param terminate
+		 *        - true if this runnable should exit, false otherwise.
+		 */
+		public static void setTerminateFlag(boolean terminate)
+		{
+			terminateFlag = terminate;
 		}
 
 		/**
@@ -204,8 +220,10 @@ public class ClientRequestMonitor
 
 				if (poolManager.isInUse(rmiId))
 				{
-					if (timeout >= ServerPropertiesLoader.getDeviceRequestTimeout())
+					if (timeout >= DEVICE_REQUEST_TIMEOUT)
 					{
+						LOGGER.info("Device proxy with RMI ID: " + rmiId + " released due to invocation timeout.");
+						entry.setValue(0L);
 						poolManager.releasePoolItem(rmiId);
 					}
 					else
@@ -213,6 +231,10 @@ public class ClientRequestMonitor
 						long newTimeout = entry.getValue() + TIMEOUT_STEP;
 						entry.setValue(newTimeout);
 					}
+				}
+				else
+				{
+					entry.setValue(0L);
 				}
 			}
 		}
