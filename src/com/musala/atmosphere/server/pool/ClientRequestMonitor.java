@@ -178,18 +178,18 @@ public class ClientRequestMonitor
 		@Override
 		public void run()
 		{
-			try
+			while (!terminateFlag)
 			{
-				while (!terminateFlag)
+				try
 				{
 					Thread.sleep(DEVICE_UPDATE_SLEEP);
 					updateTimeoutValues();
 				}
-			}
-			catch (InterruptedException e)
-			{
-				LOGGER.error("Monitor thread was interrupted.", e);
-				throw new RuntimeException("ClientRequestMonitor thread was interrupted.");
+				catch (InterruptedException e)
+				{
+					LOGGER.error("Monitor thread was interrupted.", e);
+					throw new RuntimeException("ClientRequestMonitor thread was interrupted.");
+				}
 			}
 		}
 
