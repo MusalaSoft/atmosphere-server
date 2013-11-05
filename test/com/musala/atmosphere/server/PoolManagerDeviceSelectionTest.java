@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
 import java.util.NoSuchElementException;
 
 import org.junit.AfterClass;
@@ -49,10 +50,16 @@ public class PoolManagerDeviceSelectionTest
 		IAgentManager mockedAgentManager = mock(IAgentManager.class);
 		when(mockedAgentManager.getAgentId()).thenReturn(AGENT_ID);
 
+		Registry mockRegistry = mock(Registry.class);
+
 		IWrapDevice mockedDeviceOne = mock(IWrapDevice.class);
 		IWrapDevice mockedDeviceTwo = mock(IWrapDevice.class);
 		IWrapDevice mockedDeviceThree = mock(IWrapDevice.class);
 		IWrapDevice mockedDeviceFour = mock(IWrapDevice.class);
+		when(mockRegistry.lookup(DEVICE1_SN)).thenReturn(mockedDeviceOne);
+		when(mockRegistry.lookup(DEVICE2_SN)).thenReturn(mockedDeviceTwo);
+		when(mockRegistry.lookup(DEVICE3_SN)).thenReturn(mockedDeviceThree);
+		when(mockRegistry.lookup(DEVICE4_SN)).thenReturn(mockedDeviceFour);
 
 		DeviceInformation mockedDeviceInfoOne = new DeviceInformation();
 		mockedDeviceInfoOne.setSerialNumber(DEVICE1_SN);
@@ -91,10 +98,10 @@ public class PoolManagerDeviceSelectionTest
 		when(mockedDeviceThree.getDeviceInformation()).thenReturn(mockedDeviceInfoThree);
 		when(mockedDeviceFour.getDeviceInformation()).thenReturn(mockedDeviceInfoFour);
 
-		poolManager.addDevice(DEVICE1_SN, mockedDeviceOne, mockedAgentManager, POOL_MANAGER_RMI_PORT);
-		poolManager.addDevice(DEVICE2_SN, mockedDeviceTwo, mockedAgentManager, POOL_MANAGER_RMI_PORT);
-		poolManager.addDevice(DEVICE3_SN, mockedDeviceThree, mockedAgentManager, POOL_MANAGER_RMI_PORT);
-		poolManager.addDevice(DEVICE4_SN, mockedDeviceFour, mockedAgentManager, POOL_MANAGER_RMI_PORT);
+		poolManager.addDevice(DEVICE1_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
+		poolManager.addDevice(DEVICE2_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
+		poolManager.addDevice(DEVICE3_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
+		poolManager.addDevice(DEVICE4_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
 	}
 
 	@AfterClass

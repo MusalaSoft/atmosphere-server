@@ -16,7 +16,6 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.sa.IAgentManager;
-import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.server.pool.PoolManager;
 
@@ -57,37 +56,16 @@ public class ServerManager
 		else
 		{
 			// The agent which sends the event is registered to the server
-			if (poolManager.isDevicePresent(changedDeviceRmiId, onAgent))
+			// TODO make this more complex - what happens if a device that is allocated to a client is disconnected?
+			if (isConnected)
 			{
-				poolManager.refreshDevice(changedDeviceRmiId, onAgent, isConnected);
+				IAgentManager agent = agentManagersId.get(onAgent);
+				Registry agentRegistry = agentManagerRegistry.get(agent);
+				poolManager.addDevice(changedDeviceRmiId, agentRegistry, agent, rmiRegistryPort);
 			}
 			else
 			{
-				// TODO make this more complex - what happens if a device that is allocated to a client is disconnected?
-				if (isConnected)
-				{
-					IAgentManager agent = agentManagersId.get(onAgent);
-					Registry agentRegistry = agentManagerRegistry.get(agent);
-					try
-					{
-						IWrapDevice deviceWrapper = (IWrapDevice) agentRegistry.lookup(changedDeviceRmiId);
-						poolManager.addDevice(changedDeviceRmiId, deviceWrapper, agent, rmiRegistryPort);
-					}
-					catch (NotBoundException e)
-					{
-						LOGGER.warn("Attempted to get a non-bound device wrapper from an Agent.", e);
-						return;
-					}
-					catch (RemoteException e)
-					{
-						LOGGER.warn("Attempted to get a device wrapper from an Agent that we can not connect to.", e);
-						return;
-					}
-				}
-				else
-				{
-					LOGGER.warn("Received device disconnected event for a device that was not registered at all.");
-				}
+				poolManager.removeDevice(changedDeviceRmiId, onAgent);
 			}
 
 		}
@@ -239,15 +217,7 @@ public class ServerManager
 		Registry agentRegistry = agentManagerRegistry.get(agent);
 		for (String wrapperRmiId : deviceWrappers)
 		{
-			try
-			{
-				IWrapDevice deviceWrapper = (IWrapDevice) agentRegistry.lookup(wrapperRmiId);
-				poolManager.addDevice(wrapperRmiId, deviceWrapper, agent, rmiRegistryPort);
-			}
-			catch (NotBoundException e)
-			{
-				LOGGER.error("Could not find device to wrap on the Agent.", e);
-			}
+			poolManager.addDevice(wrapperRmiId, agentRegistry, agent, rmiRegistryPort);
 		}
 	}
 

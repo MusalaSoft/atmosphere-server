@@ -66,9 +66,7 @@ public class ClientRequestMonitor
 		// registering devices to the ClientRequestMonitor
 		for (String deviceRmiIdentifier : allDevicesRmiIdentifiers)
 		{
-			DeviceProxy deviceProxy = poolManager.getUnderlyingDeviceProxy(deviceRmiIdentifier);
-			proxyToTimeout.put(deviceProxy, 0L);
-			proxyToRmiId.put(deviceProxy, deviceRmiIdentifier);
+			registerDevice(deviceRmiIdentifier);
 		}
 	}
 
@@ -91,7 +89,7 @@ public class ClientRequestMonitor
 		proxyToTimeout.putIfAbsent(deviceProxy, 0L);
 		proxyToRmiId.putIfAbsent(deviceProxy, poolItemRmiIdentifier);
 
-		LOGGER.info("ClientRequestMonitor registered new device with RMI ID: " + poolItemRmiIdentifier);
+		LOGGER.info("ClientRequestMonitor registered new device with RMI ID [" + poolItemRmiIdentifier + "].");
 	}
 
 	/**
@@ -103,11 +101,13 @@ public class ClientRequestMonitor
 	void unregisterDevice(String poolItemRmiIdentifier)
 	{
 		DeviceProxy deviceProxy = poolManager.getUnderlyingDeviceProxy(poolItemRmiIdentifier);
-		boolean isDeviceProxyRegistered = (proxyToTimeout.contains(deviceProxy) && proxyToRmiId.contains(deviceProxy));
+		boolean isDeviceProxyRegistered = proxyToTimeout.containsKey(deviceProxy)
+				|| proxyToRmiId.containsKey(deviceProxy);
 		if (isDeviceProxyRegistered)
 		{
 			proxyToTimeout.remove(deviceProxy);
 			proxyToRmiId.remove(deviceProxy);
+
 			LOGGER.info("ClientRequestMonitor unregistered device: " + poolItemRmiIdentifier);
 		}
 		else

@@ -1,12 +1,15 @@
 package com.musala.atmosphere.server.pool;
 
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -100,38 +103,69 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 	 *        - RMI string identifier on the Agent for the device wrapper stub.
 	 * @param agent
 	 *        - the {@link AgentManager AgentManager} that the device is connected to.
-	 * @param isConnected
-	 *        - true if the device is connected to an Agent, false if not.
 	 */
-	public void refreshDevice(String changedDeviceRmiId, String agent, boolean isConnected)
+	public void removeDevice(String changedDeviceRmiId, String agent)
 	{
-		for (String poolItemUnderlyingDeviceProxyRmiId : rmiIdToPoolItem.keySet())
+		for (Entry<String, PoolItem> poolItems : rmiIdToPoolItem.entrySet())
 		{
-			PoolItem poolItem = rmiIdToPoolItem.get(poolItemUnderlyingDeviceProxyRmiId);
+			PoolItem poolItem = poolItems.getValue();
+			String poolItemProxyRmiId = poolItems.getKey();
 
 			if (!poolItem.isCorrespondingTo(agent, changedDeviceRmiId))
 			{
 				continue;
 			}
-			if (isConnected)
-			{
-				LOGGER.warn("Received device connected event for a device that is already registered.");
-			}
-			else
-			{
-				ClientRequestMonitor deviceMonitor = ClientRequestMonitor.getInstance();
-				deviceMonitor.unregisterDevice(poolItemUnderlyingDeviceProxyRmiId);
 
-				DeviceProxy removedProxy = poolItem.getUnderlyingDeviceProxy();
-				PasskeyAuthority.getInstance().removeDevice(removedProxy);
-				poolItem.unbindDeviceProxyFromRmi();
-				rmiIdToPoolItem.remove(poolItemUnderlyingDeviceProxyRmiId);
+			ClientRequestMonitor deviceMonitor = ClientRequestMonitor.getInstance();
+			deviceMonitor.unregisterDevice(poolItemProxyRmiId);
 
-				LOGGER.info("PoolItem with id " + changedDeviceRmiId + " disconnected and removed.");
-				return;
-			}
+			DeviceProxy removedProxy = poolItem.getUnderlyingDeviceProxy();
+			PasskeyAuthority.getInstance().removeDevice(removedProxy);
+			poolItem.unbindDeviceProxyFromRmi();
+			rmiIdToPoolItem.remove(poolItemProxyRmiId);
+
+			LOGGER.info("PoolItem with id " + changedDeviceRmiId + " disconnected and removed.");
+			return;
 		}
-		LOGGER.warn("Received refresh request for a device that is not present in the pool.");
+		LOGGER.warn("Received remove request for a device that is not present in the pool.");
+	}
+
+	/**
+	 * Adds a device to the pool.
+	 * 
+	 * @param deviceRmiId
+	 *        - RMI string identifier for the device wrapper stub on the Agent registry.
+	 * @param agentRegistry
+	 *        - the Agent {@link Registry} object that contains the device that will be added.
+	 * @param agent
+	 *        - the {@link AgentManager AgentManager} that published the {@link IWrapDevice IWrapDevice} we are
+	 *        wrapping.
+	 * @param rmiRegistryPort
+	 *        - RMI registry port in which we will publish the newly created {@link DeviceProxy DeviceProxy} wrapper.
+	 */
+	public void addDevice(String deviceRmiId, Registry agentRegistry, IAgentManager agent, int rmiRegistryPort)
+	{
+		try
+		{
+			IWrapDevice deviceWrapper = (IWrapDevice) agentRegistry.lookup(deviceRmiId);
+
+			PoolItem poolItem = new PoolItem(deviceRmiId, deviceWrapper, agent, rmiRegistryPort);
+			String poolItemRmiId = poolItem.getDeviceProxyRmiBindingIdentifier();
+			rmiIdToPoolItem.put(poolItemRmiId, poolItem);
+
+			ClientRequestMonitor deviceMonitor = ClientRequestMonitor.getInstance();
+			deviceMonitor.registerDevice(poolItemRmiId);
+
+			LOGGER.info("PoolItem created with rmi id [" + poolItemRmiId + "].");
+		}
+		catch (NotBoundException e)
+		{
+			LOGGER.warn("Attempted to get a non-bound device wrapper [" + deviceRmiId + "] from an Agent.", e);
+		}
+		catch (RemoteException e)
+		{
+			LOGGER.warn("Attempted to get a device wrapper from an Agent that we can not connect to.", e);
+		}
 	}
 
 	/**
@@ -142,38 +176,6 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 		for (PoolItem poolItem : rmiIdToPoolItem.values())
 		{
 			poolItem.unbindDeviceProxyFromRmi();
-		}
-	}
-
-	/**
-	 * Adds a device to the pool.
-	 * 
-	 * @param deviceRmiId
-	 *        - RMI string identifier on the Agent for the device wrapper stub.
-	 * @param deviceWrapper
-	 *        - device to be wrapped in a {@link DeviceProxy DeviceProxy} object.
-	 * @param agent
-	 *        - the {@link AgentManager AgentManager} that published the {@link IWrapDevice IWrapDevice} we are
-	 *        wrapping.
-	 * @param serverRmiRegistry
-	 *        - RMI registry in which we will publish the newly created {@link DeviceProxy DeviceProxy} wrapper.
-	 */
-	public void addDevice(String deviceRmiId, IWrapDevice deviceWrapper, IAgentManager agent, int rmiRegistryPort)
-	{
-		try
-		{
-			PoolItem poolItem = new PoolItem(deviceRmiId, deviceWrapper, agent, rmiRegistryPort);
-			String poolItemRmiId = poolItem.getDeviceProxyRmiBindingIdentifier();
-			rmiIdToPoolItem.put(poolItemRmiId, poolItem);
-
-			ClientRequestMonitor deviceMonitor = ClientRequestMonitor.getInstance();
-			deviceMonitor.registerDevice(poolItemRmiId);
-
-			LOGGER.info("PoolItem created with rmi id: " + deviceRmiId + ".");
-		}
-		catch (RemoteException e)
-		{
-			LOGGER.error("PoolItem creation failed.", e);
 		}
 	}
 
@@ -270,6 +272,11 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder
 	 */
 	boolean isInUse(String deviceProxyRmiId)
 	{
+		if (!rmiIdToPoolItem.containsKey(deviceProxyRmiId))
+		{
+			LOGGER.error("Checking if device is in use for unregistered proxy ID [" + deviceProxyRmiId + "].");
+			return true;
+		}
 		PoolItem correspondingPoolItem = rmiIdToPoolItem.get(deviceProxyRmiId);
 		boolean availability = correspondingPoolItem.isAvailable();
 		return (!availability);
