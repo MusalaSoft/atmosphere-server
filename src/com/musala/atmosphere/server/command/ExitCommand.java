@@ -7,9 +7,9 @@ import com.musala.atmosphere.server.Server;
  * 
  * @author vladimir.vladimirov
  */
-public class StopCommand extends NoParamsServerCommand
+public class ExitCommand extends NoParamsServerCommand
 {
-	public StopCommand(Server server)
+	public ExitCommand(Server server)
 	{
 		super(server);
 	}
@@ -17,6 +17,6 @@ public class StopCommand extends NoParamsServerCommand
 	@Override
 	protected void executeCommand(String[] params)
 	{
-		server.stop();
+		server.exit();
 	}
 }

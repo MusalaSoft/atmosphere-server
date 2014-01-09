@@ -42,7 +42,6 @@ public class RunningServer extends ServerState
 	public void stop()
 	{
 		server.setState(new StoppedServer(server, serverConsole));
-		server.exit();
 		isRunning = false;
 	}
 
@@ -62,7 +61,7 @@ public class RunningServer extends ServerState
 				catch (InterruptedException e)
 				{
 					LOGGER.warn("Server wait thread was interrupted.", e);
-					stop();
+					server.exit();
 					break;
 				}
 			}

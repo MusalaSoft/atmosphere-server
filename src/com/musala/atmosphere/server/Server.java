@@ -95,6 +95,7 @@ public class Server
 	 */
 	public void exit()
 	{
+		stop();
 		ClientRequestMonitor deviceMonitor = ClientRequestMonitor.getInstance();
 		deviceMonitor.stop();
 

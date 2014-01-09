@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import com.musala.atmosphere.server.Server;
 
-public class StopCommandTest
+public class ExitCommandTest
 {
 	private Server innerServerMock;
 
@@ -21,7 +21,7 @@ public class StopCommandTest
 	public void setUp()
 	{
 		innerServerMock = mock(Server.class);
-		stopCommand = new StopCommand(innerServerMock);
+		stopCommand = new ExitCommand(innerServerMock);
 		emptyArray = new String[] {};
 	}
 
@@ -30,6 +30,6 @@ public class StopCommandTest
 	{
 		stopCommand.execute(emptyArray);
 
-		verify(innerServerMock, times(1)).stop();
+		verify(innerServerMock, times(1)).exit();
 	}
 }

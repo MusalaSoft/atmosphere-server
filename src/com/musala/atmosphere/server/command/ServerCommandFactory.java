@@ -38,9 +38,9 @@ public class ServerCommandFactory
 				resultCommand = new HelpCommand(server);
 				break;
 			}
-			case SERVER_STOP:
+			case SERVER_EXIT:
 			{
-				resultCommand = new StopCommand(server);
+				resultCommand = new ExitCommand(server);
 				break;
 			}
 		}
