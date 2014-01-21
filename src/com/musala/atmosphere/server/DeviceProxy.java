@@ -12,6 +12,7 @@ import com.musala.atmosphere.commons.DeviceAcceleration;
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.DeviceOrientation;
 import com.musala.atmosphere.commons.MobileDataState;
+import com.musala.atmosphere.commons.SmsMessage;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
@@ -573,7 +574,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		}
 		catch (RemoteException e)
 		{
-			// TODO handle remoteexception (the server should know the connection is bad)
+			// TODO handle remote exception (the server should know the connection is bad)
 			// and decide what to do next. This next line is temporal.
 			throw new RuntimeException("Connection to device failed.", e);
 		}
@@ -598,5 +599,25 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 			throw new RuntimeException("Connection to device failed.", e);
 		}
 
+	}
+
+	@Override
+	public void receiveSms(SmsMessage smsMessage, long invocationPasskey)
+		throws InvalidPasskeyException,
+			CommandFailedException,
+			RemoteException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
+		try
+		{
+			wrappedDevice.receiveSms(smsMessage);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
 	}
 }
