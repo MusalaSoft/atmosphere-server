@@ -25,6 +25,8 @@ import org.mockito.Mockito;
 
 import com.musala.atmosphere.commons.BatteryState;
 import com.musala.atmosphere.commons.CommandFailedException;
+import com.musala.atmosphere.commons.PhoneNumber;
+import com.musala.atmosphere.commons.SmsMessage;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
@@ -37,6 +39,8 @@ public class DeviceProxyTest
 	private DeviceProxy deviceProxy;
 
 	private long proxyPasskey;
+
+	private final static PhoneNumber PHONE_NUMBER = new PhoneNumber("123");
 
 	@Before
 	public void setUpClass() throws Exception
@@ -436,5 +440,88 @@ public class DeviceProxyTest
 		when(innerDeviceWrapperMock.getPowerState()).thenThrow(new RemoteException());
 
 		deviceProxy.getPowerState(proxyPasskey);
+	}
+
+	@Test
+	public void testReceiveSms() throws Exception
+	{
+		SmsMessage smsMessage = new SmsMessage(PHONE_NUMBER, "");
+
+		deviceProxy.receiveSms(smsMessage, proxyPasskey);
+		verify(innerDeviceWrapperMock, times(1)).receiveSms(smsMessage);
+		verifyNoMoreInteractions(innerDeviceWrapperMock);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testReceiveSmsFailed() throws Exception
+	{
+		SmsMessage smsMessage = new SmsMessage(PHONE_NUMBER, "");
+
+		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).receiveSms((SmsMessage) any());
+		deviceProxy.receiveSms(smsMessage, proxyPasskey);
+	}
+
+	@Test
+	public void testReceiveCall() throws Exception
+	{
+		deviceProxy.receiveCall(PHONE_NUMBER, proxyPasskey);
+
+		verify(innerDeviceWrapperMock, times(1)).receiveCall(PHONE_NUMBER);
+		verifyNoMoreInteractions(innerDeviceWrapperMock);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testReceiveCallFailed() throws Exception
+	{
+		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).receiveCall((PhoneNumber) any());
+		deviceProxy.receiveCall(PHONE_NUMBER, proxyPasskey);
+	}
+
+	@Test
+	public void testAcceptCall() throws Exception
+	{
+		deviceProxy.acceptCall(PHONE_NUMBER, proxyPasskey);
+
+		verify(innerDeviceWrapperMock, times(1)).acceptCall(PHONE_NUMBER);
+		verifyNoMoreInteractions(innerDeviceWrapperMock);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testAcceptCallFailed() throws Exception
+	{
+		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).acceptCall((PhoneNumber) any());
+		deviceProxy.acceptCall(PHONE_NUMBER, proxyPasskey);
+	}
+
+	@Test
+	public void testHoldCall() throws Exception
+	{
+		deviceProxy.holdCall(PHONE_NUMBER, proxyPasskey);
+
+		verify(innerDeviceWrapperMock, times(1)).holdCall(PHONE_NUMBER);
+		verifyNoMoreInteractions(innerDeviceWrapperMock);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testHoldCallFailed() throws Exception
+	{
+		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).holdCall((PhoneNumber) any());
+		deviceProxy.holdCall(PHONE_NUMBER, proxyPasskey);
+	}
+
+	@Test
+	public void testCancelCall() throws Exception
+	{
+		deviceProxy.cancelCall(PHONE_NUMBER, proxyPasskey);
+
+		verify(innerDeviceWrapperMock, times(1)).cancelCall(PHONE_NUMBER);
+		verifyNoMoreInteractions(innerDeviceWrapperMock);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testCancelCallFailed() throws Exception
+	{
+		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).cancelCall((PhoneNumber) any());
+		deviceProxy.cancelCall(PHONE_NUMBER, proxyPasskey);
 	}
 }

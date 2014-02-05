@@ -12,6 +12,7 @@ import com.musala.atmosphere.commons.DeviceAcceleration;
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.DeviceOrientation;
 import com.musala.atmosphere.commons.MobileDataState;
+import com.musala.atmosphere.commons.PhoneNumber;
 import com.musala.atmosphere.commons.SmsMessage;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
@@ -612,6 +613,87 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		try
 		{
 			wrappedDevice.receiveSms(smsMessage);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+	}
+
+	@Override
+	public void receiveCall(PhoneNumber phoneNumber, long invocationPasskey)
+		throws InvalidPasskeyException,
+			CommandFailedException,
+			RemoteException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
+		try
+		{
+			wrappedDevice.receiveCall(phoneNumber);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+	}
+
+	@Override
+	public void acceptCall(PhoneNumber phoneNumber, long invocationPasskey)
+		throws InvalidPasskeyException,
+			CommandFailedException,
+			RemoteException
+	{
+
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
+		try
+		{
+			wrappedDevice.acceptCall(phoneNumber);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+	}
+
+	@Override
+	public void holdCall(PhoneNumber phoneNumber, long invocationPasskey)
+		throws InvalidPasskeyException,
+			CommandFailedException,
+			RemoteException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
+		try
+		{
+			wrappedDevice.holdCall(phoneNumber);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+	}
+
+	@Override
+	public void cancelCall(PhoneNumber phoneNumber, long invocationPasskey)
+		throws InvalidPasskeyException,
+			CommandFailedException,
+			RemoteException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
+		try
+		{
+			wrappedDevice.cancelCall(phoneNumber);
 		}
 		catch (RemoteException e)
 		{
