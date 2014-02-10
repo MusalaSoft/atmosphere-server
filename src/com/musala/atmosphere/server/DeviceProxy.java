@@ -16,6 +16,7 @@ import com.musala.atmosphere.commons.PhoneNumber;
 import com.musala.atmosphere.commons.SmsMessage;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
+import com.musala.atmosphere.commons.gesture.Gesture;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
@@ -613,6 +614,26 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		try
 		{
 			wrappedDevice.receiveSms(smsMessage);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+	}
+
+	@Override
+	public void executeGesture(Gesture gesture, long invocationPasskey)
+		throws InvalidPasskeyException,
+			CommandFailedException,
+			RemoteException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
+		try
+		{
+			wrappedDevice.executeGesture(gesture);
 		}
 		catch (RemoteException e)
 		{
