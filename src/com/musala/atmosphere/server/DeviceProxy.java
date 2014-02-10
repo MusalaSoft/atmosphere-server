@@ -5,17 +5,17 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 
-import com.musala.atmosphere.commons.BatteryState;
-import com.musala.atmosphere.commons.CommandFailedException;
 import com.musala.atmosphere.commons.ConnectionType;
-import com.musala.atmosphere.commons.DeviceAcceleration;
 import com.musala.atmosphere.commons.DeviceInformation;
-import com.musala.atmosphere.commons.DeviceOrientation;
-import com.musala.atmosphere.commons.MobileDataState;
-import com.musala.atmosphere.commons.PhoneNumber;
 import com.musala.atmosphere.commons.SmsMessage;
+import com.musala.atmosphere.commons.beans.BatteryState;
+import com.musala.atmosphere.commons.beans.DeviceAcceleration;
+import com.musala.atmosphere.commons.beans.DeviceOrientation;
+import com.musala.atmosphere.commons.beans.MobileDataState;
+import com.musala.atmosphere.commons.beans.PhoneNumber;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
+import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.gesture.Gesture;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.util.Pair;
@@ -24,9 +24,9 @@ import com.musala.atmosphere.server.pool.ClientRequestMonitor;
 /**
  * The DeviceProxy object is used in RMI. It reroutes invocations of it's methods (by the {@link IClientDevice
  * IClientDevice} stub) to invocations on another RMI stub (the {@link IWrapDevice IWrapDevice}).
- * 
+ *
  * @author georgi.gaydarov
- * 
+ *
  */
 public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 {
