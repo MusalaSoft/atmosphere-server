@@ -524,4 +524,20 @@ public class DeviceProxyTest
 		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).cancelCall((PhoneNumber) any());
 		deviceProxy.cancelCall(PHONE_NUMBER, proxyPasskey);
 	}
+
+	@Test
+	public void testGetTelephonyInformation() throws Exception
+	{
+		deviceProxy.getTelephonyInformation(proxyPasskey);
+
+		verify(innerDeviceWrapperMock, times(1)).getTelephonyInformation();
+		verifyNoMoreInteractions(innerDeviceWrapperMock);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testGetTelephonyInformationFailed() throws Exception
+	{
+		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).getTelephonyInformation();
+		deviceProxy.getTelephonyInformation(proxyPasskey);
+	}
 }

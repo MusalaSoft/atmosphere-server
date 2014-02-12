@@ -8,6 +8,7 @@ import java.util.List;
 import com.musala.atmosphere.commons.ConnectionType;
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.SmsMessage;
+import com.musala.atmosphere.commons.TelephonyInformation;
 import com.musala.atmosphere.commons.beans.BatteryState;
 import com.musala.atmosphere.commons.beans.DeviceAcceleration;
 import com.musala.atmosphere.commons.beans.DeviceOrientation;
@@ -24,9 +25,9 @@ import com.musala.atmosphere.server.pool.ClientRequestMonitor;
 /**
  * The DeviceProxy object is used in RMI. It reroutes invocations of it's methods (by the {@link IClientDevice
  * IClientDevice} stub) to invocations on another RMI stub (the {@link IWrapDevice IWrapDevice}).
- *
+ * 
  * @author georgi.gaydarov
- *
+ * 
  */
 public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 {
@@ -715,6 +716,26 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		try
 		{
 			wrappedDevice.cancelCall(phoneNumber);
+		}
+		catch (RemoteException e)
+		{
+			// TODO handle remote exception (the server should know the connection is bad)
+			// and decide what to do next. This next line is temporal.
+			throw new RuntimeException("Connection to device failed.", e);
+		}
+	}
+
+	@Override
+	public TelephonyInformation getTelephonyInformation(long invocationPasskey)
+		throws InvalidPasskeyException,
+			CommandFailedException,
+			RemoteException
+	{
+		passkeyAuthority.validatePasskey(this, invocationPasskey);
+		timeoutMonitor.restartTimerForDevice(this);
+		try
+		{
+			return wrappedDevice.getTelephonyInformation();
 		}
 		catch (RemoteException e)
 		{
