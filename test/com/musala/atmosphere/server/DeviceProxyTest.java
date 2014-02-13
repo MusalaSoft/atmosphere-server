@@ -3,7 +3,6 @@ package com.musala.atmosphere.server;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -23,8 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.musala.atmosphere.commons.PowerProperties;
 import com.musala.atmosphere.commons.SmsMessage;
-import com.musala.atmosphere.commons.beans.BatteryState;
 import com.musala.atmosphere.commons.beans.PhoneNumber;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
@@ -320,126 +319,44 @@ public class DeviceProxyTest
 	}
 
 	@Test
-	public void testSetBatteryLevel() throws Exception
+	public void testSetPowerPropeties() throws Exception
 	{
-		int testInput = 123;
+		PowerProperties testInput = new PowerProperties();
 
-		deviceProxy.setBatteryLevel(testInput, proxyPasskey);
+		deviceProxy.setPowerProperties(testInput, proxyPasskey);
 
-		verify(innerDeviceWrapperMock, times(1)).setBatteryLevel(testInput);
+		verify(innerDeviceWrapperMock, times(1)).setPowerProperties(testInput);
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testSetBatteryLevelFailed() throws Exception
+	public void testSetPowerPropertiesFailed() throws Exception
 	{
-		int testInput = 123;
-		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setBatteryLevel(anyInt());
+		PowerProperties testInput = new PowerProperties();
+		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setPowerProperties((PowerProperties) any());
 
-		deviceProxy.setBatteryLevel(testInput, proxyPasskey);
-	}
-
-	@Test
-	public void testGetBatteryLevel() throws Exception
-	{
-		int testDataResponse = 123;
-		when(innerDeviceWrapperMock.getBatteryLevel()).thenReturn(testDataResponse);
-
-		int response = deviceProxy.getBatteryLevel(proxyPasskey);
-
-		assertEquals("Expected response and method response should match.", testDataResponse, response);
-		verify(innerDeviceWrapperMock, times(1)).getBatteryLevel();
-		verifyNoMoreInteractions(innerDeviceWrapperMock);
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void testGetBatteryLevelFailed() throws Exception
-	{
-		when(innerDeviceWrapperMock.getBatteryLevel()).thenThrow(new RemoteException());
-
-		deviceProxy.getBatteryLevel(proxyPasskey);
-	}
-
-	@Test
-	public void testSetBatteryState() throws Exception
-	{
-		BatteryState testInput = BatteryState.CHARGING;
-
-		deviceProxy.setBatteryState(testInput, proxyPasskey);
-
-		verify(innerDeviceWrapperMock, times(1)).setBatteryState(testInput);
-		verifyNoMoreInteractions(innerDeviceWrapperMock);
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void testSetBatteryStateFailed() throws Exception
-	{
-		BatteryState testInput = BatteryState.CHARGING;
-		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setBatteryState((BatteryState) any());
-
-		deviceProxy.setBatteryState(testInput, proxyPasskey);
+		deviceProxy.setPowerProperties(testInput, proxyPasskey);
 	}
 
 	@Test
 	public void testGetBatteryState() throws Exception
 	{
-		BatteryState testDataResponse = BatteryState.CHARGING;
-		when(innerDeviceWrapperMock.getBatteryState()).thenReturn(testDataResponse);
+		PowerProperties testDataResponse = new PowerProperties();
+		when(innerDeviceWrapperMock.getPowerProperties()).thenReturn(testDataResponse);
 
-		BatteryState response = deviceProxy.getBatteryState(proxyPasskey);
-
-		assertEquals("Expected response and method response should match.", testDataResponse, response);
-		verify(innerDeviceWrapperMock, times(1)).getBatteryState();
-		verifyNoMoreInteractions(innerDeviceWrapperMock);
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void testGetBatteryStateFailed() throws Exception
-	{
-		when(innerDeviceWrapperMock.getBatteryState()).thenThrow(new RemoteException());
-
-		deviceProxy.getBatteryState(proxyPasskey);
-	}
-
-	@Test
-	public void testSetPowerState() throws Exception
-	{
-		boolean testInput = false;
-
-		deviceProxy.setPowerState(testInput, proxyPasskey);
-
-		verify(innerDeviceWrapperMock, times(1)).setPowerState(testInput);
-		verifyNoMoreInteractions(innerDeviceWrapperMock);
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void testSetPowerStateFailed() throws Exception
-	{
-		boolean testInput = false;
-		Mockito.doThrow(new RemoteException()).when(innerDeviceWrapperMock).setPowerState(anyBoolean());
-
-		deviceProxy.setPowerState(testInput, proxyPasskey);
-	}
-
-	@Test
-	public void testGetPowerState() throws Exception
-	{
-		boolean testDataResponse = false;
-		when(innerDeviceWrapperMock.getPowerState()).thenReturn(testDataResponse);
-
-		boolean response = deviceProxy.getPowerState(proxyPasskey);
+		PowerProperties response = deviceProxy.getPowerProperties(proxyPasskey);
 
 		assertEquals("Expected response and method response should match.", testDataResponse, response);
-		verify(innerDeviceWrapperMock, times(1)).getPowerState();
+		verify(innerDeviceWrapperMock, times(1)).getPowerProperties();
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void testGetPowerStateFailed() throws Exception
+	public void testGetPowerPropertiesFailed() throws Exception
 	{
-		when(innerDeviceWrapperMock.getPowerState()).thenThrow(new RemoteException());
+		when(innerDeviceWrapperMock.getPowerProperties()).thenThrow(new RemoteException());
 
-		deviceProxy.getPowerState(proxyPasskey);
+		deviceProxy.getPowerProperties(proxyPasskey);
 	}
 
 	@Test

@@ -7,9 +7,9 @@ import java.util.List;
 
 import com.musala.atmosphere.commons.ConnectionType;
 import com.musala.atmosphere.commons.DeviceInformation;
+import com.musala.atmosphere.commons.PowerProperties;
 import com.musala.atmosphere.commons.SmsMessage;
 import com.musala.atmosphere.commons.TelephonyInformation;
-import com.musala.atmosphere.commons.beans.BatteryState;
 import com.musala.atmosphere.commons.beans.DeviceAcceleration;
 import com.musala.atmosphere.commons.beans.DeviceOrientation;
 import com.musala.atmosphere.commons.beans.MobileDataState;
@@ -303,7 +303,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void setBatteryLevel(int level, long invocationPasskey)
+	public void setPowerProperties(PowerProperties properties, long invocationPasskey)
 		throws RemoteException,
 			CommandFailedException,
 			InvalidPasskeyException
@@ -312,7 +312,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
-			wrappedDevice.setBatteryLevel(level);
+			wrappedDevice.setPowerProperties(properties);
 		}
 		catch (RemoteException e)
 		{
@@ -323,7 +323,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public int getBatteryLevel(long invocationPasskey)
+	public PowerProperties getPowerProperties(long invocationPasskey)
 		throws RemoteException,
 			CommandFailedException,
 			InvalidPasskeyException
@@ -332,90 +332,8 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
-			int returnValue = wrappedDevice.getBatteryLevel();
+			PowerProperties returnValue = wrappedDevice.getPowerProperties();
 			return returnValue;
-		}
-		catch (RemoteException e)
-		{
-			// TODO handle remote exception (the server should know the connection is bad)
-			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.", e);
-		}
-	}
-
-	@Override
-	public void setBatteryState(BatteryState state, long invocationPasskey)
-		throws RemoteException,
-			CommandFailedException,
-			InvalidPasskeyException
-	{
-		passkeyAuthority.validatePasskey(this, invocationPasskey);
-		timeoutMonitor.restartTimerForDevice(this);
-		try
-		{
-			wrappedDevice.setBatteryState(state);
-		}
-		catch (RemoteException e)
-		{
-			// TODO handle remote exception (the server should know the connection is bad)
-			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.", e);
-		}
-	}
-
-	@Override
-	public BatteryState getBatteryState(long invocationPasskey)
-		throws RemoteException,
-			CommandFailedException,
-			InvalidPasskeyException
-	{
-		passkeyAuthority.validatePasskey(this, invocationPasskey);
-		timeoutMonitor.restartTimerForDevice(this);
-		try
-		{
-			BatteryState returnValue = wrappedDevice.getBatteryState();
-			return returnValue;
-		}
-		catch (RemoteException e)
-		{
-			// TODO handle remote exception (the server should know the connection is bad)
-			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.", e);
-		}
-	}
-
-	@Override
-	public boolean getPowerState(long invocationPasskey)
-		throws RemoteException,
-			CommandFailedException,
-			InvalidPasskeyException
-	{
-		passkeyAuthority.validatePasskey(this, invocationPasskey);
-		timeoutMonitor.restartTimerForDevice(this);
-		try
-		{
-			boolean powerState = wrappedDevice.getPowerState();
-			return powerState;
-		}
-		catch (RemoteException e)
-		{
-			// TODO handle remote exception (the server should know the connection is bad)
-			// and decide what to do next. This next line is temporal.
-			throw new RuntimeException("Connection to device failed.", e);
-		}
-	}
-
-	@Override
-	public void setPowerState(boolean state, long invocationPasskey)
-		throws RemoteException,
-			CommandFailedException,
-			InvalidPasskeyException
-	{
-		passkeyAuthority.validatePasskey(this, invocationPasskey);
-		timeoutMonitor.restartTimerForDevice(this);
-		try
-		{
-			wrappedDevice.setPowerState(state);
 		}
 		catch (RemoteException e)
 		{
