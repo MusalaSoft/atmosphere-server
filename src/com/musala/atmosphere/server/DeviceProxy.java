@@ -25,9 +25,9 @@ import com.musala.atmosphere.server.pool.ClientRequestMonitor;
 /**
  * The DeviceProxy object is used in RMI. It reroutes invocations of it's methods (by the {@link IClientDevice
  * IClientDevice} stub) to invocations on another RMI stub (the {@link IWrapDevice IWrapDevice}).
- * 
+ *
  * @author georgi.gaydarov
- * 
+ *
  */
 public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 {
@@ -128,7 +128,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 	}
 
 	@Override
-	public void appendToApk(byte[] bytes, long invocationPasskey)
+	public void appendToApk(byte[] bytes, long invocationPasskey, int length)
 		throws RemoteException,
 			IOException,
 			InvalidPasskeyException
@@ -137,7 +137,7 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice
 		timeoutMonitor.restartTimerForDevice(this);
 		try
 		{
-			wrappedDevice.appendToAPK(bytes);
+			wrappedDevice.appendToAPK(bytes, length);
 		}
 		catch (RemoteException e)
 		{

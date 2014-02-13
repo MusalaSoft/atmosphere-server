@@ -148,9 +148,9 @@ public class DeviceProxyTest
 	public void testAppendToApk() throws Exception
 	{
 		byte[] testBytes = new byte[] {0, 1, 2, 3};
-		deviceProxy.appendToApk(testBytes, proxyPasskey);
+		deviceProxy.appendToApk(testBytes, proxyPasskey, 4);
 
-		verify(innerDeviceWrapperMock, times(1)).appendToAPK(testBytes);
+		verify(innerDeviceWrapperMock, times(1)).appendToAPK(testBytes, testBytes.length);
 		verifyNoMoreInteractions(innerDeviceWrapperMock);
 	}
 
@@ -158,9 +158,9 @@ public class DeviceProxyTest
 	public void testAppendToApkFailed() throws Exception
 	{
 		byte[] testBytes = new byte[] {0, 1, 2, 3};
-		Mockito.doThrow(new IOException()).when(innerDeviceWrapperMock).appendToAPK((byte[]) any());
+		Mockito.doThrow(new IOException()).when(innerDeviceWrapperMock).appendToAPK((byte[]) any(), anyInt());
 
-		deviceProxy.appendToApk(testBytes, proxyPasskey);
+		deviceProxy.appendToApk(testBytes, proxyPasskey, 4);
 	}
 
 	@Test
