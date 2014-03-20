@@ -194,6 +194,9 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
         DeviceAllocationInformation allocatedDeviceDescriptor = new DeviceAllocationInformation(bestMatchDeviceProxyRmiId,
                                                                                                 devicePasskey);
 
+        ClientRequestMonitor deviceMonitor = ClientRequestMonitor.getInstance();
+        deviceMonitor.restartTimerForDevice(selectedPoolItemDeviceProxy);
+
         return allocatedDeviceDescriptor;
     }
 
