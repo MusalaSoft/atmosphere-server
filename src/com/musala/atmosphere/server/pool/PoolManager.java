@@ -20,7 +20,7 @@ import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformatio
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.IClientBuilder;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
-import com.musala.atmosphere.commons.sa.IDeviceManager;
+import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.server.DeviceProxy;
 import com.musala.atmosphere.server.PasskeyAuthority;
@@ -130,11 +130,11 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      * @param rmiRegistryPort
      *        - RMI registry port in which we will publish the newly created {@link DeviceProxy DeviceProxy} wrapper.
      */
-    public void addDevice(String deviceRmiId, Registry agentRegistry, IDeviceManager device, int rmiRegistryPort) {
+    public void addDevice(String deviceRmiId, Registry agentRegistry, IAgentManager agent, int rmiRegistryPort) {
         try {
             IWrapDevice deviceWrapper = (IWrapDevice) agentRegistry.lookup(deviceRmiId);
 
-            PoolItem poolItem = new PoolItem(deviceRmiId, deviceWrapper, device, rmiRegistryPort);
+            PoolItem poolItem = new PoolItem(deviceRmiId, deviceWrapper, agent, rmiRegistryPort);
             String poolItemRmiId = poolItem.getDeviceProxyRmiBindingIdentifier();
             rmiIdToPoolItem.put(poolItemRmiId, poolItem);
 
@@ -189,8 +189,8 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
         try {
             bestMatchDeviceInformation = Collections.max(freePoolItemsDeviceInfoList, matchComparator);
         } catch (NoSuchElementException e) {
-            LOGGER.info("No available device found");
-            throw new NoAvailableDeviceFoundException("No available device found");
+            LOGGER.info("No available device found.");
+            throw new NoAvailableDeviceFoundException("No available device found.");
 
         }
 
