@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
-import java.util.NoSuchElementException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -22,6 +21,7 @@ import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.util.Pair;
+import com.musala.atmosphere.server.pool.NoAvailableDeviceFoundException;
 import com.musala.atmosphere.server.pool.PoolManager;
 
 public class PoolManagerDeviceSelectionTest {
@@ -109,7 +109,7 @@ public class PoolManagerDeviceSelectionTest {
         serverManager.close();
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test(expected = NoAvailableDeviceFoundException.class)
     public void getNotPresentDevice() throws RemoteException {
         DeviceParameters parameters = new DeviceParameters();
         parameters.setOs(DeviceOs.JELLY_BEAN_MR1_4_2_1);
