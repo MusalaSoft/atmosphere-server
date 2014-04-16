@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.RoutingAction;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
-import com.musala.atmosphere.commons.sa.IAgentManager;
+import com.musala.atmosphere.commons.sa.IDeviceManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.server.DeviceProxy;
 import com.musala.atmosphere.server.ServerManager;
@@ -35,7 +35,7 @@ public class PoolItem {
 
     private boolean availability = true; // Device is available on creation.
 
-    private final IAgentManager onAgent;
+    private final IDeviceManager onDeviceManager;
 
     private final String onAgentId;
 
@@ -51,21 +51,21 @@ public class PoolItem {
      *        - RMI string identifier on the Agent for the device wrapper stub.
      * @param deviceWrapper
      *        - device to be wrapped in a {@link DeviceProxy DeviceProxy} object.
-     * @param onAgent
+     * @param onDeviceManager
      *        - the {@link AgentManager AgentManager} that published the {@link IWrapDevice IWrapDevice} we are
      *        wrapping.
      * @param serverRmiRegistry
      *        - RMI registry in which we will publish the newly created {@link DeviceProxy DeviceProxy} wrapper.
      * @throws RemoteException
      */
-    public PoolItem(String deviceWrapperId, IWrapDevice deviceWrapper, IAgentManager onAgent, int serverRmiRegistryPort)
+    public PoolItem(String deviceWrapperId, IWrapDevice deviceWrapper, IDeviceManager onDeviceManager, int serverRmiRegistryPort)
         throws RemoteException,
             CommandFailedException {
         deviceInformation = (DeviceInformation) deviceWrapper.route(RoutingAction.GET_DEVICE_INFORMATION);
 
         deviceWrapperAgentRmiId = deviceWrapperId;
-        this.onAgent = onAgent;
-        onAgentId = onAgent.getAgentId();
+        this.onDeviceManager = onDeviceManager;
+        onAgentId = onDeviceManager.getAgentId();
         deviceProxy = new DeviceProxy(deviceWrapper);
 
         this.serverRmiRegistryPort = serverRmiRegistryPort;

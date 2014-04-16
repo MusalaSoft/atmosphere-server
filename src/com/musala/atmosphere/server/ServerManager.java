@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.sa.IAgentManager;
+import com.musala.atmosphere.commons.sa.IDeviceManager;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.server.pool.PoolManager;
 
@@ -25,216 +26,195 @@ import com.musala.atmosphere.server.pool.PoolManager;
  * @author georgi.gaydarov
  * 
  */
-public class ServerManager
-{
+public class ServerManager {
 
-	private static Logger LOGGER = Logger.getLogger(ServerManager.class.getCanonicalName());
+    private static Logger LOGGER = Logger.getLogger(ServerManager.class.getCanonicalName());
 
-	private Map<String, IAgentManager> agentManagersId = new HashMap<String, IAgentManager>();
+    private Map<String, IAgentManager> agentManagersId = new HashMap<String, IAgentManager>();
 
-	private Map<IAgentManager, Registry> agentManagerRegistry = new HashMap<IAgentManager, Registry>();
+    private Map<IAgentManager, Registry> agentManagerRegistry = new HashMap<IAgentManager, Registry>();
 
-	private int rmiRegistryPort;
+    private Map<String, IDeviceManager> deviceManagersId = new HashMap<String, IDeviceManager>();
 
-	private Registry rmiRegistry;
+    private Map<IDeviceManager, Registry> deviceManagerRegistry = new HashMap<IDeviceManager, Registry>();
 
-	private AgentEventSender agentChangeNotifier;
+    private int rmiRegistryPort;
 
-	private ConnectionRequestReceiver connectionRequestReceiver;
+    private Registry rmiRegistry;
 
-	private PoolManager poolManager = PoolManager.getInstance();
+    private AgentEventSender agentChangeNotifier;
 
-	void onAgentDeviceListChanged(String onAgent, String changedDeviceRmiId, boolean isConnected)
-	{
-		if (!agentManagersId.containsKey(onAgent))
-		{
-			// The agent which sends the event is not registered on server
-			LOGGER.warn("Received device state change event from an Agent that is not registered on the server ("
-					+ onAgent + ").");
-			return;
-		}
-		else
-		{
-			// The agent which sends the event is registered to the server
-			// TODO make this more complex - what happens if a device that is allocated to a client is disconnected?
-			if (isConnected)
-			{
-				IAgentManager agent = agentManagersId.get(onAgent);
-				Registry agentRegistry = agentManagerRegistry.get(agent);
-				poolManager.addDevice(changedDeviceRmiId, agentRegistry, agent, rmiRegistryPort);
-			}
-			else
-			{
-				poolManager.removeDevice(changedDeviceRmiId, onAgent);
-			}
+    private ConnectionRequestReceiver connectionRequestReceiver;
 
-		}
-	}
+    private PoolManager poolManager = PoolManager.getInstance();
 
-	/**
-	 * Creates a new {@link ServerManager ServerManager} instance that opens an RMI registry on a specific port and
-	 * waits for a client connection.
-	 * 
-	 * @param rmiPort
-	 *        port, on which the RMI registry for the new {@link ServerManager SercerManager} will be opened.
-	 * @throws RemoteException
-	 */
-	public ServerManager(int rmiPort) throws RemoteException
-	{
-		// Publish this ServerManager in the RMI registry
-		try
-		{
-			rmiRegistryPort = rmiPort;
-			rmiRegistry = LocateRegistry.createRegistry(rmiPort);
+    void onAgentDeviceListChanged(String onAgent, String changedDeviceRmiId, boolean isConnected) {
+        if (!agentManagersId.containsKey(onAgent)) {
+            // The agent which sends the event is not registered on server
+            LOGGER.warn("Received device state change event from an Agent that is not registered on the server ("
+                    + onAgent + ").");
+            return;
+        } else {
+            // The agent which sends the event is registered to the server
+            // TODO make this more complex - what happens if a device that is allocated to a client is disconnected?
+            if (isConnected) {
+                // IAgentManager agent = agentManagersId.get(onAgent);
+                IDeviceManager deviceManager = deviceManagersId.get(onAgent);
+                // Registry agentRegistry = agentManagerRegistry.get(agent);
+                Registry agentRegistry = deviceManagerRegistry.get(deviceManager);
+                poolManager.addDevice(changedDeviceRmiId, agentRegistry, deviceManager, rmiRegistryPort);
+            } else {
+                poolManager.removeDevice(changedDeviceRmiId, onAgent);
+            }
 
-			String poolManagerRmiPublishString = com.musala.atmosphere.commons.cs.RmiStringConstants.POOL_MANAGER.toString();
-			rmiRegistry.rebind(poolManagerRmiPublishString, poolManager);
+        }
+    }
 
-			LOGGER.info("PoolManager instance published in RMI (port " + rmiPort + ") under the identifier '"
-					+ poolManagerRmiPublishString + "'.");
+    /**
+     * Creates a new {@link ServerManager ServerManager} instance that opens an RMI registry on a specific port and
+     * waits for a client connection.
+     * 
+     * @param rmiPort
+     *        port, on which the RMI registry for the new {@link ServerManager SercerManager} will be opened.
+     * @throws RemoteException
+     */
+    public ServerManager(int rmiPort) throws RemoteException {
+        // Publish this ServerManager in the RMI registry
+        try {
+            rmiRegistryPort = rmiPort;
+            rmiRegistry = LocateRegistry.createRegistry(rmiPort);
 
-			String connectionRequestReceiverRmiString = RmiStringConstants.CONNECTION_REQUEST_RECEIVER.toString();
-			connectionRequestReceiver = new ConnectionRequestReceiver(this);
-			rmiRegistry.rebind(connectionRequestReceiverRmiString, connectionRequestReceiver);
+            String poolManagerRmiPublishString = com.musala.atmosphere.commons.cs.RmiStringConstants.POOL_MANAGER.toString();
+            rmiRegistry.rebind(poolManagerRmiPublishString, poolManager);
 
-			LOGGER.info("Connection request receiver instance published in RMI under the identifier '"
-					+ connectionRequestReceiverRmiString + "'.");
-		}
-		catch (RemoteException e)
-		{
-			close();
-			throw e;
-		}
+            LOGGER.info("PoolManager instance published in RMI (port " + rmiPort + ") under the identifier '"
+                    + poolManagerRmiPublishString + "'.");
 
-		// Publish an AgentEventSender in the RMI registry
-		try
-		{
-			agentChangeNotifier = new AgentEventSender(this);
-			String agentChangeNotifierRmiPublishString = RmiStringConstants.AGENT_EVENT_SENDER.toString();
-			rmiRegistry.rebind(agentChangeNotifierRmiPublishString, agentChangeNotifier);
-			LOGGER.info("AgentEventSender instance published in RMI (port " + rmiPort + ") under the identifier '"
-					+ agentChangeNotifierRmiPublishString + "'.");
-		}
-		catch (RemoteException e)
-		{
-			close();
-			throw e;
-		}
-	}
+            String connectionRequestReceiverRmiString = RmiStringConstants.CONNECTION_REQUEST_RECEIVER.toString();
+            connectionRequestReceiver = new ConnectionRequestReceiver(this);
+            rmiRegistry.rebind(connectionRequestReceiverRmiString, connectionRequestReceiver);
 
-	/**
-	 * Calls the {@link #close() close()} method just to be sure everything is closed.
-	 */
-	@Override
-	public void finalize()
-	{
-		close();
-	}
+            LOGGER.info("Connection request receiver instance published in RMI under the identifier '"
+                    + connectionRequestReceiverRmiString + "'.");
+        } catch (RemoteException e) {
+            close();
+            throw e;
+        }
 
-	/**
-	 * Closes all open resources. <b>MUST BE CALLED WHEN THIS CLASS IS NO LONGER NEEDED.</b>
-	 */
-	public void close()
-	{
-		if (connectionRequestReceiver != null)
-		{
-			connectionRequestReceiver.close();
-			connectionRequestReceiver = null;
-		}
-		try
-		{
-			// Close the registry
-			if (rmiRegistry != null)
-			{
-				// unexport the poolItems one by one
-				poolManager.unexportAllPoolItems();
+        // Publish an AgentEventSender in the RMI registry
+        try {
+            agentChangeNotifier = new AgentEventSender(this);
+            String agentChangeNotifierRmiPublishString = RmiStringConstants.AGENT_EVENT_SENDER.toString();
+            rmiRegistry.rebind(agentChangeNotifierRmiPublishString, agentChangeNotifier);
+            LOGGER.info("AgentEventSender instance published in RMI (port " + rmiPort + ") under the identifier '"
+                    + agentChangeNotifierRmiPublishString + "'.");
+        } catch (RemoteException e) {
+            close();
+            throw e;
+        }
+    }
 
-				// unexport everything else
-				String[] rmiObjectIds = rmiRegistry.list();
-				for (String rmiObjectId : rmiObjectIds)
-				{
-					Object obj = rmiRegistry.lookup(rmiObjectId);
-					try
-					{
-						rmiRegistry.unbind(rmiObjectId);
-						UnicastRemoteObject.unexportObject((Remote) obj, true);
-					}
-					catch (NoSuchObjectException e)
-					{
-						LOGGER.warn("No such object.", e);
-					}
-				}
-			}
-			UnicastRemoteObject.unexportObject(rmiRegistry, true);
-		}
-		catch (Exception e)
-		{
-			// If something cannot be closed it was never opened, so it's okay.
-			// Nothing to do here.
-			e.printStackTrace();
-		}
-		LOGGER.info("ServerManager instance closed.");
-	}
+    /**
+     * Calls the {@link #close() close()} method just to be sure everything is closed.
+     */
+    @Override
+    public void finalize() {
+        close();
+    }
 
-	/**
-	 * Connects to an Agent and adds it to the internal list of available agents to work with.
-	 * 
-	 * @param ip
-	 *        address of the agent we want to connect to.
-	 * @param port
-	 *        port that the agent has created it's registry on.
-	 * @throws RemoteException
-	 * @throws NotBoundException
-	 */
-	public void connectToAgent(String ip, int port) throws RemoteException, NotBoundException
-	{
-		String agentId = connectToAndRegisterAgent(ip, port);
-		LOGGER.info("Connection to Agent with address [" + ip + ":" + port + "] established.");
-		publishAllDeviceProxiesForAgent(agentId);
-	}
+    /**
+     * Closes all open resources. <b>MUST BE CALLED WHEN THIS CLASS IS NO LONGER NEEDED.</b>
+     */
+    public void close() {
+        if (connectionRequestReceiver != null) {
+            connectionRequestReceiver.close();
+            connectionRequestReceiver = null;
+        }
+        try {
+            // Close the registry
+            if (rmiRegistry != null) {
+                // unexport the poolItems one by one
+                poolManager.unexportAllPoolItems();
 
-	private String connectToAndRegisterAgent(String ip, int port) throws RemoteException, NotBoundException
-	{
-		// Get the agent rmi stub
-		Registry agentRegistry = LocateRegistry.getRegistry(ip, port);
-		IAgentManager agent = (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
+                // unexport everything else
+                String[] rmiObjectIds = rmiRegistry.list();
+                for (String rmiObjectId : rmiObjectIds) {
+                    Object obj = rmiRegistry.lookup(rmiObjectId);
+                    try {
+                        rmiRegistry.unbind(rmiObjectId);
+                        UnicastRemoteObject.unexportObject((Remote) obj, true);
+                    } catch (NoSuchObjectException e) {
+                        LOGGER.warn("No such object.", e);
+                    }
+                }
+            }
+            UnicastRemoteObject.unexportObject(rmiRegistry, true);
+        } catch (Exception e) {
+            // If something cannot be closed it was never opened, so it's okay.
+            // Nothing to do here.
+            e.printStackTrace();
+        }
+        LOGGER.info("ServerManager instance closed.");
+    }
 
-		// Add the agent stub to the agent lists
-		String agentId = agent.getAgentId();
-		agentManagersId.put(agentId, agent);
-		agentManagerRegistry.put(agent, agentRegistry);
+    /**
+     * Connects to an Agent and adds it to the internal list of available agents to work with.
+     * 
+     * @param ip
+     *        address of the agent we want to connect to.
+     * @param port
+     *        port that the agent has created it's registry on.
+     * @throws RemoteException
+     * @throws NotBoundException
+     */
+    public void connectToAgent(String ip, int port) throws RemoteException, NotBoundException {
+        String agentId = connectToAndRegisterAgent(ip, port);
+        LOGGER.info("Connection to Agent with address [" + ip + ":" + port + "] established.");
+        publishAllDeviceProxiesForAgent(agentId);
+    }
 
-		// Register the server for event notifications
-		String serverIpForAgent = agent.getInvokerIpAddress();
-		agent.registerServer(serverIpForAgent, rmiRegistryPort);
-		return agentId;
-	}
+    private String connectToAndRegisterAgent(String ip, int port) throws RemoteException, NotBoundException {
+        // Get the agent rmi stub
+        Registry agentRegistry = LocateRegistry.getRegistry(ip, port);
+        IAgentManager agent = (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
+        IDeviceManager deviceManager = (IDeviceManager) agentRegistry.lookup(RmiStringConstants.DEVICE_MANAGER.toString());
 
-	private void publishAllDeviceProxiesForAgent(String agentId) throws RemoteException
-	{
-		IAgentManager agent = agentManagersId.get(agentId);
-		List<String> deviceWrappers = agent.getAllDeviceWrappers();
-		Registry agentRegistry = agentManagerRegistry.get(agent);
-		for (String wrapperRmiId : deviceWrappers)
-		{
-			poolManager.addDevice(wrapperRmiId, agentRegistry, agent, rmiRegistryPort);
-		}
-	}
+        // Add the agent stub to the agent lists
+        String agentId = agent.getAgentId();
+        agentManagersId.put(agentId, agent);
+        agentManagerRegistry.put(agent, agentRegistry);
+        deviceManagersId.put(agentId, deviceManager);
+        deviceManagerRegistry.put(deviceManager, agentRegistry);
 
-	/**
-	 * Gets the list of all connected Agent IDs.
-	 * 
-	 * @return List<String> of Agent IDs.
-	 */
-	public List<String> getAllConnectedAgentIds()
-	{
-		List<String> agentIds = new LinkedList<String>();
+        // Register the server for event notifications
+        String serverIpForAgent = agent.getInvokerIpAddress();
+        agent.registerServer(serverIpForAgent, rmiRegistryPort);
+        return agentId;
+    }
 
-		for (Entry<String, IAgentManager> idAgentPair : agentManagersId.entrySet())
-		{
-			String agentId = idAgentPair.getKey();
-			agentIds.add(agentId);
-		}
-		return agentIds;
-	}
+    private void publishAllDeviceProxiesForAgent(String agentId) throws RemoteException {
+        // IAgentManager agent = agentManagersId.get(agentId);
+        IDeviceManager deviceManager = deviceManagersId.get(agentId);
+        List<String> deviceWrappers = deviceManager.getAllDeviceWrappers();
+        // Registry agentRegistry = agentManagerRegistry.get(agent);
+        Registry agentRegistry = deviceManagerRegistry.get(deviceManager);
+        for (String wrapperRmiId : deviceWrappers) {
+            poolManager.addDevice(wrapperRmiId, agentRegistry, deviceManager, rmiRegistryPort);
+        }
+    }
+
+    /**
+     * Gets the list of all connected Agent IDs.
+     * 
+     * @return List<String> of Agent IDs.
+     */
+    public List<String> getAllConnectedAgentIds() {
+        List<String> agentIds = new LinkedList<String>();
+
+        for (Entry<String, IAgentManager> idAgentPair : agentManagersId.entrySet()) {
+            String agentId = idAgentPair.getKey();
+            agentIds.add(agentId);
+        }
+        return agentIds;
+    }
 }

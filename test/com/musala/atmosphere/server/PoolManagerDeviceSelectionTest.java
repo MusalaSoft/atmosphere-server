@@ -18,7 +18,7 @@ import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformatio
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceOs;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
-import com.musala.atmosphere.commons.sa.IAgentManager;
+import com.musala.atmosphere.commons.sa.IDeviceManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.pool.NoAvailableDeviceFoundException;
@@ -47,8 +47,8 @@ public class PoolManagerDeviceSelectionTest {
 
         poolManager = PoolManager.getInstance();
 
-        IAgentManager mockedAgentManager = mock(IAgentManager.class);
-        when(mockedAgentManager.getAgentId()).thenReturn(AGENT_ID);
+        IDeviceManager mockedDeviceManager = mock(IDeviceManager.class);
+        when(mockedDeviceManager.getAgentId()).thenReturn(AGENT_ID);
 
         Registry mockRegistry = mock(Registry.class);
 
@@ -98,10 +98,10 @@ public class PoolManagerDeviceSelectionTest {
         when(mockedDeviceThree.route(eq(RoutingAction.GET_DEVICE_INFORMATION))).thenReturn(mockedDeviceInfoThree);
         when(mockedDeviceFour.route(eq(RoutingAction.GET_DEVICE_INFORMATION))).thenReturn(mockedDeviceInfoFour);
 
-        poolManager.addDevice(DEVICE1_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
-        poolManager.addDevice(DEVICE2_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
-        poolManager.addDevice(DEVICE3_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
-        poolManager.addDevice(DEVICE4_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
+        poolManager.addDevice(DEVICE1_SN, mockRegistry, mockedDeviceManager, POOL_MANAGER_RMI_PORT);
+        poolManager.addDevice(DEVICE2_SN, mockRegistry, mockedDeviceManager, POOL_MANAGER_RMI_PORT);
+        poolManager.addDevice(DEVICE3_SN, mockRegistry, mockedDeviceManager, POOL_MANAGER_RMI_PORT);
+        poolManager.addDevice(DEVICE4_SN, mockRegistry, mockedDeviceManager, POOL_MANAGER_RMI_PORT);
     }
 
     @AfterClass
