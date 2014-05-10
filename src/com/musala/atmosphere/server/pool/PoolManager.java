@@ -20,8 +20,9 @@ import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformatio
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.IClientBuilder;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
-import com.musala.atmosphere.commons.sa.IDeviceManager;
+import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
+import com.musala.atmosphere.commons.sa.exceptions.NoAvailableDeviceFoundException;
 import com.musala.atmosphere.server.DeviceProxy;
 import com.musala.atmosphere.server.PasskeyAuthority;
 import com.musala.atmosphere.server.util.DeviceMatchingComparator;
@@ -124,17 +125,17 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      *        - RMI string identifier for the device wrapper stub on the Agent registry.
      * @param agentRegistry
      *        - the Agent {@link Registry} object that contains the device that will be added.
-     * @param deviceManager
+     * @param agentManager
      *        - the {@link AgentManager AgentManager} that published the {@link IWrapDevice IWrapDevice} we are
      *        wrapping.
      * @param rmiRegistryPort
      *        - RMI registry port in which we will publish the newly created {@link DeviceProxy DeviceProxy} wrapper.
      */
-    public void addDevice(String deviceRmiId, Registry agentRegistry, IDeviceManager deviceManager, int rmiRegistryPort) {
+    public void addDevice(String deviceRmiId, Registry agentRegistry, IAgentManager agentManager, int rmiRegistryPort) {
         try {
             IWrapDevice deviceWrapper = (IWrapDevice) agentRegistry.lookup(deviceRmiId);
 
-            PoolItem poolItem = new PoolItem(deviceRmiId, deviceWrapper, deviceManager, rmiRegistryPort);
+            PoolItem poolItem = new PoolItem(deviceRmiId, deviceWrapper, agentManager, rmiRegistryPort);
             String poolItemRmiId = poolItem.getDeviceProxyRmiBindingIdentifier();
             rmiIdToPoolItem.put(poolItemRmiId, poolItem);
 

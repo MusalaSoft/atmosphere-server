@@ -16,7 +16,6 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.sa.IAgentManager;
-import com.musala.atmosphere.commons.sa.IDeviceManager;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.server.pool.PoolManager;
 
@@ -34,10 +33,6 @@ public class ServerManager {
 
     private Map<IAgentManager, Registry> agentManagerRegistry = new HashMap<IAgentManager, Registry>();
 
-    private Map<String, IDeviceManager> deviceManagersId = new HashMap<String, IDeviceManager>();
-
-    private Map<IDeviceManager, Registry> deviceManagerRegistry = new HashMap<IDeviceManager, Registry>();
-
     private int rmiRegistryPort;
 
     private Registry rmiRegistry;
@@ -53,16 +48,13 @@ public class ServerManager {
             // The agent which sends the event is not registered on server
             LOGGER.warn("Received device state change event from an Agent that is not registered on the server ("
                     + onAgent + ").");
-            return;
         } else {
             // The agent which sends the event is registered to the server
             // TODO make this more complex - what happens if a device that is allocated to a client is disconnected?
             if (isConnected) {
-                // IAgentManager agent = agentManagersId.get(onAgent);
-                IDeviceManager deviceManager = deviceManagersId.get(onAgent);
-                // Registry agentRegistry = agentManagerRegistry.get(agent);
-                Registry agentRegistry = deviceManagerRegistry.get(deviceManager);
-                poolManager.addDevice(changedDeviceRmiId, agentRegistry, deviceManager, rmiRegistryPort);
+                IAgentManager agentManager = agentManagersId.get(onAgent);
+                Registry agentRegistry = agentManagerRegistry.get(agentManager);
+                poolManager.addDevice(changedDeviceRmiId, agentRegistry, agentManager, rmiRegistryPort);
             } else {
                 poolManager.removeDevice(changedDeviceRmiId, onAgent);
             }
@@ -177,14 +169,11 @@ public class ServerManager {
         // Get the agent rmi stub
         Registry agentRegistry = LocateRegistry.getRegistry(ip, port);
         IAgentManager agent = (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
-        IDeviceManager deviceManager = (IDeviceManager) agentRegistry.lookup(RmiStringConstants.DEVICE_MANAGER.toString());
 
         // Add the agent stub to the agent lists
         String agentId = agent.getAgentId();
         agentManagersId.put(agentId, agent);
         agentManagerRegistry.put(agent, agentRegistry);
-        deviceManagersId.put(agentId, deviceManager);
-        deviceManagerRegistry.put(deviceManager, agentRegistry);
 
         // Register the server for event notifications
         String serverIpForAgent = agent.getInvokerIpAddress();
@@ -193,13 +182,11 @@ public class ServerManager {
     }
 
     private void publishAllDeviceProxiesForAgent(String agentId) throws RemoteException {
-        // IAgentManager agent = agentManagersId.get(agentId);
-        IDeviceManager deviceManager = deviceManagersId.get(agentId);
-        List<String> deviceWrappers = deviceManager.getAllDeviceWrappers();
-        // Registry agentRegistry = agentManagerRegistry.get(agent);
-        Registry agentRegistry = deviceManagerRegistry.get(deviceManager);
+        IAgentManager agentManager = agentManagersId.get(agentId);
+        List<String> deviceWrappers = agentManager.getAllDeviceRmiIdentifiers();
+        Registry agentRegistry = agentManagerRegistry.get(agentManager);
         for (String wrapperRmiId : deviceWrappers) {
-            poolManager.addDevice(wrapperRmiId, agentRegistry, deviceManager, rmiRegistryPort);
+            poolManager.addDevice(wrapperRmiId, agentRegistry, agentManager, rmiRegistryPort);
         }
     }
 
