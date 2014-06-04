@@ -106,6 +106,10 @@ public class PoolManagerDeviceSelectionTest {
 
     @AfterClass
     public static void tearDown() throws Exception {
+        poolManager.removeDevice(DEVICE1_SN, AGENT_ID);
+        poolManager.removeDevice(DEVICE2_SN, AGENT_ID);
+        poolManager.removeDevice(DEVICE3_SN, AGENT_ID);
+        poolManager.removeDevice(DEVICE4_SN, AGENT_ID);
         serverManager.close();
     }
 
@@ -113,6 +117,7 @@ public class PoolManagerDeviceSelectionTest {
     public void getNotPresentDevice() throws RemoteException {
         DeviceParameters parameters = new DeviceParameters();
         parameters.setOs(DeviceOs.JELLY_BEAN_MR1_4_2_1);
+        parameters.setDeviceType(DeviceType.DEVICE_ONLY);
         parameters.setRam(256);
 
         poolManager.allocateDevice(parameters);

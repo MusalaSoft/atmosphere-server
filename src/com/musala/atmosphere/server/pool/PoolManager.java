@@ -1,5 +1,6 @@
 package com.musala.atmosphere.server.pool;
 
+import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
@@ -18,26 +19,37 @@ import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
+import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
 import com.musala.atmosphere.commons.cs.clientbuilder.IClientBuilder;
+import com.musala.atmosphere.commons.cs.exception.EmulatorCreationFailedException;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
+import com.musala.atmosphere.commons.sa.EmulatorParameters;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
+import com.musala.atmosphere.commons.sa.exceptions.DeviceNotFoundException;
 import com.musala.atmosphere.commons.sa.exceptions.NoAvailableDeviceFoundException;
+import com.musala.atmosphere.commons.sa.exceptions.TimeoutReachedException;
+import com.musala.atmosphere.server.AgentAllocator;
 import com.musala.atmosphere.server.DeviceProxy;
 import com.musala.atmosphere.server.PasskeyAuthority;
 import com.musala.atmosphere.server.util.DeviceMatchingComparator;
+import com.musala.atmosphere.server.util.EmulatorToDeviceParametersConverter;
+import com.musala.atmosphere.server.util.ServerPropertiesLoader;
 
 public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
-    /**
-     * auto-generated serialization id
-     */
     private static final long serialVersionUID = -5077918124351182199L;
+
+    private static final long EMULATOR_CREATION_TIMEOUT = ServerPropertiesLoader.getEmulatorCreationTimeout();
+
+    private static final long POOL_ITEM_WAIT_INTERVAL = 1000;
 
     private static Logger LOGGER = Logger.getLogger(PoolManager.class.getCanonicalName());
 
     private static PoolManager poolManagerInstance = null;
 
     private HashMap<String, PoolItem> rmiIdToPoolItem = new HashMap<String, PoolItem>();
+
+    private AgentAllocator agentAllocator = new AgentAllocator();
 
     private PoolManager() throws RemoteException {
     }
@@ -161,11 +173,17 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
         }
     }
 
-    @Override
-    public synchronized DeviceAllocationInformation allocateDevice(DeviceParameters deviceParameters)
-        throws RemoteException {
+    /**
+     * Gets a {@link DeviceInformation}, {@link PoolItem} mapping of all {@link PoolItem}s matching given
+     * {@link DeviceParameters}.
+     * 
+     * @param deviceParameters
+     *        - the {@link DeviceParameters} that will be used for comparison.
+     * @returna {@link DeviceInformation}, {@link PoolItem} mapping of all {@link PoolItem}s matching given
+     *          {@link DeviceParameters}.
+     */
+    private Map<DeviceInformation, PoolItem> getFreePoolItemsMatchingParameters(DeviceParameters deviceParameters) {
         Map<DeviceInformation, PoolItem> freePoolItemsDeviceInfoMap = new HashMap<DeviceInformation, PoolItem>();
-        List<DeviceInformation> freePoolItemsDeviceInfoList = new ArrayList<DeviceInformation>();
         for (PoolItem poolItem : rmiIdToPoolItem.values()) {
             if (poolItem.isAvailable()) {
                 DeviceInformation poolItemDeviceInformation = poolItem.getUnderlyingDeviceInformation();
@@ -175,31 +193,61 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
                 }
 
                 freePoolItemsDeviceInfoMap.put(poolItemDeviceInformation, poolItem);
-                freePoolItemsDeviceInfoList.add(poolItemDeviceInformation);
             }
         }
 
-        if (freePoolItemsDeviceInfoList.size() == 0) {
-            // TODO add logic behind device creation
-            LOGGER.warn("No available devices found.");
+        return freePoolItemsDeviceInfoMap;
+    }
+
+    /**
+     * Gets the {@link PoolItem} with highest match score for given {@link DeviceParameters}.
+     * 
+     * @param deviceParameters
+     *        - the {@link DeviceParameters} that will be used for comparison.
+     * @return the {@link PoolItem} with highest match score for given {@link DeviceParameters}.
+     */
+    private PoolItem getBestMatchingFreePoolItem(DeviceParameters deviceParameters) {
+        Map<DeviceInformation, PoolItem> freePoolItemsDeviceInfoMap = getFreePoolItemsMatchingParameters(deviceParameters);
+        PoolItem bestMatchingPoolItem = null;
+
+        if (!freePoolItemsDeviceInfoMap.isEmpty()) {
+            DeviceMatchingComparator matchComparator = new DeviceMatchingComparator(deviceParameters);
+
+            DeviceInformation bestMatchDeviceInformation = null;
+            try {
+                bestMatchDeviceInformation = Collections.max(freePoolItemsDeviceInfoMap.keySet(), matchComparator);
+                bestMatchingPoolItem = freePoolItemsDeviceInfoMap.get(bestMatchDeviceInformation);
+            } catch (NoSuchElementException e) {
+                // Nothing to do here
+            }
         }
 
-        DeviceMatchingComparator matchComparator = new DeviceMatchingComparator(deviceParameters);
+        return bestMatchingPoolItem;
+    }
 
-        DeviceInformation bestMatchDeviceInformation = null;
-        try {
-            bestMatchDeviceInformation = Collections.max(freePoolItemsDeviceInfoList, matchComparator);
-        } catch (NoSuchElementException e) {
-            LOGGER.info("No available device found.");
-            throw new NoAvailableDeviceFoundException("No available device found.");
+    @Override
+    public synchronized DeviceAllocationInformation allocateDevice(DeviceParameters deviceParameters)
+        throws RemoteException {
+        // TODO: refactor synchronization.
+        DeviceType deviceType = deviceParameters.getDeviceType();
+        boolean isDeviceOnly = deviceType == DeviceType.DEVICE_ONLY;
+        PoolItem bestMatchingPoolItem = getBestMatchingFreePoolItem(deviceParameters);
+        boolean isBestMatchingPoolItemNull = bestMatchingPoolItem == null;
 
+        if (isBestMatchingPoolItemNull && isDeviceOnly) {
+            String message = "No available device found.";
+            LOGGER.info(message);
+            throw new NoAvailableDeviceFoundException(message);
         }
 
-        PoolItem bestMatchPoolItem = freePoolItemsDeviceInfoMap.get(bestMatchDeviceInformation);
-        String bestMatchDeviceProxyRmiId = bestMatchPoolItem.getDeviceProxyRmiBindingIdentifier();
+        if (isBestMatchingPoolItemNull) {
+            LOGGER.info("No available device found. Starting an emulator device...");
+            bestMatchingPoolItem = createEmulator(deviceParameters);
+        }
 
-        bestMatchPoolItem.setAvailability(false);
-        DeviceProxy selectedPoolItemDeviceProxy = bestMatchPoolItem.getUnderlyingDeviceProxy();
+        String bestMatchDeviceProxyRmiId = bestMatchingPoolItem.getDeviceProxyRmiBindingIdentifier();
+        bestMatchingPoolItem.setAvailability(false);
+        DeviceProxy selectedPoolItemDeviceProxy = bestMatchingPoolItem.getUnderlyingDeviceProxy();
         long devicePasskey = PasskeyAuthority.getInstance().getPasskey(selectedPoolItemDeviceProxy);
 
         DeviceAllocationInformation allocatedDeviceDescriptor = new DeviceAllocationInformation(bestMatchDeviceProxyRmiId,
@@ -284,5 +332,76 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
         List<String> deviceProxyIds = new ArrayList<String>();
         deviceProxyIds.addAll(rmiIdToPoolItem.keySet());
         return deviceProxyIds;
+    }
+
+    private String waitForPoolItemExists(String serialNumber, long timeout) throws TimeoutReachedException {
+        while (timeout > 0) {
+            for (Entry<String, PoolItem> currentRmiIdPoolItemEntry : rmiIdToPoolItem.entrySet()) {
+                String currentRmiId = currentRmiIdPoolItemEntry.getKey();
+                PoolItem currentPoolItem = currentRmiIdPoolItemEntry.getValue();
+                DeviceInformation currentPoolItemInformation = currentPoolItem.getUnderlyingDeviceInformation();
+                String currentPoolItemSerial = currentPoolItemInformation.getSerialNumber();
+                if (serialNumber.equals(currentPoolItemSerial)) {
+                    return currentRmiId;
+                }
+            }
+            try {
+                Thread.sleep(POOL_ITEM_WAIT_INTERVAL);
+                timeout -= POOL_ITEM_WAIT_INTERVAL;
+            } catch (InterruptedException e) {
+                // Nothing to do here
+            }
+        }
+
+        throw new TimeoutReachedException();
+    }
+
+    /**
+     * Creates an emulator device matching the given {@link DeviceParameters} to be published to the server.
+     * 
+     * @param deviceParameters
+     *        - {@link DeviceParameters} that will be used for emulator creation.
+     * @return a {@link PoolItem} representing the created emulator device.
+     * @throws EmulatorCreationFailedException
+     */
+    private PoolItem createEmulator(DeviceParameters deviceParameters) throws EmulatorCreationFailedException {
+        IAgentManager agentManager = agentAllocator.getAgent();
+        EmulatorParameters emulatorParameters = EmulatorToDeviceParametersConverter.convert(deviceParameters);
+
+        // TODO: think of a better logic here.
+        // TODO: extract this logic.
+        long waitForEmulatorExistsTimeout = EMULATOR_CREATION_TIMEOUT * 5 / 30;
+        long waitForDeviceExistsTimeout = EMULATOR_CREATION_TIMEOUT * 4 / 5;
+        long waitForPoolItemExistsTimeout = EMULATOR_CREATION_TIMEOUT * 1 / 30;
+
+        String errorMessage = null;
+        try {
+            errorMessage = "Emulator creation failed.";
+            String emulatorName = agentManager.createAndStartEmulator(emulatorParameters);
+            LOGGER.info("Created emulator device with name " + emulatorName);
+
+            LOGGER.info("Waiting for emulator process to start...");
+            errorMessage = "Emulator wait timeout reached.";
+            agentManager.waitForEmulatorExists(emulatorName, waitForEmulatorExistsTimeout);
+            LOGGER.info("Emulator process started.");
+
+            errorMessage = "Getting serial number of created emulator failed.";
+            String serialNumber = agentManager.getSerialNumberOfEmulator(emulatorName);
+
+            LOGGER.info("Waiting for emulator to be wrapped...");
+            errorMessage = "Emulator wrapping wait timeout reached.";
+            agentManager.waitForDeviceExists(serialNumber, waitForDeviceExistsTimeout);
+            LOGGER.info("Emulator device wrapped.");
+
+            LOGGER.info("Waiting for emulator wrapper to be published to server...");
+            errorMessage = "Emulator server publishing wait timeout reached.";
+            String rmiId = waitForPoolItemExists(serialNumber, waitForPoolItemExistsTimeout);
+            LOGGER.info("Emulator wrapped published to server.");
+
+            return rmiIdToPoolItem.get(rmiId);
+        } catch (IOException | TimeoutReachedException | DeviceNotFoundException e) {
+            LOGGER.fatal(errorMessage, e);
+            throw new EmulatorCreationFailedException(errorMessage, e);
+        }
     }
 }

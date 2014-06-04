@@ -7,16 +7,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
+import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.pool.PoolManager;
 
 /**
@@ -29,9 +26,7 @@ public class ServerManager {
 
     private static Logger LOGGER = Logger.getLogger(ServerManager.class.getCanonicalName());
 
-    private Map<String, IAgentManager> agentManagersId = new HashMap<String, IAgentManager>();
-
-    private Map<IAgentManager, Registry> agentManagerRegistry = new HashMap<IAgentManager, Registry>();
+    private AgentAllocator agentAllocator = new AgentAllocator();
 
     private int rmiRegistryPort;
 
@@ -44,7 +39,7 @@ public class ServerManager {
     private PoolManager poolManager = PoolManager.getInstance();
 
     void onAgentDeviceListChanged(String onAgent, String changedDeviceRmiId, boolean isConnected) {
-        if (!agentManagersId.containsKey(onAgent)) {
+        if (!agentAllocator.hasAgent(onAgent)) {
             // The agent which sends the event is not registered on server
             LOGGER.warn("Received device state change event from an Agent that is not registered on the server ("
                     + onAgent + ").");
@@ -52,8 +47,9 @@ public class ServerManager {
             // The agent which sends the event is registered to the server
             // TODO make this more complex - what happens if a device that is allocated to a client is disconnected?
             if (isConnected) {
-                IAgentManager agentManager = agentManagersId.get(onAgent);
-                Registry agentRegistry = agentManagerRegistry.get(agentManager);
+                Pair<IAgentManager, Registry> agentRegistryPair = agentAllocator.getAgentRegistryPair(onAgent);
+                IAgentManager agentManager = agentRegistryPair.getKey();
+                Registry agentRegistry = agentRegistryPair.getValue();
                 poolManager.addDevice(changedDeviceRmiId, agentRegistry, agentManager, rmiRegistryPort);
             } else {
                 poolManager.removeDevice(changedDeviceRmiId, onAgent);
@@ -171,20 +167,19 @@ public class ServerManager {
         IAgentManager agent = (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
 
         // Add the agent stub to the agent lists
-        String agentId = agent.getAgentId();
-        agentManagersId.put(agentId, agent);
-        agentManagerRegistry.put(agent, agentRegistry);
+        agentAllocator.registerAgent(agent, agentRegistry);
 
         // Register the server for event notifications
         String serverIpForAgent = agent.getInvokerIpAddress();
         agent.registerServer(serverIpForAgent, rmiRegistryPort);
-        return agentId;
+        return agent.getAgentId();
     }
 
     private void publishAllDeviceProxiesForAgent(String agentId) throws RemoteException {
-        IAgentManager agentManager = agentManagersId.get(agentId);
+        Pair<IAgentManager, Registry> agentRegistryPair = agentAllocator.getAgentRegistryPair(agentId);
+        IAgentManager agentManager = agentRegistryPair.getKey();
         List<String> deviceWrappers = agentManager.getAllDeviceRmiIdentifiers();
-        Registry agentRegistry = agentManagerRegistry.get(agentManager);
+        Registry agentRegistry = agentRegistryPair.getValue();
         for (String wrapperRmiId : deviceWrappers) {
             poolManager.addDevice(wrapperRmiId, agentRegistry, agentManager, rmiRegistryPort);
         }
@@ -196,12 +191,6 @@ public class ServerManager {
      * @return List<String> of Agent IDs.
      */
     public List<String> getAllConnectedAgentIds() {
-        List<String> agentIds = new LinkedList<String>();
-
-        for (Entry<String, IAgentManager> idAgentPair : agentManagersId.entrySet()) {
-            String agentId = idAgentPair.getKey();
-            agentIds.add(agentId);
-        }
-        return agentIds;
+        return agentAllocator.getAllConnectedAgentsIds();
     }
 }
