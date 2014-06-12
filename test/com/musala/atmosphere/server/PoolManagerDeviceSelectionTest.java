@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -25,6 +27,7 @@ import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.pool.PoolManager;
 
 public class PoolManagerDeviceSelectionTest {
+
     private final static int POOL_MANAGER_RMI_PORT = 1234;
 
     private final static String AGENT_ID = "mockagent";
@@ -37,6 +40,8 @@ public class PoolManagerDeviceSelectionTest {
 
     private final static String DEVICE4_SN = "mockdevice4";
 
+    private static final String DEVICE5_SN = "mockdevice5";
+
     private static ServerManager serverManager;
 
     private static PoolManager poolManager;
@@ -44,22 +49,12 @@ public class PoolManagerDeviceSelectionTest {
     @BeforeClass
     public static void setUp() throws Exception {
         serverManager = new ServerManager(POOL_MANAGER_RMI_PORT);
-
         poolManager = PoolManager.getInstance();
 
         IAgentManager mockedAgentManager = mock(IAgentManager.class);
         when(mockedAgentManager.getAgentId()).thenReturn(AGENT_ID);
 
         Registry mockRegistry = mock(Registry.class);
-
-        IWrapDevice mockedDeviceOne = mock(IWrapDevice.class);
-        IWrapDevice mockedDeviceTwo = mock(IWrapDevice.class);
-        IWrapDevice mockedDeviceThree = mock(IWrapDevice.class);
-        IWrapDevice mockedDeviceFour = mock(IWrapDevice.class);
-        when(mockRegistry.lookup(DEVICE1_SN)).thenReturn(mockedDeviceOne);
-        when(mockRegistry.lookup(DEVICE2_SN)).thenReturn(mockedDeviceTwo);
-        when(mockRegistry.lookup(DEVICE3_SN)).thenReturn(mockedDeviceThree);
-        when(mockRegistry.lookup(DEVICE4_SN)).thenReturn(mockedDeviceFour);
 
         DeviceInformation mockedDeviceInfoOne = new DeviceInformation();
         mockedDeviceInfoOne.setSerialNumber(DEVICE1_SN);
@@ -92,16 +87,36 @@ public class PoolManagerDeviceSelectionTest {
         mockedDeviceInfoFour.setRam(512);
         mockedDeviceInfoFour.setResolution(new Pair<>(200, 200));
         mockedDeviceInfoFour.setDpi(180);
+        mockedDeviceInfoFour.setCamera(true);
 
-        when(mockedDeviceOne.route(eq(RoutingAction.GET_DEVICE_INFORMATION))).thenReturn(mockedDeviceInfoOne);
-        when(mockedDeviceTwo.route(eq(RoutingAction.GET_DEVICE_INFORMATION))).thenReturn(mockedDeviceInfoTwo);
-        when(mockedDeviceThree.route(eq(RoutingAction.GET_DEVICE_INFORMATION))).thenReturn(mockedDeviceInfoThree);
-        when(mockedDeviceFour.route(eq(RoutingAction.GET_DEVICE_INFORMATION))).thenReturn(mockedDeviceInfoFour);
+        DeviceInformation mockedDeviceInfoFive = new DeviceInformation();
+        mockedDeviceInfoFive.setSerialNumber(DEVICE5_SN);
+        mockedDeviceInfoFive.setOs("4.3.1");
+        mockedDeviceInfoFive.setEmulator(true);
+        mockedDeviceInfoFive.setRam(0x7fffffff); // MAX_INT
+        mockedDeviceInfoFive.setResolution(new Pair<>(123, 456));
+        mockedDeviceInfoFive.setDpi(314);
+        mockedDeviceInfoFive.setCamera(false);
 
-        poolManager.addDevice(DEVICE1_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
-        poolManager.addDevice(DEVICE2_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
-        poolManager.addDevice(DEVICE3_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
-        poolManager.addDevice(DEVICE4_SN, mockRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
+        List<DeviceInformation> deviceInfos = Arrays.asList(mockedDeviceInfoOne,
+                                                            mockedDeviceInfoTwo,
+                                                            mockedDeviceInfoThree,
+                                                            mockedDeviceInfoFour,
+                                                            mockedDeviceInfoFive);
+        for (DeviceInformation aDeviceInfo : deviceInfos) {
+            registerMockedDevice(aDeviceInfo, AGENT_ID, mockedAgentManager, mockRegistry);
+        }
+    }
+
+    public static void registerMockedDevice(DeviceInformation mockDevInfo,
+                                            String agentId,
+                                            IAgentManager mockedAgentManager,
+                                            Registry mockedRegistry) throws Exception {
+        IWrapDevice mockedDevice = mock(IWrapDevice.class);
+        String deviceId = mockDevInfo.getSerialNumber();
+        when(mockedRegistry.lookup(deviceId)).thenReturn(mockedDevice);
+        when(mockedDevice.route(eq(RoutingAction.GET_DEVICE_INFORMATION))).thenReturn(mockDevInfo);
+        poolManager.addDevice(deviceId, mockedRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
     }
 
     @AfterClass
@@ -110,6 +125,7 @@ public class PoolManagerDeviceSelectionTest {
         poolManager.removeDevice(DEVICE2_SN, AGENT_ID);
         poolManager.removeDevice(DEVICE3_SN, AGENT_ID);
         poolManager.removeDevice(DEVICE4_SN, AGENT_ID);
+        poolManager.removeDevice(DEVICE5_SN, AGENT_ID);
         serverManager.close();
     }
 
@@ -129,9 +145,8 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setRam(128);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        String rmiId = deviceDescriptor.getProxyRmiId();
-        assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
         poolManager.releaseDevice(deviceDescriptor);
+        assertCorrectDeviceFetched(DEVICE1_SN, deviceDescriptor);
     }
 
     @Test
@@ -142,9 +157,8 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setResolutionWidth(800);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        String rmiId = deviceDescriptor.getProxyRmiId();
-        assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
         poolManager.releaseDevice(deviceDescriptor);
+        assertCorrectDeviceFetched(DEVICE1_SN, deviceDescriptor);
     }
 
     @Test
@@ -153,9 +167,8 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setRam(128);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        String rmiId = deviceDescriptor.getProxyRmiId();
-        assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE1_SN, rmiId);
         poolManager.releaseDevice(deviceDescriptor);
+        assertCorrectDeviceFetched(DEVICE1_SN, deviceDescriptor);
     }
 
     @Test
@@ -164,9 +177,8 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setDpi(240);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        String rmiId = deviceDescriptor.getProxyRmiId();
         poolManager.releaseDevice(deviceDescriptor);
-        assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE2_SN, rmiId);
+        assertCorrectDeviceFetched(DEVICE2_SN, deviceDescriptor);
     }
 
     @Test
@@ -176,9 +188,8 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setRam(512);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        String rmiId = deviceDescriptor.getProxyRmiId();
         poolManager.releaseDevice(deviceDescriptor);
-        assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE3_SN, rmiId);
+        assertCorrectDeviceFetched(DEVICE3_SN, deviceDescriptor);
     }
 
     @Test
@@ -188,9 +199,45 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setDpi(180);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        String rmiId = deviceDescriptor.getProxyRmiId();
         poolManager.releaseDevice(deviceDescriptor);
-        assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + DEVICE4_SN, rmiId);
+        assertCorrectDeviceFetched(DEVICE4_SN, deviceDescriptor);
+    }
+
+    @Test
+    public void getPresentDeviceWithCamera() throws Exception {
+        DeviceParameters parameters = new DeviceParameters();
+        parameters.setDeviceType(DeviceType.EMULATOR_ONLY);
+        parameters.setCameraPresent(true);
+
+        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+        poolManager.releaseDevice(deviceDescriptor);
+        assertCorrectDeviceFetched(DEVICE4_SN, deviceDescriptor);
+    }
+
+    @Test
+    public void getPresentDeviceWithoutCamera() throws Exception {
+        DeviceParameters parameters = new DeviceParameters();
+        parameters.setCameraPresent(false);
+
+        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+        poolManager.releaseDevice(deviceDescriptor);
+        assertCorrectDeviceFetched(DEVICE5_SN, deviceDescriptor);
+    }
+
+    @Test(expected = NoAvailableDeviceFoundException.class)
+    public void getMissingDeviceWithCamera() throws Exception {
+        DeviceParameters parameters = new DeviceParameters();
+        parameters.setDeviceType(DeviceType.DEVICE_ONLY);
+        parameters.setDpi(0xdeadbeef);
+        parameters.setCameraPresent(true);
+
+        poolManager.allocateDevice(parameters);
+    }
+
+    private void assertCorrectDeviceFetched(String expectedDeviceSN,
+                                            DeviceAllocationInformation allocatedDeviceInformation) {
+        String deviceRmiID = allocatedDeviceInformation.getProxyRmiId();
+        assertEquals("Failed to receive RMI ID of the correct device.", AGENT_ID + "_" + expectedDeviceSN, deviceRmiID);
     }
 
 }
