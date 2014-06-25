@@ -3,6 +3,12 @@
     <import file="../common-build.xml"/>
 
     <property name="dependency.projects" value="AtmosphereCommons,AtmosphereSACommons,AtmosphereCSCommons"/>
+	
+	<!--
+		Properties needed for the packing of an executable jar
+		file of the project
+	-->
+	<property name="project.main.class" value="com.musala.atmosphere.server.Server"/>
 
     <target name="init-tests">
         <mkdir dir="${testclasses.dir}"/>
@@ -13,4 +19,7 @@
         </copy>
         <copy file="${server.properties.file}" todir="${tests.run.dir}"/>
     </target>
+	
+	<!-- Overriding the default jar target to create an executable jar -->
+	<target name="jar" depends="create-executable-jar"/>
 </project>
