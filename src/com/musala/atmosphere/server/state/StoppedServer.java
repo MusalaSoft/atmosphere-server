@@ -9,30 +9,25 @@ import com.musala.atmosphere.server.Server;
  * @author vladimir.vladimirov
  * 
  */
-public class StoppedServer extends ServerState
-{
-	private static final String SERVER_NOT_RUNNING_MESSAGE = "Invalid command: server not running.";
+public class StoppedServer extends ServerState {
+    private static final String SERVER_NOT_RUNNING_MESSAGE = "Invalid command: server not running.";
 
-	public StoppedServer(Server server, ConsoleControl serverConsole)
-	{
-		super(server, serverConsole);
-	}
+    public StoppedServer(Server server, ConsoleControl serverConsole) {
+        super(server, serverConsole);
+    }
 
-	public StoppedServer(Server server)
-	{
-		this(server, new ConsoleControl());
-	}
+    public StoppedServer(Server server) {
+        this(server, new ConsoleControl());
+    }
 
-	@Override
-	public void run()
-	{
-		server.setState(new RunningServer(server, serverConsole));
-	}
+    @Override
+    public void run() {
+        server.setState(new RunningServer(server, serverConsole));
+    }
 
-	@Override
-	public void stop()
-	{
-		server.writeLineToConsole(SERVER_NOT_RUNNING_MESSAGE);
-	}
+    @Override
+    public void stop() {
+        server.writeLineToConsole(SERVER_NOT_RUNNING_MESSAGE);
+    }
 
 }

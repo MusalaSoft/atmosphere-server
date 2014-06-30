@@ -7,16 +7,13 @@ import com.musala.atmosphere.server.Server;
  * 
  * @author vladimir.vladimirov
  */
-public class ExitCommand extends NoParamsServerCommand
-{
-	public ExitCommand(Server server)
-	{
-		super(server);
-	}
+public class ExitCommand extends NoParamsServerCommand {
+    public ExitCommand(Server server) {
+        super(server);
+    }
 
-	@Override
-	protected void executeCommand(String[] params)
-	{
-		server.exit();
-	}
+    @Override
+    protected void executeCommand(String[] params) {
+        server.exit();
+    }
 }

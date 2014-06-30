@@ -9,34 +9,28 @@ import org.junit.Test;
 
 import com.musala.atmosphere.server.Server;
 
-public class NoParamsServerTest
-{
-	private ServerCommand noParamsCommand;
+public class NoParamsServerTest {
+    private ServerCommand noParamsCommand;
 
-	@Before
-	public void setUp()
-	{
-		Server innerServerMock = mock(Server.class);
-		noParamsCommand = new NoParamsServerCommand(innerServerMock)
-		{
-			@Override
-			protected void executeCommand(String[] params)
-			{
-			}
-		};
-	}
+    @Before
+    public void setUp() {
+        Server innerServerMock = mock(Server.class);
+        noParamsCommand = new NoParamsServerCommand(innerServerMock) {
+            @Override
+            protected void executeCommand(String[] params) {
+            }
+        };
+    }
 
-	@Test
-	public void testVerifyParamsWithValidParams()
-	{
-		assertTrue(noParamsCommand.verifyParams(new String[] {}));
-		assertTrue(noParamsCommand.verifyParams(null));
-	}
+    @Test
+    public void testVerifyParamsWithValidParams() {
+        assertTrue(noParamsCommand.verifyParams(new String[] {}));
+        assertTrue(noParamsCommand.verifyParams(null));
+    }
 
-	@Test
-	public void testVerifyParamsWithInvalidParams()
-	{
-		assertFalse(noParamsCommand.verifyParams(new String[] {""}));
-		assertFalse(noParamsCommand.verifyParams(new String[] {"1", "2"}));
-	}
+    @Test
+    public void testVerifyParamsWithInvalidParams() {
+        assertFalse(noParamsCommand.verifyParams(new String[] {""}));
+        assertFalse(noParamsCommand.verifyParams(new String[] {"1", "2"}));
+    }
 }

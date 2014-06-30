@@ -4,14 +4,12 @@ import static org.junit.Assert.assertNotSame;
 
 import org.junit.Test;
 
-public class ServerPropertiesLoaderTest
-{
+public class ServerPropertiesLoaderTest {
 
-	@Test
-	public void test()
-	{
-		int poolManagerPort = 0;
-		poolManagerPort = ServerPropertiesLoader.getPoolManagerRmiPort();
-		assertNotSame("Returns property.", 0, poolManagerPort);
-	}
+    @Test
+    public void test() {
+        int poolManagerPort = 0;
+        poolManagerPort = ServerPropertiesLoader.getPoolManagerRmiPort();
+        assertNotSame("Returns property.", 0, poolManagerPort);
+    }
 }

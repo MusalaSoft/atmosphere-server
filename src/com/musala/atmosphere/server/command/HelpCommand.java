@@ -11,26 +11,21 @@ import com.musala.atmosphere.server.Server;
  * @author vladimir.vladimirov
  * 
  */
-public class HelpCommand extends NoParamsServerCommand
-{
-	public HelpCommand(Server server)
-	{
-		super(server);
-	}
+public class HelpCommand extends NoParamsServerCommand {
+    public HelpCommand(Server server) {
+        super(server);
+    }
 
-	/**
-	 * Prints information about every single command on the Server that can be executed.
-	 */
-	@Override
-	protected void executeCommand(String[] params)
-	{
-		List<String> listOfCommands = ServerConsoleCommands.getListOfCommands();
-		if (listOfCommands != null)
-		{
-			for (String serverConsoleCommand : listOfCommands)
-			{
-				server.writeLineToConsole(serverConsoleCommand);
-			}
-		}
-	}
+    /**
+     * Prints information about every single command on the Server that can be executed.
+     */
+    @Override
+    protected void executeCommand(String[] params) {
+        List<String> listOfCommands = ServerConsoleCommands.getListOfCommands();
+        if (listOfCommands != null) {
+            for (String serverConsoleCommand : listOfCommands) {
+                server.writeLineToConsole(serverConsoleCommand);
+            }
+        }
+    }
 }

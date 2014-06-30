@@ -9,27 +9,24 @@ import org.junit.Test;
 
 import com.musala.atmosphere.server.Server;
 
-public class RunCommandTest
-{
-	private Server innerServerMock;
+public class RunCommandTest {
+    private Server innerServerMock;
 
-	private ServerCommand runCommand;
+    private ServerCommand runCommand;
 
-	private String[] emptyArray;
+    private String[] emptyArray;
 
-	@Before
-	public void setUp()
-	{
-		innerServerMock = mock(Server.class);
-		runCommand = new RunCommand(innerServerMock);
-		emptyArray = new String[] {};
-	}
+    @Before
+    public void setUp() {
+        innerServerMock = mock(Server.class);
+        runCommand = new RunCommand(innerServerMock);
+        emptyArray = new String[] {};
+    }
 
-	@Test
-	public void testExecuteCommand()
-	{
-		runCommand.execute(emptyArray);
+    @Test
+    public void testExecuteCommand() {
+        runCommand.execute(emptyArray);
 
-		verify(innerServerMock, times(1)).run();
-	}
+        verify(innerServerMock, times(1)).run();
+    }
 }

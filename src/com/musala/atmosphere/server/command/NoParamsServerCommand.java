@@ -8,20 +8,16 @@ import com.musala.atmosphere.server.Server;
  * @author vladimir.vladimirov
  * 
  */
-public abstract class NoParamsServerCommand extends ServerCommand
-{
-	public NoParamsServerCommand(Server server)
-	{
-		super(server);
-	}
+public abstract class NoParamsServerCommand extends ServerCommand {
+    public NoParamsServerCommand(Server server) {
+        super(server);
+    }
 
-	@Override
-	protected boolean verifyParams(String[] params)
-	{
-		if (params != null && params.length != 0)
-		{
-			return false;
-		}
-		return true;
-	}
+    @Override
+    protected boolean verifyParams(String[] params) {
+        if (params != null && params.length != 0) {
+            return false;
+        }
+        return true;
+    }
 }

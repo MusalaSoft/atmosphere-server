@@ -8,16 +8,13 @@ import com.musala.atmosphere.server.Server;
  * @author vladimir.vladimirov
  * 
  */
-public class RunCommand extends NoParamsServerCommand
-{
-	public RunCommand(Server server)
-	{
-		super(server);
-	}
+public class RunCommand extends NoParamsServerCommand {
+    public RunCommand(Server server) {
+        super(server);
+    }
 
-	@Override
-	public void executeCommand(String[] params)
-	{
-		server.run();
-	}
+    @Override
+    public void executeCommand(String[] params) {
+        server.run();
+    }
 }

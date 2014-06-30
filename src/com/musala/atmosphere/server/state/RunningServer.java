@@ -12,59 +12,49 @@ import com.musala.atmosphere.server.Server;
  * @author vladimir.vladimirov
  * 
  */
-public class RunningServer extends ServerState
-{
-	private static final Logger LOGGER = Logger.getLogger(RunningServer.class.getCanonicalName());
+public class RunningServer extends ServerState {
+    private static final Logger LOGGER = Logger.getLogger(RunningServer.class.getCanonicalName());
 
-	private static final String SERVER_ALREADY_RUNNING_ERROR = "Command invalid: Server already running.";
+    private static final String SERVER_ALREADY_RUNNING_ERROR = "Command invalid: Server already running.";
 
-	private Thread serverThread;
+    private Thread serverThread;
 
-	private boolean isRunning;
+    private boolean isRunning;
 
-	public RunningServer(Server server, ConsoleControl serverConsole)
-	{
-		super(server, serverConsole);
-		InnerRunThread innerThread = new InnerRunThread();
-		serverThread = new Thread(innerThread, "ServerRunningWaitThread");
-		serverThread.start();
+    public RunningServer(Server server, ConsoleControl serverConsole) {
+        super(server, serverConsole);
+        InnerRunThread innerThread = new InnerRunThread();
+        serverThread = new Thread(innerThread, "ServerRunningWaitThread");
+        serverThread.start();
 
-		isRunning = true;
-	}
+        isRunning = true;
+    }
 
-	@Override
-	public void run()
-	{
-		LOGGER.warn(SERVER_ALREADY_RUNNING_ERROR);
-	}
+    @Override
+    public void run() {
+        LOGGER.warn(SERVER_ALREADY_RUNNING_ERROR);
+    }
 
-	@Override
-	public void stop()
-	{
-		server.setState(new StoppedServer(server, serverConsole));
-		isRunning = false;
-	}
+    @Override
+    public void stop() {
+        server.setState(new StoppedServer(server, serverConsole));
+        isRunning = false;
+    }
 
-	private class InnerRunThread implements Runnable
-	{
-		@Override
-		public void run()
-		{
-			LOGGER.info("Running Server...");
-			while (isRunning)
-			{
-				try
-				{
-					// we must make sure the server thread is not stopped until we say so
-					Thread.sleep(1000);
-				}
-				catch (InterruptedException e)
-				{
-					LOGGER.warn("Server wait thread was interrupted.", e);
-					server.exit();
-					break;
-				}
-			}
-		}
-	}
+    private class InnerRunThread implements Runnable {
+        @Override
+        public void run() {
+            LOGGER.info("Running Server...");
+            while (isRunning) {
+                try {
+                    // we must make sure the server thread is not stopped until we say so
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    LOGGER.warn("Server wait thread was interrupted.", e);
+                    server.exit();
+                    break;
+                }
+            }
+        }
+    }
 }

@@ -9,27 +9,24 @@ import org.junit.Test;
 
 import com.musala.atmosphere.server.Server;
 
-public class ExitCommandTest
-{
-	private Server innerServerMock;
+public class ExitCommandTest {
+    private Server innerServerMock;
 
-	private ServerCommand stopCommand;
+    private ServerCommand stopCommand;
 
-	private String[] emptyArray;
+    private String[] emptyArray;
 
-	@Before
-	public void setUp()
-	{
-		innerServerMock = mock(Server.class);
-		stopCommand = new ExitCommand(innerServerMock);
-		emptyArray = new String[] {};
-	}
+    @Before
+    public void setUp() {
+        innerServerMock = mock(Server.class);
+        stopCommand = new ExitCommand(innerServerMock);
+        emptyArray = new String[] {};
+    }
 
-	@Test
-	public void testExecuteCommand()
-	{
-		stopCommand.execute(emptyArray);
+    @Test
+    public void testExecuteCommand() {
+        stopCommand.execute(emptyArray);
 
-		verify(innerServerMock, times(1)).exit();
-	}
+        verify(innerServerMock, times(1)).exit();
+    }
 }

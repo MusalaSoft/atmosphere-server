@@ -10,25 +10,22 @@ import com.musala.atmosphere.commons.sa.IAgentEventSender;
  * @author georgi.gaydarov
  * 
  */
-public class AgentEventSender extends UnicastRemoteObject implements IAgentEventSender
-{
-	/**
-	 * auto-generated serialization version id.
-	 */
-	private static final long serialVersionUID = 3349681803074360222L;
+public class AgentEventSender extends UnicastRemoteObject implements IAgentEventSender {
+    /**
+     * auto-generated serialization version id.
+     */
+    private static final long serialVersionUID = 3349681803074360222L;
 
-	private ServerManager serverManager;
+    private ServerManager serverManager;
 
-	public AgentEventSender(ServerManager serverManager) throws RemoteException
-	{
-		this.serverManager = serverManager;
-	}
+    public AgentEventSender(ServerManager serverManager) throws RemoteException {
+        this.serverManager = serverManager;
+    }
 
-	@Override
-	public void deviceListChanged(String agentId, String changedDeviceRmiId, boolean isNowAvailable)
-		throws RemoteException
-	{
-		serverManager.onAgentDeviceListChanged(agentId, changedDeviceRmiId, isNowAvailable);
-	}
+    @Override
+    public void deviceListChanged(String agentId, String changedDeviceRmiId, boolean isNowAvailable)
+        throws RemoteException {
+        serverManager.onAgentDeviceListChanged(agentId, changedDeviceRmiId, isNowAvailable);
+    }
 
 }
