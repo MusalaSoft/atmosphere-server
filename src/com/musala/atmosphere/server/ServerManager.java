@@ -14,6 +14,10 @@ import org.apache.log4j.Logger;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.commons.util.Pair;
+import com.musala.atmosphere.server.eventservice.ServerEventService;
+import com.musala.atmosphere.server.eventservice.event.AgentConnectedEvent;
+import com.musala.atmosphere.server.eventservice.event.AgentDisconnectedEvent;
+import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 import com.musala.atmosphere.server.pool.PoolManager;
 
 /**
@@ -22,7 +26,7 @@ import com.musala.atmosphere.server.pool.PoolManager;
  * @author georgi.gaydarov
  * 
  */
-public class ServerManager {
+public class ServerManager extends Subscriber {
 
     private static Logger LOGGER = Logger.getLogger(ServerManager.class.getCanonicalName());
 
@@ -37,6 +41,8 @@ public class ServerManager {
     private ConnectionRequestReceiver connectionRequestReceiver;
 
     private PoolManager poolManager = PoolManager.getInstance();
+
+    private ServerEventService eventService = new ServerEventService();
 
     void onAgentDeviceListChanged(String onAgent, String changedDeviceRmiId, boolean isConnected) {
         if (!agentAllocator.hasAgent(onAgent)) {
@@ -172,6 +178,11 @@ public class ServerManager {
         // Register the server for event notifications
         String serverIpForAgent = agent.getInvokerIpAddress();
         agent.registerServer(serverIpForAgent, rmiRegistryPort);
+
+        // Publish agent connected event to the event service.
+        AgentConnectedEvent agentConnectedEvent = new AgentConnectedEvent(agent, agentRegistry);
+        eventService.publish(agentConnectedEvent);
+
         return agent.getAgentId();
     }
 
@@ -180,6 +191,7 @@ public class ServerManager {
         IAgentManager agentManager = agentRegistryPair.getKey();
         List<String> deviceWrappers = agentManager.getAllDeviceRmiIdentifiers();
         Registry agentRegistry = agentRegistryPair.getValue();
+
         for (String wrapperRmiId : deviceWrappers) {
             poolManager.addDevice(wrapperRmiId, agentRegistry, agentManager, rmiRegistryPort);
         }
@@ -192,5 +204,27 @@ public class ServerManager {
      */
     public List<String> getAllConnectedAgentIds() {
         return agentAllocator.getAllConnectedAgentsIds();
+    }
+
+    /**
+     * Informs server manager for {@link AgentDisconnectedEvent event} received when an agent disconnects.
+     * 
+     * @param event
+     *        - event, which is received when an agent is disconnected.
+     */
+    public void inform(AgentDisconnectedEvent event) {
+        // TODO: Release all devices on the agent and unregister it from the server.
+        LOGGER.info("An agent disconnected event is received.");
+    }
+
+    /**
+     * Informs server manager for {@link AgentConnectedEvent event} received when an agent connects.
+     * 
+     * @param event
+     *        - event, which is received when an agent is connected.
+     */
+    public void inform(AgentConnectedEvent event) {
+        // TODO: Re-factor agent allocator to use events on agent connected.
+        LOGGER.debug("An agent connected event is received.");
     }
 }

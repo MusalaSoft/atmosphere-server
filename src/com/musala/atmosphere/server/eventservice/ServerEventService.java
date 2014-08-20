@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import com.musala.atmosphere.server.eventservice.event.Event;
 import com.musala.atmosphere.server.eventservice.filter.Filter;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
@@ -16,6 +18,8 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
  * 
  */
 public class ServerEventService {
+    private static Logger LOGGER = Logger.getLogger(ServerEventService.class);
+
     private static Set<Subscription> subscriptions = Collections.synchronizedSet(new HashSet<Subscription>());
 
     private static Class<?> eventClass = Event.class;
@@ -27,6 +31,11 @@ public class ServerEventService {
      *        - event to be published.
      */
     public synchronized void publish(Event event) {
+        String publishMessage = String.format("Publishing event %s in thread %s.",
+                                            event.getClass().getSimpleName(),
+                                            Thread.currentThread().getName());
+        LOGGER.debug(publishMessage);
+
         for (Subscription subscription : subscriptions) {
             Filter subscriptionFilter = subscription.getFilter();
             Class<?> subscriptionEventType = subscription.getEventType();
@@ -40,7 +49,6 @@ public class ServerEventService {
                 subscriber.inform(event);
             }
         }
-
     }
 
     /**
@@ -55,10 +63,14 @@ public class ServerEventService {
      *        - object, subscribed for the given eventType and filter.
      */
     public void subscribe(Class<?> eventType, Filter filter, Subscriber subscriber) {
-        if (!eventType.isAssignableFrom(eventClass)) {
+        if (!eventClass.isAssignableFrom(eventType)) {
             return;
         }
 
+        String subscribeMessage = String.format("%s subscribes for %s.",
+                                            subscriber.getClass().getSimpleName(),
+                                            eventType.getSimpleName());
+        LOGGER.debug(subscribeMessage);
         Subscription subscription = new Subscription(eventType, filter, subscriber);
         synchronized (subscriptions) {
             if (!subscriptions.contains(subscription)) {
@@ -79,12 +91,15 @@ public class ServerEventService {
      *        - object, which is unsubscribed for the given eventType and filter.
      */
     public void unsubscribe(Class<?> eventType, Filter filter, Subscriber subscriber) {
-        if (!eventType.isAssignableFrom(eventClass)) {
+        if (!eventClass.isAssignableFrom(eventType)) {
             return;
         }
 
+        String unsubscribeMessage = String.format("%s unsubscribes for %s.",
+                                            subscriber.getClass().getSimpleName(),
+                                            eventType.getSimpleName());
+        LOGGER.debug(unsubscribeMessage);
         Subscription subscription = new Subscription(eventType, filter, subscriber);
         subscriptions.remove(subscription);
     }
-
 }

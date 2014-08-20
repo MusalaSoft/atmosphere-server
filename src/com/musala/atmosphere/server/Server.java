@@ -12,6 +12,9 @@ import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.command.ServerCommand;
 import com.musala.atmosphere.server.command.ServerCommandFactory;
 import com.musala.atmosphere.server.command.ServerConsoleCommands;
+import com.musala.atmosphere.server.eventservice.ServerEventService;
+import com.musala.atmosphere.server.eventservice.event.AgentEvent;
+import com.musala.atmosphere.server.monitor.AgentMonitor;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
 import com.musala.atmosphere.server.pool.PoolManager;
 import com.musala.atmosphere.server.state.ServerState;
@@ -33,6 +36,10 @@ public class Server {
     private ServerCommandFactory commandFactory;
 
     private ServerState currentServerState;
+
+    private ServerEventService eventService;
+
+    private AgentMonitor agentMonitor;
 
     private int serverRmiPort;
 
@@ -61,6 +68,13 @@ public class Server {
 
         serverConsole = new ConsoleControl();
         commandFactory = new ServerCommandFactory(this);
+
+        eventService = new ServerEventService();
+        agentMonitor = new AgentMonitor();
+
+        // Add subscribers to the event service for agent events.
+        eventService.subscribe(AgentEvent.class, null, serverManager);
+        eventService.subscribe(AgentEvent.class, null, agentMonitor);
 
         closed = false;
         LOGGER.info("Server instance created succesfully.");
@@ -97,6 +111,10 @@ public class Server {
         stop();
         ClientRequestMonitor deviceMonitor = ClientRequestMonitor.getInstance();
         deviceMonitor.stop();
+
+        // Remove subscribers from event service.
+        eventService.unsubscribe(AgentEvent.class, null, agentMonitor);
+        eventService.unsubscribe(AgentEvent.class, null, serverManager);
 
         serverManager.close();
         closed = true;

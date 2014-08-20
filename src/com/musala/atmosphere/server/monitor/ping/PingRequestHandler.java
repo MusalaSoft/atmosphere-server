@@ -19,7 +19,7 @@ import com.musala.atmosphere.server.eventservice.event.AgentDisconnectedEvent;
  * @author filareta.yordanova
  * 
  */
-public class PingRequestHandler implements Runnable {
+public class PingRequestHandler extends Thread {
     private static Logger LOGGER = Logger.getLogger(PingRequestHandler.class.getCanonicalName());
 
     private static final long PING_INTERVAL = 5000;
@@ -34,6 +34,14 @@ public class PingRequestHandler implements Runnable {
 
     private volatile boolean isRunning;
 
+    /**
+     * Creates new handler for ping requests sent to this agent manager in a separate thread.
+     * 
+     * @param agentManager
+     *        - agent manager, that will be pinged.
+     * @param agentRegistry
+     *        - RMI registry for this agent manager.
+     */
     public PingRequestHandler(IAgentManager agentManager, Registry agentRegistry) {
         this.agentManager = agentManager;
         eventService = new ServerEventService();
@@ -44,7 +52,6 @@ public class PingRequestHandler implements Runnable {
             agentId = agentManager.getAgentId();
         } catch (RemoteException | NotBoundException e) {
             publishEventOnAgentDisconnected();
-            terminate();
         }
     }
 
@@ -55,7 +62,6 @@ public class PingRequestHandler implements Runnable {
                 serverEventSender.pingAgent();
             } catch (RemoteException e) {
                 publishEventOnAgentDisconnected();
-                terminate();
             }
 
             try {
@@ -72,6 +78,8 @@ public class PingRequestHandler implements Runnable {
      */
     public synchronized void terminate() {
         isRunning = false;
+        String message = String.format("Ping handler for agent %s is terminated.", agentId);
+        LOGGER.debug(message);
     }
 
     private void publishEventOnAgentDisconnected() {
