@@ -51,7 +51,6 @@ public class ServerManager extends Subscriber {
                     + onAgent + ").");
         } else {
             // The agent which sends the event is registered to the server
-            // TODO make this more complex - what happens if a device that is allocated to a client is disconnected?
             if (isConnected) {
                 Pair<IAgentManager, Registry> agentRegistryPair = agentAllocator.getAgentRegistryPair(onAgent);
                 IAgentManager agentManager = agentRegistryPair.getKey();
@@ -60,7 +59,6 @@ public class ServerManager extends Subscriber {
             } else {
                 poolManager.removeDevice(changedDeviceRmiId, onAgent);
             }
-
         }
     }
 

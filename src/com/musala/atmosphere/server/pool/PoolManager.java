@@ -77,6 +77,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
                 }
             }
         }
+
         return poolManagerInstance;
     }
 
@@ -179,8 +180,8 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      * 
      * @param deviceParameters
      *        - the {@link DeviceParameters} that will be used for comparison.
-     * @returna {@link DeviceInformation}, {@link PoolItem} mapping of all {@link PoolItem}s matching given
-     *          {@link DeviceParameters}.
+     * @return a {@link DeviceInformation}, {@link PoolItem} mapping of all {@link PoolItem}s matching given
+     *         {@link DeviceParameters}.
      */
     private Map<DeviceInformation, PoolItem> getFreePoolItemsMatchingParameters(DeviceParameters deviceParameters) {
         Map<DeviceInformation, PoolItem> freePoolItemsDeviceInfoMap = new HashMap<DeviceInformation, PoolItem>();
