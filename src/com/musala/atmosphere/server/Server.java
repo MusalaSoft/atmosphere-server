@@ -12,6 +12,8 @@ import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.command.ServerCommand;
 import com.musala.atmosphere.server.command.ServerCommandFactory;
 import com.musala.atmosphere.server.command.ServerConsoleCommands;
+import com.musala.atmosphere.server.data.IDataSourceManager;
+import com.musala.atmosphere.server.data.db.flyway.DataSourceManager;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.AgentEvent;
 import com.musala.atmosphere.server.monitor.AgentMonitor;
@@ -40,6 +42,8 @@ public class Server {
     private ServerEventService eventService;
 
     private AgentMonitor agentMonitor;
+
+    private IDataSourceManager dataSourceManager;
 
     private int serverRmiPort;
 
@@ -73,8 +77,10 @@ public class Server {
         agentMonitor = new AgentMonitor();
 
         // Add subscribers to the event service for agent events.
-        eventService.subscribe(AgentEvent.class, null, serverManager);
-        eventService.subscribe(AgentEvent.class, null, agentMonitor);
+        eventService.subscribe(AgentEvent.class, serverManager);
+        eventService.subscribe(AgentEvent.class, agentMonitor);
+
+        dataSourceManager = new DataSourceManager();
 
         closed = false;
         LOGGER.info("Server instance created succesfully.");
@@ -93,6 +99,7 @@ public class Server {
      * Starts the Server thread if it is not already running.
      */
     public void run() {
+        dataSourceManager.initialize();
         currentServerState.run();
     }
 

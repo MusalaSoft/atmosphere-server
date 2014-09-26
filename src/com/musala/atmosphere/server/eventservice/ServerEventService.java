@@ -28,12 +28,12 @@ public class ServerEventService {
      * Publishes an event to the server event service, that is managed and sent to the subscribers.
      * 
      * @param event
-     *        - event to be published.
+     *        - event to be published
      */
     public synchronized void publish(Event event) {
         String publishMessage = String.format("Publishing event %s in thread %s.",
-                                            event.getClass().getSimpleName(),
-                                            Thread.currentThread().getName());
+                                              event.getClass().getSimpleName(),
+                                              Thread.currentThread().getName());
         LOGGER.debug(publishMessage);
 
         for (Subscription subscription : subscriptions) {
@@ -56,11 +56,11 @@ public class ServerEventService {
      * the filter.
      * 
      * @param eventType
-     *        - type of the published event.
+     *        - type of the published event
      * @param filter
-     *        - matching criteria for the corresponding eventType.
+     *        - matching criteria for the corresponding eventType
      * @param subscriber
-     *        - object, subscribed for the given eventType and filter.
+     *        - object, subscribed for the given eventType and filter
      */
     public void subscribe(Class<?> eventType, Filter filter, Subscriber subscriber) {
         if (!eventClass.isAssignableFrom(eventType)) {
@@ -68,8 +68,8 @@ public class ServerEventService {
         }
 
         String subscribeMessage = String.format("%s subscribes for %s.",
-                                            subscriber.getClass().getSimpleName(),
-                                            eventType.getSimpleName());
+                                                subscriber.getClass().getSimpleName(),
+                                                eventType.getSimpleName());
         LOGGER.debug(subscribeMessage);
         Subscription subscription = new Subscription(eventType, filter, subscriber);
         synchronized (subscriptions) {
@@ -80,15 +80,28 @@ public class ServerEventService {
     }
 
     /**
+     * Adds a subscription on the event service for the requested subscriber for events from the given type.
+     * 
+     * @param eventType
+     *        - type of the published event
+     * 
+     * @param subscriber
+     *        - object, subscribed for the given eventType
+     */
+    public void subscribe(Class<?> eventType, Subscriber subscriber) {
+        subscribe(eventType, null, subscriber);
+    }
+
+    /**
      * Removes the subscription from the event service for the requested subscriber for events from the given type and
      * matching the filter.
      * 
      * @param eventType
-     *        - type of the published event.
+     *        - type of the published event
      * @param filter
-     *        - matching criteria for the corresponding eventType.
+     *        - matching criteria for the corresponding eventType
      * @param subscriber
-     *        - object, which is unsubscribed for the given eventType and filter.
+     *        - object, which is unsubscribed for the given eventType and filter
      */
     public void unsubscribe(Class<?> eventType, Filter filter, Subscriber subscriber) {
         if (!eventClass.isAssignableFrom(eventType)) {
@@ -96,8 +109,8 @@ public class ServerEventService {
         }
 
         String unsubscribeMessage = String.format("%s unsubscribes for %s.",
-                                            subscriber.getClass().getSimpleName(),
-                                            eventType.getSimpleName());
+                                                  subscriber.getClass().getSimpleName(),
+                                                  eventType.getSimpleName());
         LOGGER.debug(unsubscribeMessage);
         Subscription subscription = new Subscription(eventType, filter, subscriber);
         subscriptions.remove(subscription);
