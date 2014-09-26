@@ -6,7 +6,7 @@ package com.musala.atmosphere.server.dao;
  * @author delyan.dimitrov
  * 
  */
-public interface AgentDAO {
+public interface IAgentDAO {
     /**
      * Adds an agent entry in the data source.
      * 
