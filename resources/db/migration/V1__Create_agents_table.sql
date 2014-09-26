@@ -1,7 +1,7 @@
 CREATE TABLE agents (
     id BIGINT AUTO_INCREMENT,
-    agent_id VARCHAR(255) UNIQUE,
-    rmi_registry_id VARCHAR(255) UNIQUE,
+    agent_id VARCHAR(255) UNIQUE NOT NULL,
+    rmi_registry_id VARCHAR(255) UNIQUE NOT NULL,
     PRIMARY KEY (id)
     );
 
