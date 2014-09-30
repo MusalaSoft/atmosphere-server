@@ -13,6 +13,7 @@ import com.musala.atmosphere.server.command.ServerCommand;
 import com.musala.atmosphere.server.command.ServerCommandFactory;
 import com.musala.atmosphere.server.command.ServerConsoleCommands;
 import com.musala.atmosphere.server.data.IDataSourceManager;
+import com.musala.atmosphere.server.data.db.flyway.DataSourceCallback;
 import com.musala.atmosphere.server.data.db.flyway.DataSourceManager;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.AgentEvent;
@@ -80,7 +81,8 @@ public class Server {
         eventService.subscribe(AgentEvent.class, serverManager);
         eventService.subscribe(AgentEvent.class, agentMonitor);
 
-        dataSourceManager = new DataSourceManager();
+        DataSourceCallback dataSourceCallback = new DataSourceCallback();
+        dataSourceManager = new DataSourceManager(dataSourceCallback);
 
         closed = false;
         LOGGER.info("Server instance created succesfully.");

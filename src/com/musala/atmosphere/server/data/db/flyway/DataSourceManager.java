@@ -13,15 +13,21 @@ import com.musala.atmosphere.server.data.db.constant.Property;
  * 
  */
 public class DataSourceManager implements IDataSourceManager {
-    private static final String DATABASE_URL = String.format(Property.DATABASE_URL_FORMAT, Property.DATABASE_NAME);
-
     private static final String MIGRATIONS_LOCATION_PATTERN = "filesystem:%s/resources/db/migration";
+
+    private DataSourceCallback dataSourceCallback;
+
+    private Flyway flywayDataHandler;
+
+    public DataSourceManager(DataSourceCallback dataSourceCallback) {
+        this.dataSourceCallback = dataSourceCallback;
+        flywayDataHandler = new Flyway();
+    }
 
     @Override
     public void initialize() {
-        Flyway flywayDataHandler = new Flyway();
-        flywayDataHandler.setDataSource(DATABASE_URL, null, null);
-        flywayDataHandler.setCallbacks(new DataSourceCallback());
+        flywayDataHandler.setDataSource(Property.DATABASE_URL, null, null);
+        flywayDataHandler.setCallbacks(dataSourceCallback);
 
         String currentDir = System.getProperty("user.dir");
         String migrationsLocation = String.format(MIGRATIONS_LOCATION_PATTERN, currentDir);
