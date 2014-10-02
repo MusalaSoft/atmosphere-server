@@ -11,7 +11,7 @@ import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
  * @author delyan.dimitrov
  * 
  */
-public interface IDevicePoolDAO {
+public interface IDevicePoolDao {
     /**
      * Adds a device entry in the data source.
      * 
@@ -21,28 +21,28 @@ public interface IDevicePoolDAO {
      *        - the ID of the device in the RMI registry
      * @param agentId
      *        - the ID of the agent that the device is connected to
-     * @return a {@link IDeviceDAO data access object} for interacting with the newly created device entry in the data
+     * @return a {@link IDeviceDao data access object} for interacting with the newly created device entry in the data
      *         source or <code>null</code> if the insertion fails
      */
-    public IDeviceDAO addDevice(DeviceInformation device, String rmiId, String agentId);
+    public IDeviceDao addDevice(DeviceInformation device, String rmiId, String agentId);
 
     /**
      * Gets all devices that match the given parameters.
      * 
      * @param parameters
      *        - the parameters that the requested devices should match
-     * @return a {@link List list} of {@link IDeviceDAO devices} that match the passed parameters
+     * @return a {@link List list} of {@link IDeviceDao devices} that match the passed parameters
      */
-    public List<IDeviceDAO> getDevices(DeviceParameters parameters);
+    public List<IDeviceDao> getDevices(DeviceParameters parameters);
 
     /**
      * Gets a device by its ID.
      * 
      * @param id
      *        - the ID of the requested device
-     * @return the {@link IDeviceDAO device} with the given ID or <code>null</code> if no such device exists
+     * @return the {@link IDeviceDao device} with the given ID or <code>null</code> if no such device exists
      */
-    public IDeviceDAO getDevice(String id);
+    public IDeviceDao getDevice(String id);
 
     /**
      * Checks if a device with such ID is available in the data source.

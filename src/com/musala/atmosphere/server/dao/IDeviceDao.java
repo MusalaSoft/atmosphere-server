@@ -8,7 +8,7 @@ import com.musala.atmosphere.commons.DeviceInformation;
  * @author delyan.dimitrov
  * 
  */
-public interface IDeviceDAO {
+public interface IDeviceDao {
     /**
      * Marks the device as allocated in the data source.
      * 

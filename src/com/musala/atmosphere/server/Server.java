@@ -13,10 +13,14 @@ import com.musala.atmosphere.server.command.ServerCommand;
 import com.musala.atmosphere.server.command.ServerCommandFactory;
 import com.musala.atmosphere.server.command.ServerConsoleCommands;
 import com.musala.atmosphere.server.data.IDataSourceManager;
+import com.musala.atmosphere.server.data.IDataSourceProvider;
 import com.musala.atmosphere.server.data.db.flyway.DataSourceCallback;
 import com.musala.atmosphere.server.data.db.flyway.DataSourceManager;
+import com.musala.atmosphere.server.data.provider.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.AgentEvent;
+import com.musala.atmosphere.server.eventservice.event.DataSourceInitializedEvent;
+import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 import com.musala.atmosphere.server.monitor.AgentMonitor;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
 import com.musala.atmosphere.server.pool.PoolManager;
@@ -45,6 +49,8 @@ public class Server {
     private AgentMonitor agentMonitor;
 
     private IDataSourceManager dataSourceManager;
+
+    private IDataSourceProvider dataSourceProvider;
 
     private int serverRmiPort;
 
@@ -83,6 +89,11 @@ public class Server {
 
         DataSourceCallback dataSourceCallback = new DataSourceCallback();
         dataSourceManager = new DataSourceManager(dataSourceCallback);
+
+        dataSourceProvider = new DataSourceProvider();
+
+        // Add subscribers to the event service for data source events.
+        eventService.subscribe(DataSourceInitializedEvent.class, (Subscriber) dataSourceProvider);
 
         closed = false;
         LOGGER.info("Server instance created succesfully.");
