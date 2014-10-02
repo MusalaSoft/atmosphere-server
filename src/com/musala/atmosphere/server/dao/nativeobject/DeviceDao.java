@@ -1,7 +1,7 @@
 package com.musala.atmosphere.server.dao.nativeobject;
 
 import com.musala.atmosphere.commons.DeviceInformation;
-import com.musala.atmosphere.server.dao.IDeviceDAO;
+import com.musala.atmosphere.server.dao.IDeviceDao;
 
 /**
  * A data access object which handles allocating, releasing and getting a device's information.
@@ -9,7 +9,7 @@ import com.musala.atmosphere.server.dao.IDeviceDAO;
  * @author yavor.stankov
  * 
  */
-public class DeviceDao implements IDeviceDAO {
+public class DeviceDao implements IDeviceDao {
     private DeviceInformation deviceInformation;
 
     private String deviceId;

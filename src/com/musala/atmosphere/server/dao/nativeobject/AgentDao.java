@@ -2,7 +2,7 @@ package com.musala.atmosphere.server.dao.nativeobject;
 
 import java.util.HashMap;
 
-import com.musala.atmosphere.server.dao.IAgentDAO;
+import com.musala.atmosphere.server.dao.IAgentDao;
 
 /**
  * A data access object which handles adding, removing agent, or getting its ID or rmi ID.
@@ -10,7 +10,7 @@ import com.musala.atmosphere.server.dao.IAgentDAO;
  * @author yavor.stankov
  * 
  */
-public class AgentDao implements IAgentDAO {
+public class AgentDao implements IAgentDao {
     private HashMap<String, String> agentIdToRmiId = new HashMap<String, String>();
 
     private HashMap<String, String> rmiIdToAgentId = new HashMap<String, String>();
