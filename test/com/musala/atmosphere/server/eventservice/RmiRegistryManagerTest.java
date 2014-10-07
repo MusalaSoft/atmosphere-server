@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -27,14 +27,14 @@ public class RmiRegistryManagerTest {
 
     private DeviceProxy deviceProxy = mock(DeviceProxy.class);
 
-    public static RmiRegistryManager rmiManager;
+    public RmiRegistryManager rmiManager;
 
-    private static Registry serverRmiRegistry;
+    private Registry serverRmiRegistry;
 
-    private static String deviceProxyRmiString = null;
+    private String deviceProxyRmiString = null;
 
-    @BeforeClass
-    public static void setup() {
+    @Before
+    public void setup() {
         serverRmiRegistry = mock(Registry.class);
         rmiManager = new RmiRegistryManager(serverRmiRegistry);
 
