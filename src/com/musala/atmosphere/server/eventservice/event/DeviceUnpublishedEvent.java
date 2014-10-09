@@ -8,22 +8,27 @@ import com.musala.atmosphere.server.DeviceProxy;
  * @author yavor.stankov
  * 
  */
-public class DeviceUnpublishedEvent {
+public class DeviceUnpublishedEvent implements DeviceEvent {
     private String onAgentId;
 
     private DeviceProxy deviceProxy;
+
+    private String deviceSerialNumber;
 
     /**
      * Creates new event, which is holding information about the unpublished device.
      * 
      * @param onAgentId
      *        - identifier of the agent on which the device is registered
+     * @param deviceSerialNumber
+     *        - the serial number of the device, that has been unpublished from the server
      * @param deviceProxy
      *        - the remote device object, that has been unpublished from the server
      */
-    public DeviceUnpublishedEvent(String onAgentId, DeviceProxy deviceProxy) {
+    public DeviceUnpublishedEvent(DeviceProxy deviceProxy, String deviceSerialNumber, String onAgentId) {
         this.onAgentId = onAgentId;
         this.deviceProxy = deviceProxy;
+        this.deviceSerialNumber = deviceSerialNumber;
     }
 
     /**
@@ -44,4 +49,12 @@ public class DeviceUnpublishedEvent {
         return onAgentId;
     }
 
+    /**
+     * Gets the serial number of the un-registered device.
+     * 
+     * @return serial number of the device
+     */
+    public String getUnpublishedDeviceSerialNumber() {
+        return deviceSerialNumber;
+    }
 }
