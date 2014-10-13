@@ -1,16 +1,20 @@
-package com.musala.atmosphere.server.data.provider;
+package com.musala.atmosphere.server.data.provider.ormlite;
 
 import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import com.musala.atmosphere.server.dao.IAgentDao;
 import com.musala.atmosphere.server.dao.IDeviceDao;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
-import com.musala.atmosphere.server.data.IDataSourceProvider;
+import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
 import com.musala.atmosphere.server.data.db.constant.Property;
+import com.musala.atmosphere.server.data.model.Agent;
+import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.AgentDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.DataSourceCreatedEvent;
@@ -29,11 +33,11 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 public class DataSourceProvider extends Subscriber implements IDataSourceProvider {
     private static final Logger LOGGER = Logger.getLogger(DataSourceProvider.class);
 
-    private static IAgentDao agentDao = null;
+    private static IAgentDao wrappedAgentDao = null;
 
-    private static IDeviceDao deviceDao = null;
+    private static IDeviceDao wrappedDeviceDao = null;
 
-    private static IDevicePoolDao devicePoolDao = null;
+    private static IDevicePoolDao wrappedDevicePoolDao = null;
 
     private static ServerEventService eventService = new ServerEventService();
 
@@ -41,17 +45,17 @@ public class DataSourceProvider extends Subscriber implements IDataSourceProvide
 
     @Override
     public IAgentDao getAgentDao() {
-        return agentDao;
+        return wrappedAgentDao;
     }
 
     @Override
     public IDeviceDao getDeviceDao() {
-        return deviceDao;
+        return wrappedDeviceDao;
     }
 
     @Override
     public IDevicePoolDao getDevicePoolDao() {
-        return devicePoolDao;
+        return wrappedDevicePoolDao;
     }
 
     /**
@@ -62,7 +66,6 @@ public class DataSourceProvider extends Subscriber implements IDataSourceProvide
      *        - event, which is received when data source is initialized
      */
     public void inform(DataSourceInitializedEvent event) {
-        System.out.println("Provider received event!");
         try {
             if (connectionSource == null) {
                 connectionSource = new JdbcConnectionSource(Property.DATABASE_URL);
@@ -70,8 +73,14 @@ public class DataSourceProvider extends Subscriber implements IDataSourceProvide
 
             // TODO: Initialize data access objects here, when the provided interfaces are implemented.
 
+            if (wrappedAgentDao == null) {
+                Dao<Agent, String> agentDao = DaoManager.createDao(connectionSource, Agent.class);
+                wrappedAgentDao = new AgentDao(agentDao);
+
+                publishDataSourceCreatedEvent(new AgentDaoCreatedEvent());
+            }
+
             // TODO: Needs to be re-factored after adding initialization of the data access objects.
-            publishDataSourceCreatedEvent(new AgentDaoCreatedEvent());
             publishDataSourceCreatedEvent(new DeviceDaoCreatedEvent());
             publishDataSourceCreatedEvent(new DevicePoolDaoCreatedEvent());
         } catch (SQLException e) {

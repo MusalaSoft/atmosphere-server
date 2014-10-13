@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.db;
+package com.musala.atmosphere.server.data.db.flyway;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
@@ -12,8 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.musala.atmosphere.server.data.db.flyway.DataSourceCallback;
-import com.musala.atmosphere.server.data.db.flyway.DataSourceManager;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 
 /**

@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.db;
+package com.musala.atmosphere.server.data.provider.ormlite;
 
 import static junit.framework.Assert.assertNull;
 import static org.mockito.Matchers.any;
@@ -16,7 +16,7 @@ import com.j256.ormlite.support.ConnectionSource;
 import com.musala.atmosphere.server.dao.IAgentDao;
 import com.musala.atmosphere.server.dao.IDeviceDao;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
-import com.musala.atmosphere.server.data.provider.DataSourceProvider;
+import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.AgentDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.DataSourceInitializedEvent;

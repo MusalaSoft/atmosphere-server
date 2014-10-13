@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.db;
+package com.musala.atmosphere.server.data.db.flyway;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -11,8 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.musala.atmosphere.server.data.db.flyway.DataSourceCallback;
-import com.musala.atmosphere.server.data.db.flyway.DataSourceManager;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.DataSourceInitializedEvent;
 
@@ -47,6 +45,7 @@ public class DataInitializedPublishingEventTest {
         verify(mockedEventService).publish(argument.capture());
 
         String publishedEventClassName = argument.getValue().getClass().getSimpleName();
+
         assertEquals("Data source initialized event was not published.",
                      EXPECTED_PUBLISHED_EVENT_CLASS_NAME,
                      publishedEventClassName);

@@ -16,21 +16,17 @@ public class AgentDao implements IAgentDao {
     private HashMap<String, String> rmiIdToAgentId = new HashMap<String, String>();
 
     @Override
-    public boolean add(String agentId, String rmiId) {
+    public void add(String agentId, String rmiId) {
         agentIdToRmiId.put(agentId, rmiId);
         rmiIdToAgentId.put(rmiId, agentId);
-
-        return true;
     }
 
     @Override
-    public boolean remove(String agentId) {
+    public void remove(String agentId) {
         String rmiId = agentIdToRmiId.remove(agentId);
         if (rmiId != null) {
             rmiIdToAgentId.remove(rmiId);
         }
-
-        return true;
     }
 
     @Override

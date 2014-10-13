@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.data;
+package com.musala.atmosphere.server.data.provider;
 
 import com.musala.atmosphere.server.dao.IAgentDao;
 import com.musala.atmosphere.server.dao.IDeviceDao;

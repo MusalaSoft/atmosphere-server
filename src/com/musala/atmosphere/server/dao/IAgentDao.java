@@ -1,5 +1,7 @@
 package com.musala.atmosphere.server.dao;
 
+import com.musala.atmosphere.server.dao.exception.AgentDaoException;
+
 /**
  * A data access object for using agent information from a data source.
  * 
@@ -14,18 +16,20 @@ public interface IAgentDao {
      *        - the ID of the entry
      * @param rmiId
      *        - the RMI ID of the entry
-     * @return <code>true</code> if the add operation is successful, and <code>false</code> false otherwise
+     * @throws AgentDaoException
+     *         - thrown when adding new agent fails
      */
-    public boolean add(String agentId, String rmiId);
+    public void add(String agentId, String rmiId) throws AgentDaoException;
 
     /**
      * Removes the entry of the agent with the given ID from the data source.
      * 
      * @param agentId
      *        - ID of the agent to be removed
-     * @return <code>true</code> if the removal is successful, and <code>false</code> false otherwise
+     * @throws AgentDaoException
+     *         - thrown when removing agent with the given ID fails
      */
-    public boolean remove(String agentId);
+    public void remove(String agentId) throws AgentDaoException;
 
     /**
      * Gets the RMI ID of the agent with the given Id.
@@ -33,8 +37,10 @@ public interface IAgentDao {
      * @param agentId
      *        - ID of the agent
      * @return the RMI ID of the agent with the given ID or <code>null</code> if the operation fails
+     * @throws AgentDaoException
+     *         - thrown when retrieving RMI id for the agent from the data source fails
      */
-    public String getRmiId(String agentId);
+    public String getRmiId(String agentId) throws AgentDaoException;
 
     /**
      * Gets the ID of the agent with the given RMI ID.
@@ -42,6 +48,8 @@ public interface IAgentDao {
      * @param rmiId
      *        - RMI ID of the agent
      * @return ID of the agent with the given RMI ID or <code>null</code> if the operation fails
+     * @throws AgentDaoException
+     *         - thrown when retrieving ID for the agent from the data source fails
      */
-    public String getAgentId(String rmiId);
+    public String getAgentId(String rmiId) throws AgentDaoException;
 }
