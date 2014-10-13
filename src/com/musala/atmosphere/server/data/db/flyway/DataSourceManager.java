@@ -1,5 +1,7 @@
 package com.musala.atmosphere.server.data.db.flyway;
 
+import java.io.File;
+
 import org.flywaydb.core.Flyway;
 
 import com.musala.atmosphere.server.data.IDataSourceManager;
@@ -13,7 +15,7 @@ import com.musala.atmosphere.server.data.db.constant.Property;
  * 
  */
 public class DataSourceManager implements IDataSourceManager {
-    private static final String MIGRATIONS_LOCATION_PATTERN = "filesystem:%s/resources/db/migration";
+    private static final String MIGRATIONS_LOCATION_PATTERN = "filesystem:%s%sresources%sdb%smigration";
 
     private DataSourceCallback dataSourceCallback;
 
@@ -30,7 +32,11 @@ public class DataSourceManager implements IDataSourceManager {
         flywayDataHandler.setCallbacks(dataSourceCallback);
 
         String currentDir = System.getProperty("user.dir");
-        String migrationsLocation = String.format(MIGRATIONS_LOCATION_PATTERN, currentDir);
+        String migrationsLocation = String.format(MIGRATIONS_LOCATION_PATTERN,
+                                                  currentDir,
+                                                  File.separator,
+                                                  File.separator,
+                                                  File.separator);
         flywayDataHandler.setLocations(migrationsLocation);
 
         flywayDataHandler.migrate();

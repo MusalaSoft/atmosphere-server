@@ -55,7 +55,7 @@ public class ServerManager extends Subscriber {
                 Pair<IAgentManager, Registry> agentRegistryPair = agentAllocator.getAgentRegistryPair(onAgent);
                 IAgentManager agentManager = agentRegistryPair.getKey();
                 Registry agentRegistry = agentRegistryPair.getValue();
-                poolManager.addDevice(changedDeviceRmiId, agentRegistry, agentManager, rmiRegistryPort);
+                poolManager.addDevice(changedDeviceRmiId, agentRegistry, agentManager);
             } else {
                 poolManager.removeDevice(changedDeviceRmiId, onAgent);
             }
@@ -73,6 +73,7 @@ public class ServerManager extends Subscriber {
     public ServerManager(int rmiPort) throws RemoteException {
         // Publish this ServerManager in the RMI registry
         try {
+            // TODO: Extract this logic to the RemoteObjectregistryManager
             rmiRegistryPort = rmiPort;
             rmiRegistry = LocateRegistry.createRegistry(rmiPort);
 
@@ -191,7 +192,7 @@ public class ServerManager extends Subscriber {
         Registry agentRegistry = agentRegistryPair.getValue();
 
         for (String wrapperRmiId : deviceWrappers) {
-            poolManager.addDevice(wrapperRmiId, agentRegistry, agentManager, rmiRegistryPort);
+            poolManager.addDevice(wrapperRmiId, agentRegistry, agentManager);
         }
     }
 
@@ -224,5 +225,14 @@ public class ServerManager extends Subscriber {
     public void inform(AgentConnectedEvent event) {
         // TODO: Re-factor agent allocator to use events on agent connected.
         LOGGER.debug("An agent connected event is received.");
+    }
+
+    /**
+     * Gets the server's RMI registry.
+     * 
+     * @return server's RMI registry
+     */
+    public Registry getRegistry() {
+        return rmiRegistry;
     }
 }

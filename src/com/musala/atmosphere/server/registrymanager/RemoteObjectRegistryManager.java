@@ -4,6 +4,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.RemoteObject;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
@@ -23,6 +24,8 @@ public class RemoteObjectRegistryManager extends Subscriber {
     private static final Logger LOGGER = Logger.getLogger(RemoteObjectRegistryManager.class);
 
     private static final String DEVICE_RMI_ID_FORMAT = "%s_%s";
+
+    private static final String DEVICE_PUBLISHED_MESSAGE_FORMAT = "%s %s %s";
 
     private HashMap<RemoteObject, String> remoteObjectToDeviceRmiIndetifier = new HashMap<RemoteObject, String>();
 
@@ -48,7 +51,7 @@ public class RemoteObjectRegistryManager extends Subscriber {
      * @throws RemoteException
      *         - if failed to publish remote object in the server's RMI registry
      */
-    public synchronized void publishObject(RemoteObject remoteObject, String remoteObjectRmiId) throws RemoteException {
+    private synchronized void publishObject(RemoteObject remoteObject, String remoteObjectRmiId) throws RemoteException {
         try {
             serverRmiRegistry.rebind(remoteObjectRmiId, remoteObject);
 
@@ -57,24 +60,30 @@ public class RemoteObjectRegistryManager extends Subscriber {
                                       e);
         }
 
-        String message = String.format("Remote object published in the RMI registry under the identifier %s.",
+        String message = String.format(DEVICE_PUBLISHED_MESSAGE_FORMAT,
+                                       "Remote object published in the RMI registry under the identifier",
                                        remoteObjectToDeviceRmiIndetifier.get(remoteObject),
-                                       "'.");
+                                       ".");
         LOGGER.info(message);
     }
 
     /**
      * Unpublishes a remote object from the server's RMI registry.
      * 
-     * @param deviceProxyRmiString
+     * @param remoteObject
+     *        - the remote object to be unpublished from the registry
+     * @param remoteObjectRmiString
      *        - unique remote object identifier
      * @throws RemoteException
      *         - if failed to unpublish the remote object from the server's RMI registry
      * @throws NotBoundException
+     *         - if an attempt is made to unbind from the registry a object that has no associated binding
      */
-    public synchronized void unpublishObject(String remoteObjectRmiString) throws RemoteException, NotBoundException {
+    private synchronized void unpublishObject(RemoteObject remoteObject) throws RemoteException, NotBoundException {
         try {
+            String remoteObjectRmiString = remoteObjectToDeviceRmiIndetifier.get(remoteObject);
             serverRmiRegistry.unbind(remoteObjectRmiString);
+            UnicastRemoteObject.unexportObject(remoteObject, true);
         } catch (RemoteException e) {
             throw new RemoteException("Exception occured when unpublishing remote object from the server's RMI registry.",
                                       e);
@@ -119,8 +128,7 @@ public class RemoteObjectRegistryManager extends Subscriber {
         RemoteObject remoteObject = event.getUnpublishedDeviceProxy();
 
         if (remoteObjectToDeviceRmiIndetifier.containsKey(remoteObject)) {
-            String deviceProxyRmiString = remoteObjectToDeviceRmiIndetifier.get(remoteObject);
-            unpublishObject(deviceProxyRmiString);
+            unpublishObject(remoteObject);
 
             remoteObjectToDeviceRmiIndetifier.remove(remoteObject);
         } else {

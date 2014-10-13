@@ -20,10 +20,12 @@ import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.AgentEvent;
 import com.musala.atmosphere.server.eventservice.event.DataSourceInitializedEvent;
+import com.musala.atmosphere.server.eventservice.event.DeviceEvent;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 import com.musala.atmosphere.server.monitor.AgentMonitor;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
 import com.musala.atmosphere.server.pool.PoolManager;
+import com.musala.atmosphere.server.registrymanager.RemoteObjectRegistryManager;
 import com.musala.atmosphere.server.state.ServerState;
 import com.musala.atmosphere.server.state.StoppedServer;
 import com.musala.atmosphere.server.util.ServerPropertiesLoader;
@@ -47,6 +49,8 @@ public class Server {
     private ServerEventService eventService;
 
     private AgentMonitor agentMonitor;
+
+    private RemoteObjectRegistryManager registryManager;
 
     private IDataSourceManager dataSourceManager;
 
@@ -83,9 +87,14 @@ public class Server {
         eventService = new ServerEventService();
         agentMonitor = new AgentMonitor();
 
+        registryManager = new RemoteObjectRegistryManager(serverManager.getRegistry());
+
         // Add subscribers to the event service for agent events.
         eventService.subscribe(AgentEvent.class, serverManager);
         eventService.subscribe(AgentEvent.class, agentMonitor);
+
+        // Add subscribers to the event service for device events.
+        eventService.subscribe(DeviceEvent.class, registryManager);
 
         DataSourceCallback dataSourceCallback = new DataSourceCallback();
         dataSourceManager = new DataSourceManager(dataSourceCallback);
@@ -284,7 +293,8 @@ public class Server {
      *        - id of agent
      */
     public void waitForDeviceToBeAvailable(String deviceId, String agentId) {
-        while (!PoolManager.getInstance().isDevicePresent(deviceId, agentId)) {
+        PoolManager poolManager = PoolManager.getInstance();
+        while (!poolManager.isDeviceConnectedToAgent(agentId)) {
             try {
                 Thread.sleep(DEVICE_PRESENCE_CYCLE_WAIT);
             } catch (InterruptedException e) {

@@ -1,10 +1,8 @@
 package com.musala.atmosphere.server.registrymanager;
 
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 
@@ -52,48 +50,9 @@ public class RemoteObjectRegistryManagerTest {
     }
 
     @Test
-    public void testPublishObject() throws RemoteException {
-        rmiManager.publishObject(deviceProxy, deviceProxyRmiId);
-        verify(serverRmiRegistry).rebind(onAgentId, deviceProxy);
-    }
-
-    @Test(expected = RemoteException.class)
-    public void testPublishObjectThrowsException() throws RemoteException {
-        doThrow(new RemoteException()).when(serverRmiRegistry).rebind(onAgentId, deviceProxy);
-
-        rmiManager.publishObject(deviceProxy, deviceProxyRmiId);
-    }
-
-    @Test
-    public void testUnpublishObject() throws RemoteException, NotBoundException {
-        rmiManager.publishObject(deviceProxy, deviceProxyRmiId);
-
-        rmiManager.unpublishObject(deviceProxyRmiId);
-        verify(serverRmiRegistry).unbind(deviceProxyRmiId);
-    }
-
-    @Test(expected = RemoteException.class)
-    public void testUnpublishObjectThrowsException() throws RemoteException, NotBoundException {
-        rmiManager.publishObject(deviceProxy, deviceProxyRmiId);
-
-        doThrow(new RemoteException()).when(serverRmiRegistry).unbind(deviceProxyRmiId);
-
-        rmiManager.unpublishObject(deviceProxyRmiId);
-    }
-
-    @Test
     public void testInformDevicePublish() throws RemoteException {
         rmiManager.inform(devicePublishedEvent);
 
         verify(serverRmiRegistry).rebind(deviceUniqueIdentifier, deviceProxy);
-    }
-
-    @Test
-    public void testInformDeviceUnpublished() throws RemoteException, NotBoundException {
-        rmiManager.inform(devicePublishedEvent);
-
-        rmiManager.inform(deviceUnpublishedEvent);
-
-        verify(serverRmiRegistry).unbind(deviceUniqueIdentifier);
     }
 }

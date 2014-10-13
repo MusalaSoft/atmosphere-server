@@ -16,6 +16,7 @@ import java.util.NoSuchElementException;
 import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.DeviceInformation;
+import com.musala.atmosphere.commons.RoutingAction;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
@@ -32,6 +33,10 @@ import com.musala.atmosphere.commons.sa.exceptions.TimeoutReachedException;
 import com.musala.atmosphere.server.AgentAllocator;
 import com.musala.atmosphere.server.DeviceProxy;
 import com.musala.atmosphere.server.PasskeyAuthority;
+import com.musala.atmosphere.server.eventservice.ServerEventService;
+import com.musala.atmosphere.server.eventservice.event.DevicePublishedEvent;
+import com.musala.atmosphere.server.eventservice.event.DeviceUnpublishedEvent;
+import com.musala.atmosphere.server.eventservice.event.Event;
 import com.musala.atmosphere.server.util.DeviceMatchingComparator;
 import com.musala.atmosphere.server.util.EmulatorToDeviceParametersConverter;
 import com.musala.atmosphere.server.util.ServerPropertiesLoader;
@@ -43,11 +48,15 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
 
     private static final long POOL_ITEM_WAIT_INTERVAL = 1000;
 
+    private static final String POOL_ITEM_ID_FORMAT = "%s_%s";
+
     private static Logger LOGGER = Logger.getLogger(PoolManager.class.getCanonicalName());
 
     private static PoolManager poolManagerInstance = null;
 
-    private HashMap<String, PoolItem> rmiIdToPoolItem = new HashMap<String, PoolItem>();
+    private ServerEventService eventService = new ServerEventService();
+
+    private HashMap<String, PoolItem> deviceIdToPoolItem = new HashMap<String, PoolItem>();
 
     private AgentAllocator agentAllocator = new AgentAllocator();
 
@@ -84,15 +93,13 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
     /**
      * Checks whether a device is present in the pool.
      * 
-     * @param changedDeviceRmiId
-     *        - RMI string identifier for the device.
      * @param agent
      *        - the agent that the device is connected to.
      * @return True if the device is present, and false if it is not.
      */
-    public boolean isDevicePresent(String changedDeviceRmiId, String agent) {
-        for (PoolItem poolItem : rmiIdToPoolItem.values()) {
-            if (poolItem.isCorrespondingTo(agent, changedDeviceRmiId)) {
+    public boolean isDeviceConnectedToAgent(String agent) {
+        for (PoolItem poolItem : deviceIdToPoolItem.values()) {
+            if (poolItem.isCorrespondingTo(agent)) {
                 return true;
             }
         }
@@ -101,31 +108,38 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
 
     /**
      * Refreshes the current state of the device - removes the device from the pool if it is not present on an Agent
-     * anymore.
+     * anymore and remove the device from the server's RMI registry.
      * 
-     * @param changedDeviceRmiId
-     *        - RMI string identifier on the Agent for the device wrapper stub.
+     * @param changedDeviceId
+     *        - string identifier on the Agent for the device wrapper stub.
      * @param agent
      *        - the {@link AgentManager AgentManager} that the device is connected to.
      */
-    public void removeDevice(String changedDeviceRmiId, String agent) {
-        for (Entry<String, PoolItem> poolItems : rmiIdToPoolItem.entrySet()) {
+    public void removeDevice(String changedDeviceId, String agent) {
+        for (Entry<String, PoolItem> poolItems : deviceIdToPoolItem.entrySet()) {
             PoolItem poolItem = poolItems.getValue();
-            String poolItemProxyRmiId = poolItems.getKey();
+            String poolItemId = poolItems.getKey();
 
-            if (!poolItem.isCorrespondingTo(agent, changedDeviceRmiId)) {
+            if (!poolItem.isCorrespondingTo(agent)) {
                 continue;
             }
 
             ClientRequestMonitor deviceMonitor = ClientRequestMonitor.getInstance();
-            deviceMonitor.unregisterDevice(poolItemProxyRmiId);
+            deviceMonitor.unregisterDevice(poolItemId);
 
-            DeviceProxy removedProxy = poolItem.getUnderlyingDeviceProxy();
-            PasskeyAuthority.getInstance().removeDevice(removedProxy);
-            poolItem.unbindDeviceProxyFromRmi();
-            rmiIdToPoolItem.remove(poolItemProxyRmiId);
+            DeviceProxy deviceProxy = poolItem.getUnderlyingDeviceProxy();
+            PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+            passkeyAuthority.removeDevice(deviceProxy);
 
-            LOGGER.info("PoolItem with id " + changedDeviceRmiId + " disconnected and removed.");
+            DeviceInformation deviceInformation = poolItem.getUnderlyingDeviceInformation();
+            String deviceSerialNumber = deviceInformation.getSerialNumber();
+
+            Event event = new DeviceUnpublishedEvent(deviceProxy, deviceSerialNumber, agent);
+            eventService.publish(event);
+
+            deviceIdToPoolItem.remove(poolItemId);
+
+            LOGGER.info("PoolItem with id " + changedDeviceId + " disconnected and removed.");
             return;
         }
         LOGGER.warn("Received remove request for a device that is not present in the pool.");
@@ -141,21 +155,27 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      * @param agentManager
      *        - the {@link AgentManager AgentManager} that published the {@link IWrapDevice IWrapDevice} we are
      *        wrapping.
-     * @param rmiRegistryPort
-     *        - RMI registry port in which we will publish the newly created {@link DeviceProxy DeviceProxy} wrapper.
      */
-    public void addDevice(String deviceRmiId, Registry agentRegistry, IAgentManager agentManager, int rmiRegistryPort) {
+    public void addDevice(String deviceRmiId, Registry agentRegistry, IAgentManager agentManager) {
         try {
             IWrapDevice deviceWrapper = (IWrapDevice) agentRegistry.lookup(deviceRmiId);
+            DeviceProxy deviceProxy = new DeviceProxy(deviceWrapper);
+            DeviceInformation deviceInformation = (DeviceInformation) deviceWrapper.route(RoutingAction.GET_DEVICE_INFORMATION);
 
-            PoolItem poolItem = new PoolItem(deviceRmiId, deviceWrapper, agentManager, rmiRegistryPort);
-            String poolItemRmiId = poolItem.getDeviceProxyRmiBindingIdentifier();
-            rmiIdToPoolItem.put(poolItemRmiId, poolItem);
+            String deviceSerialNumber = deviceInformation.getSerialNumber();
+            String onAgentId = agentManager.getAgentId();
+
+            Event devicePublishedEvent = new DevicePublishedEvent(deviceProxy, deviceSerialNumber, onAgentId);
+            eventService.publish(devicePublishedEvent);
+
+            PoolItem poolItem = new PoolItem(deviceProxy, deviceInformation, onAgentId);
+            String poolItemId = buildPoolItemIdentifier(onAgentId, deviceSerialNumber);
+            deviceIdToPoolItem.put(poolItemId, poolItem);
 
             ClientRequestMonitor deviceMonitor = ClientRequestMonitor.getInstance();
-            deviceMonitor.registerDevice(poolItemRmiId);
+            deviceMonitor.registerDevice(poolItemId);
 
-            LOGGER.info("PoolItem created with rmi id [" + poolItemRmiId + "].");
+            LOGGER.info("PoolItem created with rmi id [" + poolItemId + "].");
         } catch (NotBoundException e) {
             LOGGER.warn("Attempted to get a non-bound device wrapper [" + deviceRmiId + "] from an Agent.", e);
         } catch (RemoteException e) {
@@ -169,8 +189,16 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      * Unexports all devices from the pool.
      */
     public void unexportAllPoolItems() {
-        for (PoolItem poolItem : rmiIdToPoolItem.values()) {
-            poolItem.unbindDeviceProxyFromRmi();
+        for (PoolItem poolItem : deviceIdToPoolItem.values()) {
+            DeviceProxy deviceProxy = poolItem.getUnderlyingDeviceProxy();
+
+            DeviceInformation deviceInformation = poolItem.getUnderlyingDeviceInformation();
+            String deviceSerialNumber = deviceInformation.getSerialNumber();
+
+            String onAgentId = poolItem.getUnderlyingAgentId();
+
+            Event deviceUnpublishedEvent = new DeviceUnpublishedEvent(deviceProxy, deviceSerialNumber, onAgentId);
+            eventService.publish(deviceUnpublishedEvent);
         }
     }
 
@@ -185,7 +213,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      */
     private Map<DeviceInformation, PoolItem> getFreePoolItemsMatchingParameters(DeviceParameters deviceParameters) {
         Map<DeviceInformation, PoolItem> freePoolItemsDeviceInfoMap = new HashMap<DeviceInformation, PoolItem>();
-        for (PoolItem poolItem : rmiIdToPoolItem.values()) {
+        for (PoolItem poolItem : deviceIdToPoolItem.values()) {
             if (poolItem.isAvailable()) {
                 DeviceInformation poolItemDeviceInformation = poolItem.getUnderlyingDeviceInformation();
 
@@ -245,8 +273,12 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
             LOGGER.info("No available device found. Starting an emulator device...");
             bestMatchingPoolItem = createEmulator(deviceParameters);
         }
+        String onAgentId = bestMatchingPoolItem.getUnderlyingAgentId();
 
-        String bestMatchDeviceProxyRmiId = bestMatchingPoolItem.getDeviceProxyRmiBindingIdentifier();
+        DeviceInformation deviceInformation = bestMatchingPoolItem.getUnderlyingDeviceInformation();
+        String deviceSerialNumber = deviceInformation.getSerialNumber();
+
+        String bestMatchDeviceProxyRmiId = buildPoolItemIdentifier(onAgentId, deviceSerialNumber);
         bestMatchingPoolItem.setAvailability(false);
         DeviceProxy selectedPoolItemDeviceProxy = bestMatchingPoolItem.getUnderlyingDeviceProxy();
         long devicePasskey = PasskeyAuthority.getInstance().getPasskey(selectedPoolItemDeviceProxy);
@@ -267,7 +299,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
         String rmiId = allocatedDeviceDescriptor.getProxyRmiId();
         long passkey = allocatedDeviceDescriptor.getProxyPasskey();
 
-        PoolItem poolItem = rmiIdToPoolItem.get(rmiId);
+        PoolItem poolItem = deviceIdToPoolItem.get(rmiId);
         if (poolItem != null) {
             DeviceProxy releasedDeviceProxy = poolItem.getUnderlyingDeviceProxy();
             PasskeyAuthority.getInstance().validatePasskey(releasedDeviceProxy, passkey);
@@ -279,19 +311,19 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
     /**
      * Frees given PoolItem by its RMI identifier so it can be given to the next Client.
      * 
-     * @param poolItemRmiId
+     * @param poolItemIdentifier
      */
-    void releasePoolItem(String poolItemRmiId) {
-        PoolItem poolItemForRelease = rmiIdToPoolItem.get(poolItemRmiId);
+    void releasePoolItem(String poolItemIdentifier) {
+        PoolItem poolItemForRelease = deviceIdToPoolItem.get(poolItemIdentifier);
 
         if (poolItemForRelease != null) {
             poolItemForRelease.setAvailability(true);
             DeviceProxy deviceProxyToRelease = poolItemForRelease.getUnderlyingDeviceProxy();
             PasskeyAuthority.getInstance().renewPasskey(deviceProxyToRelease);
 
-            LOGGER.info("Released device with rmi id " + poolItemRmiId);
+            LOGGER.info("Released device with rmi id " + poolItemIdentifier);
         } else {
-            LOGGER.fatal("Error trying to unexport PoolItem: PoolItem with ID: " + poolItemRmiId + " not found.");
+            LOGGER.fatal("Error trying to unexport PoolItem: PoolItem with ID: " + poolItemIdentifier + " not found.");
         }
     }
 
@@ -303,11 +335,11 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      * @return - true, if the device is currently used by a Client, and false otherwise.
      */
     boolean isInUse(String deviceProxyRmiId) {
-        if (!rmiIdToPoolItem.containsKey(deviceProxyRmiId)) {
+        if (!deviceIdToPoolItem.containsKey(deviceProxyRmiId)) {
             LOGGER.error("Checking if device is in use for unregistered proxy ID [" + deviceProxyRmiId + "].");
             return true;
         }
-        PoolItem correspondingPoolItem = rmiIdToPoolItem.get(deviceProxyRmiId);
+        PoolItem correspondingPoolItem = deviceIdToPoolItem.get(deviceProxyRmiId);
         boolean availability = correspondingPoolItem.isAvailable();
         return (!availability);
     }
@@ -315,11 +347,11 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
     /**
      * Returns the {@link DeviceProxy} object with given RMI identifier.
      * 
-     * @param deviceProxyRmiBindingIdentifier
+     * @param poolItemIdentifier
      * @return - {@link DeviceProxy} that lies under the {@link PoolItem} with the passed RMI id.
      */
-    DeviceProxy getUnderlyingDeviceProxy(String deviceProxyRmiBindingIdentifier) {
-        PoolItem poolItem = rmiIdToPoolItem.get(deviceProxyRmiBindingIdentifier);
+    DeviceProxy getUnderlyingDeviceProxy(String poolItemIdentifier) {
+        PoolItem poolItem = deviceIdToPoolItem.get(poolItemIdentifier);
         DeviceProxy underlyingDeviceProxy = poolItem.getUnderlyingDeviceProxy();
         return underlyingDeviceProxy;
     }
@@ -331,13 +363,13 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      */
     public List<String> getAllUnderlyingDeviceProxyIds() {
         List<String> deviceProxyIds = new ArrayList<String>();
-        deviceProxyIds.addAll(rmiIdToPoolItem.keySet());
+        deviceProxyIds.addAll(deviceIdToPoolItem.keySet());
         return deviceProxyIds;
     }
 
     private String waitForPoolItemExists(String serialNumber, long timeout) throws TimeoutReachedException {
         while (timeout > 0) {
-            for (Entry<String, PoolItem> currentRmiIdPoolItemEntry : rmiIdToPoolItem.entrySet()) {
+            for (Entry<String, PoolItem> currentRmiIdPoolItemEntry : deviceIdToPoolItem.entrySet()) {
                 String currentRmiId = currentRmiIdPoolItemEntry.getKey();
                 PoolItem currentPoolItem = currentRmiIdPoolItemEntry.getValue();
                 DeviceInformation currentPoolItemInformation = currentPoolItem.getUnderlyingDeviceInformation();
@@ -396,13 +428,18 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
 
             LOGGER.info("Waiting for emulator wrapper to be published to server...");
             errorMessage = "Emulator server publishing wait timeout reached.";
-            String rmiId = waitForPoolItemExists(serialNumber, waitForPoolItemExistsTimeout);
+            String poolItemId = waitForPoolItemExists(serialNumber, waitForPoolItemExistsTimeout);
             LOGGER.info("Emulator wrapped published to server.");
 
-            return rmiIdToPoolItem.get(rmiId);
+            return deviceIdToPoolItem.get(poolItemId);
         } catch (IOException | TimeoutReachedException | DeviceNotFoundException e) {
             LOGGER.fatal(errorMessage, e);
             throw new EmulatorCreationFailedException(errorMessage, e);
         }
+    }
+
+    private String buildPoolItemIdentifier(String onAgentId, String deviceSerialNumber) {
+        String poolItemIdentifier = String.format(POOL_ITEM_ID_FORMAT, onAgentId, deviceSerialNumber);
+        return poolItemIdentifier;
     }
 }

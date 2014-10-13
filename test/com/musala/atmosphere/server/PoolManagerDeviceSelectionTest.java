@@ -116,7 +116,7 @@ public class PoolManagerDeviceSelectionTest {
         String deviceId = mockDevInfo.getSerialNumber();
         when(mockedRegistry.lookup(deviceId)).thenReturn(mockedDevice);
         when(mockedDevice.route(eq(RoutingAction.GET_DEVICE_INFORMATION))).thenReturn(mockDevInfo);
-        poolManager.addDevice(deviceId, mockedRegistry, mockedAgentManager, POOL_MANAGER_RMI_PORT);
+        poolManager.addDevice(deviceId, mockedRegistry, mockedAgentManager);
     }
 
     @AfterClass

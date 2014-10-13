@@ -83,7 +83,7 @@ public class PoolManagerEmulatorCreationTest {
 
         @Override
         public Void answer(InvocationOnMock invocation) throws Throwable {
-            poolManager.addDevice(deviceSerialNumber, agentRegistry, agentManager, POOL_MANAGER_RMI_PORT);
+            poolManager.addDevice(deviceSerialNumber, agentRegistry, agentManager);
             return null;
         }
     }
