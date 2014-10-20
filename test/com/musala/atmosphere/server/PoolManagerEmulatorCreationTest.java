@@ -1,7 +1,14 @@
 package com.musala.atmosphere.server;
 
+import org.junit.Test;
 
 public class PoolManagerEmulatorCreationTest {
+    /* TODO : consider removing this test */
+
+    @Test
+    public void fakeTest() {
+
+    }
     // private static final int POOL_MANAGER_RMI_PORT = 1235;
     //
     // private static final long EMULATOR_CREATION_TIMEOUT = ServerPropertiesLoader.getEmulatorCreationTimeout();
