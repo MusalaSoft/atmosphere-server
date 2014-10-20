@@ -42,6 +42,8 @@ public class DeviceProxyTest {
 
     private long proxyPasskey;
 
+    private static final String DEVICE_ID = "12345_123";
+
     private final static PhoneNumber PHONE_NUMBER = new PhoneNumber("123");
 
     @BeforeClass
@@ -49,7 +51,7 @@ public class DeviceProxyTest {
         // mock the ClientRequestMonitor singleton
         // mockMonitor = SingletonMocker.mockSingleton(ClientRequestMonitor.class);
         mockMonitor = mock(ClientRequestMonitor.class);
-        Mockito.doNothing().when(mockMonitor).restartTimerForDevice(any(DeviceProxy.class));
+        Mockito.doNothing().when(mockMonitor).restartTimerForDevice(DEVICE_ID);
 
         // set proxy's ClientRequestMonitor field with the mocked monitor
         deviceProxyMonitorField = DeviceProxy.class.getDeclaredField("timeoutMonitor");
@@ -60,7 +62,7 @@ public class DeviceProxyTest {
     public void setUp() throws Exception {
         // instantiate the mocked device
         innerDeviceWrapperMock = mock(IWrapDevice.class);
-        deviceProxy = new DeviceProxy(innerDeviceWrapperMock);
+        deviceProxy = new DeviceProxy(innerDeviceWrapperMock, DEVICE_ID);
         when(innerDeviceWrapperMock.route(any(RoutingAction.class))).thenReturn(RoutingAction.CALL_ACCEPT);
         proxyPasskey = PasskeyAuthority.getInstance().getPasskey(deviceProxy);
         deviceProxyMonitorField.set(deviceProxy, mockMonitor);

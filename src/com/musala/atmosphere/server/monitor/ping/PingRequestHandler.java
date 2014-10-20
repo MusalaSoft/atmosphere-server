@@ -10,7 +10,7 @@ import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IServerEventSender;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
-import com.musala.atmosphere.server.eventservice.event.AgentDisconnectedEvent;
+import com.musala.atmosphere.server.eventservice.event.agent.AgentDisconnectedEvent;
 
 /**
  * Class that periodically sends ping requests to an agent to determine whether an agent is still connected or must be
@@ -83,7 +83,7 @@ public class PingRequestHandler extends Thread {
     }
 
     private void publishEventOnAgentDisconnected() {
-        AgentDisconnectedEvent agentDisconnectedEvent = new AgentDisconnectedEvent(agentManager);
+        AgentDisconnectedEvent agentDisconnectedEvent = new AgentDisconnectedEvent(agentManager, agentId);
         eventService.publish(agentDisconnectedEvent);
     }
 

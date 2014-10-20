@@ -35,7 +35,7 @@ public class DevicePoolDao implements IDevicePoolDao {
         for (IDeviceDao deviceDao : rmiIdToDeviceDao.values()) {
             DeviceInformation deviceInformation = deviceDao.getInformation();
 
-            if (!DeviceMatchingComparator.isValidMatch(parameters, deviceInformation)) {
+            if (DeviceMatchingComparator.isValidMatch(parameters, deviceInformation)) {
                 devicesList.add(deviceDao);
             }
         }

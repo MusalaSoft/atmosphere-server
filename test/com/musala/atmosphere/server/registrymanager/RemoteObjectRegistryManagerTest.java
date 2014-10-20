@@ -12,8 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.musala.atmosphere.server.DeviceProxy;
-import com.musala.atmosphere.server.eventservice.event.DevicePublishedEvent;
-import com.musala.atmosphere.server.eventservice.event.DeviceUnpublishedEvent;
+import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishedEvent;
 
 /**
  * 
@@ -22,8 +21,6 @@ import com.musala.atmosphere.server.eventservice.event.DeviceUnpublishedEvent;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RemoteObjectRegistryManagerTest {
-    private static String deviceProxyRmiId = "123";
-
     private static String onAgentId = "123";
 
     private static String deviceSerialNumber = "112233";
@@ -38,15 +35,12 @@ public class RemoteObjectRegistryManagerTest {
 
     private DevicePublishedEvent devicePublishedEvent;
 
-    private DeviceUnpublishedEvent deviceUnpublishedEvent;
-
     @Before
     public void setup() {
         serverRmiRegistry = mock(Registry.class);
         rmiManager = new RemoteObjectRegistryManager(serverRmiRegistry);
 
         devicePublishedEvent = new DevicePublishedEvent(deviceProxy, deviceSerialNumber, onAgentId);
-        deviceUnpublishedEvent = new DeviceUnpublishedEvent(deviceProxy, deviceSerialNumber, onAgentId);
     }
 
     @Test

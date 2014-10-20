@@ -5,6 +5,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.util.Arrays;
@@ -27,9 +28,6 @@ import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.pool.PoolManager;
 
 public class PoolManagerDeviceSelectionTest {
-
-    private final static int POOL_MANAGER_RMI_PORT = 1234;
-
     private final static String AGENT_ID = "mockagent";
 
     private final static String DEVICE1_SN = "mockdevice1";
@@ -42,19 +40,16 @@ public class PoolManagerDeviceSelectionTest {
 
     private static final String DEVICE5_SN = "mockdevice5";
 
-    private static ServerManager serverManager;
+    private static PoolManager poolManager = PoolManager.getInstance();
 
-    private static PoolManager poolManager;
+    private static Registry mockRegistry;
 
     @BeforeClass
     public static void setUp() throws Exception {
-        serverManager = new ServerManager(POOL_MANAGER_RMI_PORT);
-        poolManager = PoolManager.getInstance();
-
         IAgentManager mockedAgentManager = mock(IAgentManager.class);
         when(mockedAgentManager.getAgentId()).thenReturn(AGENT_ID);
 
-        Registry mockRegistry = mock(Registry.class);
+        mockRegistry = mock(Registry.class);
 
         DeviceInformation mockedDeviceInfoOne = new DeviceInformation();
         mockedDeviceInfoOne.setSerialNumber(DEVICE1_SN);
@@ -121,12 +116,15 @@ public class PoolManagerDeviceSelectionTest {
 
     @AfterClass
     public static void tearDown() throws Exception {
-        poolManager.removeDevice(DEVICE1_SN, AGENT_ID);
-        poolManager.removeDevice(DEVICE2_SN, AGENT_ID);
-        poolManager.removeDevice(DEVICE3_SN, AGENT_ID);
-        poolManager.removeDevice(DEVICE4_SN, AGENT_ID);
-        poolManager.removeDevice(DEVICE5_SN, AGENT_ID);
-        serverManager.close();
+        Class<?> pmc = Class.forName("com.musala.atmosphere.server.pool.PoolManager");
+        Method deviceIdBuild = pmc.getDeclaredMethod("buildDeviceIdentifier", String.class, String.class);
+        deviceIdBuild.setAccessible(true);
+
+        poolManager.removeDevice((String) deviceIdBuild.invoke(null, AGENT_ID, DEVICE1_SN));
+        poolManager.removeDevice((String) deviceIdBuild.invoke(null, AGENT_ID, DEVICE2_SN));
+        poolManager.removeDevice((String) deviceIdBuild.invoke(null, AGENT_ID, DEVICE3_SN));
+        poolManager.removeDevice((String) deviceIdBuild.invoke(null, AGENT_ID, DEVICE4_SN));
+        poolManager.removeDevice((String) deviceIdBuild.invoke(null, AGENT_ID, DEVICE5_SN));
     }
 
     @Test(expected = NoAvailableDeviceFoundException.class)
@@ -145,7 +143,9 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setRam(128);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        poolManager.releaseDevice(deviceDescriptor);
+        String deviceId = deviceDescriptor.getDeviceId();
+
+        poolManager.releaseDevice(deviceId);
         assertCorrectDeviceFetched(DEVICE1_SN, deviceDescriptor);
     }
 
@@ -157,7 +157,9 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setResolutionWidth(800);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        poolManager.releaseDevice(deviceDescriptor);
+        String deviceId = deviceDescriptor.getDeviceId();
+
+        poolManager.releaseDevice(deviceId);
         assertCorrectDeviceFetched(DEVICE1_SN, deviceDescriptor);
     }
 
@@ -167,7 +169,9 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setRam(128);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        poolManager.releaseDevice(deviceDescriptor);
+        String deviceId = deviceDescriptor.getDeviceId();
+
+        poolManager.releaseDevice(deviceId);
         assertCorrectDeviceFetched(DEVICE1_SN, deviceDescriptor);
     }
 
@@ -177,7 +181,9 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setDpi(240);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        poolManager.releaseDevice(deviceDescriptor);
+        String deviceId = deviceDescriptor.getDeviceId();
+
+        poolManager.releaseDevice(deviceId);
         assertCorrectDeviceFetched(DEVICE2_SN, deviceDescriptor);
     }
 
@@ -188,7 +194,9 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setRam(512);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        poolManager.releaseDevice(deviceDescriptor);
+        String deviceId = deviceDescriptor.getDeviceId();
+
+        poolManager.releaseDevice(deviceId);
         assertCorrectDeviceFetched(DEVICE3_SN, deviceDescriptor);
     }
 
@@ -199,7 +207,9 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setDpi(180);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        poolManager.releaseDevice(deviceDescriptor);
+        String deviceId = deviceDescriptor.getDeviceId();
+
+        poolManager.releaseDevice(deviceId);
         assertCorrectDeviceFetched(DEVICE4_SN, deviceDescriptor);
     }
 
@@ -210,7 +220,9 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setCameraPresent(true);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        poolManager.releaseDevice(deviceDescriptor);
+        String deviceId = deviceDescriptor.getDeviceId();
+
+        poolManager.releaseDevice(deviceId);
         assertCorrectDeviceFetched(DEVICE4_SN, deviceDescriptor);
     }
 
@@ -220,7 +232,9 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setCameraPresent(false);
 
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
-        poolManager.releaseDevice(deviceDescriptor);
+        String deviceId = deviceDescriptor.getDeviceId();
+
+        poolManager.releaseDevice(deviceId);
         assertCorrectDeviceFetched(DEVICE5_SN, deviceDescriptor);
     }
 

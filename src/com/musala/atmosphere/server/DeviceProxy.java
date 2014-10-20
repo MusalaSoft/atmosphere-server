@@ -3,7 +3,6 @@ package com.musala.atmosphere.server;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.RoutingAction;
 import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
@@ -23,13 +22,14 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice {
 
     private final IWrapDevice wrappedDevice;
 
-    private DeviceInformation deviceInformation;
-
     private PasskeyAuthority passkeyAuthority;
 
-    private ClientRequestMonitor timeoutMonitor = ClientRequestMonitor.getInstance();
+    private ClientRequestMonitor timeoutMonitor = new ClientRequestMonitor();
 
-    public DeviceProxy(IWrapDevice deviceToWrap) throws RemoteException {
+    private String deviceId;
+
+    public DeviceProxy(IWrapDevice deviceToWrap, String deviceId) throws RemoteException {
+        this.deviceId = deviceId;
         wrappedDevice = deviceToWrap;
         passkeyAuthority = PasskeyAuthority.getInstance();
     }
@@ -40,7 +40,12 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice {
             CommandFailedException,
             InvalidPasskeyException {
         passkeyAuthority.validatePasskey(this, invocationPasskey);
-        timeoutMonitor.restartTimerForDevice(this);
+        timeoutMonitor.restartTimerForDevice(deviceId);
+
+        return route(action, args);
+    }
+
+    public Object route(RoutingAction action, Object... args) throws RemoteException, CommandFailedException {
         try {
             Object returnValue = wrappedDevice.route(action, args);
             return returnValue;

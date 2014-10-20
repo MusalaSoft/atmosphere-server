@@ -18,10 +18,10 @@ import com.musala.atmosphere.server.dao.IDeviceDao;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
-import com.musala.atmosphere.server.eventservice.event.AgentDaoCreatedEvent;
-import com.musala.atmosphere.server.eventservice.event.DataSourceInitializedEvent;
-import com.musala.atmosphere.server.eventservice.event.DeviceDaoCreatedEvent;
-import com.musala.atmosphere.server.eventservice.event.DevicePoolDaoCreatedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DeviceDaoCreatedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
 
 /**
  * 

@@ -7,16 +7,21 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.commons.util.Pair;
+import com.musala.atmosphere.server.dao.IDevicePoolDao;
+import com.musala.atmosphere.server.dao.nativeobject.DevicePoolDao;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
-import com.musala.atmosphere.server.eventservice.event.AgentConnectedEvent;
-import com.musala.atmosphere.server.eventservice.event.AgentDisconnectedEvent;
+import com.musala.atmosphere.server.eventservice.event.agent.AgentConnectedEvent;
+import com.musala.atmosphere.server.eventservice.event.agent.AgentDisconnectedEvent;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 import com.musala.atmosphere.server.pool.PoolManager;
 
@@ -27,10 +32,13 @@ import com.musala.atmosphere.server.pool.PoolManager;
  * 
  */
 public class ServerManager extends Subscriber {
-
     private static Logger LOGGER = Logger.getLogger(ServerManager.class.getCanonicalName());
 
+    private Map<String, String> rmiIdToDeviceId = new HashMap<String, String>();
+
     private AgentAllocator agentAllocator = new AgentAllocator();
+
+    private static final String CONNECT_TO_AGENT_LOGGER_FORMAT = "%s %s %s %d %s";
 
     private int rmiRegistryPort;
 
@@ -44,7 +52,25 @@ public class ServerManager extends Subscriber {
 
     private ServerEventService eventService = new ServerEventService();
 
-    void onAgentDeviceListChanged(String onAgent, String changedDeviceRmiId, boolean isConnected) {
+    /**
+     * Adds or removes a device with given ID from the agent's device list.
+     * 
+     * @param onAgent
+     *        - the ID of the Agent
+     * @param changedDeviceRmiId
+     *        - the unique RMI identifier of the device
+     * @param isConnected
+     *        - this parameter is <code>true</code> if the device is connected to the agent and <code>false</code> if
+     *        it's disconnected.
+     * @throws RemoteException
+     *         - if fails to remove the device
+     * @throws NotBoundException
+     *         - if an attempt is made to remove non-existing device
+     */
+    void onAgentDeviceListChanged(String onAgent, String changedDeviceRmiId, boolean isConnected)
+        throws RemoteException,
+            CommandFailedException,
+            NotBoundException {
         if (!agentAllocator.hasAgent(onAgent)) {
             // The agent which sends the event is not registered on server
             LOGGER.warn("Received device state change event from an Agent that is not registered on the server ("
@@ -55,9 +81,11 @@ public class ServerManager extends Subscriber {
                 Pair<IAgentManager, Registry> agentRegistryPair = agentAllocator.getAgentRegistryPair(onAgent);
                 IAgentManager agentManager = agentRegistryPair.getKey();
                 Registry agentRegistry = agentRegistryPair.getValue();
-                poolManager.addDevice(changedDeviceRmiId, agentRegistry, agentManager);
+                String deviceId = poolManager.addDevice(changedDeviceRmiId, agentRegistry, agentManager);
+                rmiIdToDeviceId.put(changedDeviceRmiId, deviceId);
             } else {
-                poolManager.removeDevice(changedDeviceRmiId, onAgent);
+                String deviceId = rmiIdToDeviceId.get(changedDeviceRmiId);
+                poolManager.removeDevice(deviceId);
             }
         }
     }
@@ -67,8 +95,9 @@ public class ServerManager extends Subscriber {
      * waits for a client connection.
      * 
      * @param rmiPort
-     *        port, on which the RMI registry for the new {@link ServerManager SercerManager} will be opened.
+     *        port, on which the RMI registry for the new {@link ServerManager ServerManager} will be opened
      * @throws RemoteException
+     *         - if failed to publish the {@link ServerManager} in the RMI registry
      */
     public ServerManager(int rmiPort) throws RemoteException {
         // Publish this ServerManager in the RMI registry
@@ -98,6 +127,7 @@ public class ServerManager extends Subscriber {
         try {
             agentChangeNotifier = new AgentEventSender(this);
             String agentChangeNotifierRmiPublishString = RmiStringConstants.AGENT_EVENT_SENDER.toString();
+
             rmiRegistry.rebind(agentChangeNotifierRmiPublishString, agentChangeNotifier);
             LOGGER.info("AgentEventSender instance published in RMI (port " + rmiPort + ") under the identifier '"
                     + agentChangeNotifierRmiPublishString + "'.");
@@ -126,8 +156,8 @@ public class ServerManager extends Subscriber {
         try {
             // Close the registry
             if (rmiRegistry != null) {
-                // unexport the poolItems one by one
-                poolManager.unexportAllPoolItems();
+                // remove all devices from the registry
+                poolManager.removeAllDevices();
 
                 // unexport everything else
                 String[] rmiObjectIds = rmiRegistry.list();
@@ -158,11 +188,20 @@ public class ServerManager extends Subscriber {
      * @param port
      *        port that the agent has created it's registry on.
      * @throws RemoteException
+     *         - if the agent registry could not be contacted
      * @throws NotBoundException
+     *         - if looking for agent that is not in the registry
      */
     public void connectToAgent(String ip, int port) throws RemoteException, NotBoundException {
         String agentId = connectToAndRegisterAgent(ip, port);
-        LOGGER.info("Connection to Agent with address [" + ip + ":" + port + "] established.");
+
+        String message = String.format(CONNECT_TO_AGENT_LOGGER_FORMAT,
+                                       "Connection to Agent with address [",
+                                       ip,
+                                       ":",
+                                       port,
+                                       "] established.");
+        LOGGER.info(message);
         publishAllDeviceProxiesForAgent(agentId);
     }
 
@@ -209,11 +248,16 @@ public class ServerManager extends Subscriber {
      * Informs server manager for {@link AgentDisconnectedEvent event} received when an agent disconnects.
      * 
      * @param event
-     *        - event, which is received when an agent is disconnected.
+     *        - event, which is received when an agent is disconnected
+     * @throws RemoteException
+     *         - if could not get the agent ID
      */
-    public void inform(AgentDisconnectedEvent event) {
-        // TODO: Release all devices on the agent and unregister it from the server.
-        LOGGER.info("An agent disconnected event is received.");
+    public void inform(AgentDisconnectedEvent event) throws RemoteException {
+        String agentId = event.getAgentId();
+
+        IDevicePoolDao devicePoolDao = new DevicePoolDao();
+        devicePoolDao.removeDeivces(agentId);
+        LOGGER.debug("An agent disconnected event is received.");
     }
 
     /**
@@ -224,6 +268,7 @@ public class ServerManager extends Subscriber {
      */
     public void inform(AgentConnectedEvent event) {
         // TODO: Re-factor agent allocator to use events on agent connected.
+
         LOGGER.debug("An agent connected event is received.");
     }
 

@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.eventservice.event;
+package com.musala.atmosphere.server.eventservice.event.agent;
 
 import java.rmi.registry.Registry;
 

@@ -30,9 +30,9 @@ public class DeviceDao implements IDeviceDao {
      *        - the ID of the agent that the device is connected to
      */
     public DeviceDao(DeviceInformation deviceInformation, String deviceId, String agentId) {
-        deviceId = this.deviceId;
-        deviceInformation = this.deviceInformation;
-        agentId = this.agentId;
+        this.deviceId = deviceId;
+        this.deviceInformation = deviceInformation;
+        this.agentId = agentId;
     }
 
     @Override

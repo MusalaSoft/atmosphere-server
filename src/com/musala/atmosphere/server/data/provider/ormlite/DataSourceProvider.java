@@ -16,11 +16,11 @@ import com.musala.atmosphere.server.data.db.constant.Property;
 import com.musala.atmosphere.server.data.model.Agent;
 import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
-import com.musala.atmosphere.server.eventservice.event.AgentDaoCreatedEvent;
-import com.musala.atmosphere.server.eventservice.event.DataSourceCreatedEvent;
-import com.musala.atmosphere.server.eventservice.event.DataSourceInitializedEvent;
-import com.musala.atmosphere.server.eventservice.event.DeviceDaoCreatedEvent;
-import com.musala.atmosphere.server.eventservice.event.DevicePoolDaoCreatedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceCreatedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DeviceDaoCreatedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**

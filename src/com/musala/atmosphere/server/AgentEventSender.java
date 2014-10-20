@@ -1,8 +1,10 @@
 package com.musala.atmosphere.server;
 
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.sa.IAgentEventSender;
 
 /**
@@ -24,7 +26,9 @@ public class AgentEventSender extends UnicastRemoteObject implements IAgentEvent
 
     @Override
     public void deviceListChanged(String agentId, String changedDeviceRmiId, boolean isNowAvailable)
-        throws RemoteException {
+        throws RemoteException,
+            CommandFailedException,
+            NotBoundException {
         serverManager.onAgentDeviceListChanged(agentId, changedDeviceRmiId, isNowAvailable);
     }
 

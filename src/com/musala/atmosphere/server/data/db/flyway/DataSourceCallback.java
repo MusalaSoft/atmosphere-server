@@ -6,7 +6,7 @@ import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.callback.FlywayCallback;
 
 import com.musala.atmosphere.server.eventservice.ServerEventService;
-import com.musala.atmosphere.server.eventservice.event.DataSourceInitializedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
 
 /**
  * Class that receives callback functions after executing actions with the data source.

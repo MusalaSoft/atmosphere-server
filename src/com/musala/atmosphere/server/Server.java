@@ -18,13 +18,12 @@ import com.musala.atmosphere.server.data.db.flyway.DataSourceManager;
 import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
 import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
-import com.musala.atmosphere.server.eventservice.event.AgentEvent;
-import com.musala.atmosphere.server.eventservice.event.DataSourceInitializedEvent;
-import com.musala.atmosphere.server.eventservice.event.DeviceEvent;
+import com.musala.atmosphere.server.eventservice.event.agent.AgentEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
+import com.musala.atmosphere.server.eventservice.event.device.DeviceEvent;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 import com.musala.atmosphere.server.monitor.AgentMonitor;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
-import com.musala.atmosphere.server.pool.PoolManager;
 import com.musala.atmosphere.server.registrymanager.RemoteObjectRegistryManager;
 import com.musala.atmosphere.server.state.ServerState;
 import com.musala.atmosphere.server.state.StoppedServer;
@@ -138,7 +137,7 @@ public class Server {
      */
     public void exit() {
         stop();
-        ClientRequestMonitor deviceMonitor = ClientRequestMonitor.getInstance();
+        ClientRequestMonitor deviceMonitor = new ClientRequestMonitor();
         deviceMonitor.stop();
 
         // Remove subscribers from event service.
@@ -280,26 +279,6 @@ public class Server {
                 // Wait was interrupted, no one cares. Nothing to do here.
                 String exceptionMessage = String.format("Waiting for agent with id %s was interrupted.", agentId);
                 LOGGER.info(exceptionMessage);
-            }
-        }
-    }
-
-    /**
-     * Waits for expected device to become present on expected agent.
-     * 
-     * @param deviceId
-     *        - id of device
-     * @param agentId
-     *        - id of agent
-     */
-    public void waitForDeviceToBeAvailable(String deviceId, String agentId) {
-        PoolManager poolManager = PoolManager.getInstance();
-        while (!poolManager.isDeviceConnectedToAgent(agentId)) {
-            try {
-                Thread.sleep(DEVICE_PRESENCE_CYCLE_WAIT);
-            } catch (InterruptedException e) {
-                // Wait was interrupted, no one cares. Nothing to do here.
-                LOGGER.info("Waiting for connected devices was interrupted.");
             }
         }
     }

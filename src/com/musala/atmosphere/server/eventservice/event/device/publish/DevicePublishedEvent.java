@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.eventservice.event;
+package com.musala.atmosphere.server.eventservice.event.device.publish;
 
 import com.musala.atmosphere.server.DeviceProxy;
 
@@ -8,7 +8,7 @@ import com.musala.atmosphere.server.DeviceProxy;
  * @author yavor.stankov
  * 
  */
-public class DevicePublishedEvent implements DeviceEvent {
+public class DevicePublishedEvent implements DevicePublishEvent {
 
     private DeviceProxy deviceProxy;
 

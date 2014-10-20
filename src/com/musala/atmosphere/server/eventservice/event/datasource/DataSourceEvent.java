@@ -1,5 +1,6 @@
-package com.musala.atmosphere.server.eventservice.event;
+package com.musala.atmosphere.server.eventservice.event.datasource;
 
+import com.musala.atmosphere.server.eventservice.event.Event;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**

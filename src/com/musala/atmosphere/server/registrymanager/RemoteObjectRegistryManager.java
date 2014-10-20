@@ -9,8 +9,8 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
-import com.musala.atmosphere.server.eventservice.event.DevicePublishedEvent;
-import com.musala.atmosphere.server.eventservice.event.DeviceUnpublishedEvent;
+import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishedEvent;
+import com.musala.atmosphere.server.eventservice.event.device.publish.DeviceUnpublishedEvent;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**
@@ -146,7 +146,7 @@ public class RemoteObjectRegistryManager extends Subscriber {
      *        - RMI string identifier on the Agent for the device wrapper stub
      * @return - unique device RMI identifier
      */
-    private String buildDeviceRmiIdentifier(String onAgentId, String deviceWrapperAgentRmiId) {
+    private static String buildDeviceRmiIdentifier(String onAgentId, String deviceWrapperAgentRmiId) {
         String rmiIdentifier = String.format(DEVICE_RMI_ID_FORMAT, onAgentId, deviceWrapperAgentRmiId);
         return rmiIdentifier;
     }

@@ -1,4 +1,6 @@
-package com.musala.atmosphere.server.eventservice.event;
+package com.musala.atmosphere.server.eventservice.event.datasource.create.dao;
+
+import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceCreatedEvent;
 
 /**
  * This event is published when device data access object is created to inform all subscribers that operations with

@@ -1,5 +1,6 @@
 package com.musala.atmosphere.server.monitor;
 
+import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,8 +9,10 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.sa.IAgentManager;
-import com.musala.atmosphere.server.eventservice.event.AgentConnectedEvent;
-import com.musala.atmosphere.server.eventservice.event.AgentDisconnectedEvent;
+import com.musala.atmosphere.server.dao.IDevicePoolDao;
+import com.musala.atmosphere.server.dao.nativeobject.DevicePoolDao;
+import com.musala.atmosphere.server.eventservice.event.agent.AgentConnectedEvent;
+import com.musala.atmosphere.server.eventservice.event.agent.AgentDisconnectedEvent;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 import com.musala.atmosphere.server.monitor.ping.PingRequestHandler;
 
@@ -29,9 +32,16 @@ public class AgentMonitor extends Subscriber {
      * 
      * @param event
      *        - event, which is received when an agent is disconnected.
+     * @throws RemoteException
      */
-    public void inform(AgentDisconnectedEvent event) {
+    public void inform(AgentDisconnectedEvent event) throws RemoteException {
         IAgentManager disconnectedAgentManager = event.getDisconnectedAgentManager();
+
+        String agentId = disconnectedAgentManager.getAgentId();
+        IDevicePoolDao devicePoolDao = new DevicePoolDao();
+
+        devicePoolDao.removeDeivces(agentId);
+
         PingRequestHandler agentPingHandler = pingHandlers.remove(disconnectedAgentManager);
 
         if (agentPingHandler != null) {

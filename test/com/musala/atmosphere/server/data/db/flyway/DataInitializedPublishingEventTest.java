@@ -12,7 +12,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.musala.atmosphere.server.eventservice.ServerEventService;
-import com.musala.atmosphere.server.eventservice.event.DataSourceInitializedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
 
 /**
  * 
