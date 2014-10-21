@@ -64,6 +64,9 @@ public class Device {
     @DatabaseField(columnName = DeviceColumnName.RMI_REGISTRY_ID, unique = true, canBeNull = false)
     private String rmiRegistryId;
 
+    @DatabaseField(columnName = DeviceColumnName.PASSKEY, unique = false, canBeNull = false)
+    private long passkey;
+
     public Device() {
         // all persisted classes must define a no-arg constructor, used when an object is returned from a query
     }
@@ -391,4 +394,22 @@ public class Device {
         this.hasCamera = hasCamera;
     }
 
+    /**
+     * Gets the passkey for this device.
+     * 
+     * @return the passkey of this device
+     */
+    public long getPasskey() {
+        return passkey;
+    }
+
+    /**
+     * Sets the passkey for this device.
+     * 
+     * @param passkey
+     *        - the passkey for this device
+     */
+    public void setPasskey(long passkey) {
+        this.passkey = passkey;
+    }
 }

@@ -34,4 +34,6 @@ public class DeviceColumnName {
     public static final String AGENT = "agent_id";
 
     public static final String RMI_REGISTRY_ID = "rmi_registry_id";
+
+    public static final String PASSKEY = "passkey";
 }
