@@ -6,4 +6,8 @@ public class AgentColumnName {
     public static final String AGENT_ID = "agent_id";
 
     public static final String RMI_REGISTRY_ID = "rmi_registry_id";
+
+    public static final String HOSTNAME = "host_name";
+
+    public static final String PORT = "port";
 }

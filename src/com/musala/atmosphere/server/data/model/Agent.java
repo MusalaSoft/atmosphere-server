@@ -22,6 +22,12 @@ public class Agent {
     @DatabaseField(columnName = AgentColumnName.RMI_REGISTRY_ID, unique = true, canBeNull = false)
     private String rmiRegistryId;
 
+    @DatabaseField(columnName = AgentColumnName.HOSTNAME, unique = false, canBeNull = false)
+    private String hostname;
+
+    @DatabaseField(columnName = AgentColumnName.PORT, unique = false, canBeNull = false)
+    private int port;
+
     public Agent() {
         // all persisted classes must define a no-arg constructor, used when an object is returned from a query
     }
@@ -81,5 +87,43 @@ public class Agent {
      */
     public void setAgentId(String agentId) {
         this.agentId = agentId;
+    }
+
+    /**
+     * Gets the hostname of this agent.
+     * 
+     * @return the hostname of this agent
+     */
+    public String getHostname() {
+        return hostname;
+    }
+
+    /**
+     * Sets the hostname of this agent.
+     * 
+     * @param hostname
+     *        - the hostname of this agent
+     */
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
+
+    /**
+     * Gets port of this agent.
+     * 
+     * @return - the port of the agent
+     */
+    public int getPort() {
+        return port;
+    }
+
+    /**
+     * Sets the port of this agent.
+     * 
+     * @param port
+     *        - the port of this agent
+     */
+    public void setPort(int port) {
+        this.port = port;
     }
 }
