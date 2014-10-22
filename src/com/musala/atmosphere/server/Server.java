@@ -13,8 +13,7 @@ import com.musala.atmosphere.server.command.ServerCommand;
 import com.musala.atmosphere.server.command.ServerCommandFactory;
 import com.musala.atmosphere.server.command.ServerConsoleCommands;
 import com.musala.atmosphere.server.data.IDataSourceManager;
-import com.musala.atmosphere.server.data.db.flyway.DataSourceCallback;
-import com.musala.atmosphere.server.data.db.flyway.DataSourceManager;
+import com.musala.atmosphere.server.data.fake.FakeDataSourceManager;
 import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
 import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
@@ -51,7 +50,7 @@ public class Server {
 
     private RemoteObjectRegistryManager registryManager;
 
-    private IDataSourceManager dataSourceManager;
+    private IDataSourceManager fakeDataSourceManager;
 
     private IDataSourceProvider dataSourceProvider;
 
@@ -95,8 +94,7 @@ public class Server {
         // Add subscribers to the event service for device events.
         eventService.subscribe(DeviceEvent.class, registryManager);
 
-        DataSourceCallback dataSourceCallback = new DataSourceCallback();
-        dataSourceManager = new DataSourceManager(dataSourceCallback);
+        fakeDataSourceManager = new FakeDataSourceManager();
 
         dataSourceProvider = new DataSourceProvider();
 
@@ -120,7 +118,7 @@ public class Server {
      * Starts the Server thread if it is not already running.
      */
     public void run() {
-        dataSourceManager.initialize();
+        fakeDataSourceManager.initialize();
         currentServerState.run();
     }
 
