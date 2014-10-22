@@ -13,7 +13,7 @@ import com.musala.atmosphere.server.dao.IDeviceDao;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
 import com.musala.atmosphere.server.data.db.constant.Property;
-import com.musala.atmosphere.server.data.model.Agent;
+import com.musala.atmosphere.server.data.model.ormilite.Agent;
 import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceCreatedEvent;
@@ -37,7 +37,7 @@ public class DataSourceProvider extends Subscriber implements IDataSourceProvide
 
     private static IDeviceDao wrappedDeviceDao = null;
 
-    private static IDevicePoolDao wrappedDevicePoolDao = null;
+    private static IDevicePoolDao devicePoolDao = null;
 
     private static ServerEventService eventService = new ServerEventService();
 
@@ -55,7 +55,7 @@ public class DataSourceProvider extends Subscriber implements IDataSourceProvide
 
     @Override
     public IDevicePoolDao getDevicePoolDao() {
-        return wrappedDevicePoolDao;
+        return devicePoolDao;
     }
 
     /**
@@ -66,12 +66,11 @@ public class DataSourceProvider extends Subscriber implements IDataSourceProvide
      *        - event, which is received when data source is initialized
      */
     public void inform(DataSourceInitializedEvent event) {
+        // TODO: Data AccessObjects can be passed through events.
         try {
             if (connectionSource == null) {
                 connectionSource = new JdbcConnectionSource(Property.DATABASE_URL);
             }
-
-            // TODO: Initialize data access objects here, when the provided interfaces are implemented.
 
             if (wrappedAgentDao == null) {
                 Dao<Agent, String> agentDao = DaoManager.createDao(connectionSource, Agent.class);
@@ -80,7 +79,7 @@ public class DataSourceProvider extends Subscriber implements IDataSourceProvide
                 publishDataSourceCreatedEvent(new AgentDaoCreatedEvent());
             }
 
-            // TODO: Needs to be re-factored after adding initialization of the data access objects.
+            // TODO: Initialize data access objects here, when the provided interfaces are implemented.
             publishDataSourceCreatedEvent(new DeviceDaoCreatedEvent());
             publishDataSourceCreatedEvent(new DevicePoolDaoCreatedEvent());
         } catch (SQLException e) {

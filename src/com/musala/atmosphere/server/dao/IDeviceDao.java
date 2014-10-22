@@ -1,6 +1,7 @@
 package com.musala.atmosphere.server.dao;
 
-import com.musala.atmosphere.commons.DeviceInformation;
+import com.musala.atmosphere.server.dao.exception.DeviceDaoException;
+import com.musala.atmosphere.server.data.model.IDevice;
 
 /**
  * A data access object to manipulate a device entry in a data source.
@@ -10,38 +11,33 @@ import com.musala.atmosphere.commons.DeviceInformation;
  */
 public interface IDeviceDao {
     /**
-     * Marks the device as allocated in the data source.
+     * Updates device properties in the data source.
      * 
-     * @return <code>true</code> if the allocation is successful, and <code>false</code> false otherwise
+     * @param device
+     *        - device that will be updated in the data source
+     * @throws DeviceDaoException
+     *         - thrown when updating device fails
+     * 
      */
-    public boolean allocate();
+    public void update(IDevice device) throws DeviceDaoException;
 
     /**
-     * Marks the device as released in the data source.
+     * Adds new device in the data source.
      * 
-     * @return <code>true</code> if the device was successfully released, and <code>false</code> false otherwise
+     * @param device
+     *        - device to be added in the data source
+     * @throws DeviceDaoException
+     *         - thrown when adding new device fails
      */
-    public boolean release();
+    public void add(IDevice device) throws DeviceDaoException;
 
     /**
-     * Gets the information of the device from the data source.
+     * Removes a device with the given ID from the data source.
      * 
-     * @return the {@link DeviceInformation device information} of this device or <code>null</code> if the operation
-     *         fails
+     * @param deviceId
+     *        - the ID of the device to be removed
+     * @throws DeviceDaoException
+     *         - thrown when removing device fails
      */
-    public DeviceInformation getInformation();
-
-    /**
-     * Gets the ID of the device.
-     * 
-     * @return the ID of the device
-     */
-    public String getId();
-
-    /**
-     * Checks whether the device is allocated.
-     * 
-     * @return <code>true</code> if the device is allocated, and <code>false</code> otherwise
-     */
-    public boolean isAllocated();
+    public void remove(String deviceId) throws DeviceDaoException;
 }

@@ -18,6 +18,7 @@ import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
+import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
 import com.musala.atmosphere.server.dao.nativeobject.DevicePoolDao;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentConnectedEvent;
@@ -85,7 +86,12 @@ public class ServerManager extends Subscriber {
                 rmiIdToDeviceId.put(changedDeviceRmiId, deviceId);
             } else {
                 String deviceId = rmiIdToDeviceId.get(changedDeviceRmiId);
-                poolManager.removeDevice(deviceId);
+                try {
+                    poolManager.removeDevice(deviceId);
+                } catch (DevicePoolDaoException e) {
+                    String errorMessage = String.format("Failed to remove device with ID %s.", deviceId);
+                    LOGGER.error(errorMessage);
+                }
             }
         }
     }
@@ -156,7 +162,7 @@ public class ServerManager extends Subscriber {
         try {
             // Close the registry
             if (rmiRegistry != null) {
-                // remove all devices from the registry
+                // unexport the poolItems one by one
                 poolManager.removeAllDevices();
 
                 // unexport everything else
@@ -251,12 +257,14 @@ public class ServerManager extends Subscriber {
      *        - event, which is received when an agent is disconnected
      * @throws RemoteException
      *         - if could not get the agent ID
+     * @throws DevicePoolDaoException
+     *         - if devices for the disconnected agent could not be removed
      */
-    public void inform(AgentDisconnectedEvent event) throws RemoteException {
+    public void inform(AgentDisconnectedEvent event) throws RemoteException, DevicePoolDaoException {
         String agentId = event.getAgentId();
 
         IDevicePoolDao devicePoolDao = new DevicePoolDao();
-        devicePoolDao.removeDeivces(agentId);
+        devicePoolDao.removeDevices(agentId);
         LOGGER.debug("An agent disconnected event is received.");
     }
 

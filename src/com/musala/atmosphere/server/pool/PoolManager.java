@@ -4,6 +4,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,10 +22,11 @@ import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.sa.exceptions.NoAvailableDeviceFoundException;
 import com.musala.atmosphere.server.DeviceProxy;
 import com.musala.atmosphere.server.PasskeyAuthority;
-import com.musala.atmosphere.server.dao.IDeviceDao;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
-import com.musala.atmosphere.server.dao.nativeobject.DeviceDao;
+import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
+import com.musala.atmosphere.server.dao.nativeobject.Device;
 import com.musala.atmosphere.server.dao.nativeobject.DevicePoolDao;
+import com.musala.atmosphere.server.data.model.IDevice;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishEvent;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishedEvent;
@@ -92,8 +94,10 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      * 
      * @throws RemoteException
      *         - if failed to get the device information from the DeviceProxy
+     * @throws DevicePoolDaoException
+     *         - if failed to release device with the given ID
      */
-    public void removeDevice(String deviceId) throws RemoteException, CommandFailedException {
+    public void removeDevice(String deviceId) throws RemoteException, CommandFailedException, DevicePoolDaoException {
         DeviceProxy deviceProxy = deviceIdToDeviceProxy.get(deviceId);
 
         PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
@@ -102,7 +106,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
         DeviceInformation deviceInformation = (DeviceInformation) deviceProxy.route(RoutingAction.GET_DEVICE_INFORMATION);
         String deviceSerialNumber = deviceInformation.getSerialNumber();
 
-        DeviceDao deviceDao = (DeviceDao) devicePoolDao.getDevice(deviceId);
+        Device deviceDao = (Device) devicePoolDao.getDevice(deviceId);
         String agentId = deviceDao.getAgentId();
 
         DevicePublishEvent event = new DeviceUnpublishedEvent(deviceProxy, deviceSerialNumber, agentId);
@@ -125,6 +129,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      * @param agentManager
      *        - the {@link AgentManager AgentManager} that published the {@link IWrapDevice IWrapDevice} we are wrapping
      * @return the ID of the device in the pool if it was successfully inserted, or <code>null</code> otherwise
+     * 
      */
     public String addDevice(String deviceRmiId, Registry agentRegistry, IAgentManager agentManager) {
         try {
@@ -144,7 +149,12 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
 
             deviceIdToDeviceProxy.put(deviceId, deviceProxy);
 
-            devicePoolDao.addDevice(deviceInformation, deviceId, onAgentId);
+            try {
+                devicePoolDao.addDevice(deviceInformation, deviceId, onAgentId);
+            } catch (DevicePoolDaoException e) {
+                String errorMessage = String.format("Failed to add device with ID %s on agent %s.", deviceId, onAgentId);
+                LOGGER.error(errorMessage);
+            }
 
             return deviceId;
         } catch (NotBoundException e) {
@@ -163,8 +173,9 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      * 
      * @throws CommandFailedException
      * @throws RemoteException
+     * @throws DevicePoolDaoException
      */
-    public void removeAllDevices() throws RemoteException, CommandFailedException {
+    public void removeAllDevices() throws RemoteException, CommandFailedException, DevicePoolDaoException {
         for (String deviceId : deviceIdToDeviceProxy.keySet()) {
             removeDevice(deviceId);
         }
@@ -173,13 +184,19 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
     @Override
     public synchronized DeviceAllocationInformation allocateDevice(DeviceParameters deviceParameters)
         throws RemoteException {
-        List<IDeviceDao> deviceList = devicePoolDao.getDevices(deviceParameters);
+        List<IDevice> deviceList = new ArrayList<IDevice>();
+
+        try {
+            deviceList = devicePoolDao.getDevices(deviceParameters);
+        } catch (DevicePoolDaoException e) {
+            throw new NoAvailableDeviceFoundException();
+        }
 
         if (deviceList.isEmpty()) {
             throw new NoAvailableDeviceFoundException();
         }
 
-        DeviceDao device = (DeviceDao) deviceList.get(0);
+        Device device = (Device) deviceList.get(0);
 
         DeviceInformation deviceInformation = device.getInformation();
         String deviceSerialNumber = deviceInformation.getSerialNumber();
@@ -217,12 +234,17 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
         PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
         passkeyAuthority.validatePasskey(deviceProxy, passkey);
 
-        releaseDevice(deviceId);
+        try {
+            releaseDevice(deviceId);
+        } catch (DevicePoolDaoException e) {
+            String errorMessage = String.format("Failed to release device with ID %s.", deviceId);
+            LOGGER.error(errorMessage);
+        }
     }
 
-    public void releaseDevice(String deviceId) throws RemoteException {
+    public void releaseDevice(String deviceId) throws RemoteException, DevicePoolDaoException {
 
-        IDeviceDao device = devicePoolDao.getDevice(deviceId);
+        IDevice device = devicePoolDao.getDevice(deviceId);
 
         device.release();
     }

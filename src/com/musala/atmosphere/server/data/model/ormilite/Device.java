@@ -1,9 +1,13 @@
-package com.musala.atmosphere.server.data.model;
+package com.musala.atmosphere.server.data.model.ormilite;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import com.musala.atmosphere.commons.DeviceInformation;
+import com.musala.atmosphere.commons.util.Pair;
+import com.musala.atmosphere.server.data.db.constant.AgentColumnName;
 import com.musala.atmosphere.server.data.db.constant.DeviceColumnName;
 import com.musala.atmosphere.server.data.db.constant.TableName;
+import com.musala.atmosphere.server.data.model.IDevice;
 
 /**
  * Entity representing a device, storing all the useful information about it.
@@ -12,7 +16,7 @@ import com.musala.atmosphere.server.data.db.constant.TableName;
  * 
  */
 @DatabaseTable(tableName = TableName.DEVICE)
-public class Device {
+public class Device implements IDevice {
     @DatabaseField(columnName = DeviceColumnName.ID, generatedId = true)
     private Long id;
 
@@ -58,7 +62,7 @@ public class Device {
     @DatabaseField(columnName = DeviceColumnName.IS_ALLOCATED, defaultValue = "0", canBeNull = false)
     private boolean isAllocated;
 
-    @DatabaseField(columnName = DeviceColumnName.AGENT, canBeNull = false, foreign = true)
+    @DatabaseField(columnName = DeviceColumnName.AGENT, canBeNull = false, foreign = true, foreignAutoRefresh = true, foreignColumnName = AgentColumnName.ID)
     private Agent agent;
 
     @DatabaseField(columnName = DeviceColumnName.RMI_REGISTRY_ID, unique = true, canBeNull = false)
@@ -69,6 +73,19 @@ public class Device {
 
     public Device() {
         // all persisted classes must define a no-arg constructor, used when an object is returned from a query
+    }
+
+    /**
+     * Creates new device with the given serial number and RMI id.
+     * 
+     * @param serialNumber
+     *        - the serial number of this device
+     * @param rmiRegistryId
+     *        - the RMI registry of this device
+     */
+    public Device(String serialNumber, String rmiRegistryId) {
+        this.serialNumber = serialNumber;
+        this.rmiRegistryId = rmiRegistryId;
     }
 
     /**
@@ -133,6 +150,7 @@ public class Device {
      * 
      * @return <code>true</code> if this device is allocated, <code>false</code> otherwise
      */
+    @Override
     public boolean isAllocated() {
         return isAllocated;
     }
@@ -380,7 +398,7 @@ public class Device {
      * 
      * @return <code>true</code> if this device has camera, <code>false</code> otherwise
      */
-    public Boolean getHasCamera() {
+    public Boolean hasCamera() {
         return hasCamera;
     }
 
@@ -412,4 +430,73 @@ public class Device {
     public void setPasskey(long passkey) {
         this.passkey = passkey;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == null) {
+            return false;
+        }
+
+        if (!getClass().equals(object.getClass())) {
+            return false;
+        }
+
+        Device device = (Device) object;
+
+        return agent.equals(device.agent) && rmiRegistryId.equals(device.rmiRegistryId)
+                && serialNumber.equals(device.serialNumber) && passkey == device.passkey;
+    }
+
+    @Override
+    public void allocate() {
+        setAllocated(true);
+    }
+
+    @Override
+    public void release() {
+        setAllocated(false);
+    }
+
+    @Override
+    public DeviceInformation getInformation() {
+        DeviceInformation deviceInformation = new DeviceInformation();
+
+        deviceInformation.setEmulator(isEmulator);
+        deviceInformation.setSerialNumber(serialNumber);
+
+        if (apiLevel != null) {
+            deviceInformation.setApiLevel(apiLevel);
+        }
+        if (hasCamera != null) {
+            deviceInformation.setCamera(hasCamera);
+        }
+        if (cpu != null) {
+            deviceInformation.setCpu(cpu);
+        }
+        if (dpi != null) {
+            deviceInformation.setDpi(dpi);
+        }
+        if (manufacturer != null) {
+            deviceInformation.setManufacturer(manufacturer);
+        }
+        if (model != null) {
+            deviceInformation.setModel(model);
+        }
+        if (os != null) {
+            deviceInformation.setOs(os);
+        }
+        if (ram != null) {
+            deviceInformation.setRam(ram);
+        }
+        if (resolutionWidth != null && resolutionHeight != null) {
+            Pair<Integer, Integer> resolution = new Pair<Integer, Integer>(resolutionWidth, resolutionWidth);
+            deviceInformation.setResolution(resolution);
+        }
+        if (isTablet != null) {
+            deviceInformation.setTablet(isTablet);
+        }
+
+        return deviceInformation;
+    }
+
 }

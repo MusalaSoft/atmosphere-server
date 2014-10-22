@@ -1,7 +1,7 @@
 package com.musala.atmosphere.server.dao.nativeobject;
 
 import com.musala.atmosphere.commons.DeviceInformation;
-import com.musala.atmosphere.server.dao.IDeviceDao;
+import com.musala.atmosphere.server.data.model.IDevice;
 
 /**
  * A data access object which handles allocating, releasing and getting a device's information.
@@ -9,7 +9,7 @@ import com.musala.atmosphere.server.dao.IDeviceDao;
  * @author yavor.stankov
  * 
  */
-public class DeviceDao implements IDeviceDao {
+public class Device implements IDevice {
     private DeviceInformation deviceInformation;
 
     private String deviceId;
@@ -29,22 +29,20 @@ public class DeviceDao implements IDeviceDao {
      * @param agentId
      *        - the ID of the agent that the device is connected to
      */
-    public DeviceDao(DeviceInformation deviceInformation, String deviceId, String agentId) {
+    public Device(DeviceInformation deviceInformation, String deviceId, String agentId) {
         this.deviceId = deviceId;
         this.deviceInformation = deviceInformation;
         this.agentId = agentId;
     }
 
     @Override
-    public boolean allocate() {
+    public void allocate() {
         isAllocated = true;
-        return true;
     }
 
     @Override
-    public boolean release() {
+    public void release() {
         isAllocated = false;
-        return true;
     }
 
     @Override
@@ -53,15 +51,24 @@ public class DeviceDao implements IDeviceDao {
     }
 
     @Override
-    public String getId() {
-        return deviceId;
-    }
-
-    @Override
     public boolean isAllocated() {
         return isAllocated;
     }
 
+    /**
+     * Gets the ID of this device.
+     * 
+     * @return ID for this device
+     */
+    public String getId() {
+        return deviceId;
+    }
+
+    /**
+     * Gets the ID of the agent on which this device is running.
+     * 
+     * @return ID of the agent responsible for this device
+     */
     public String getAgentId() {
         return agentId;
     }

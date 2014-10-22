@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
 import com.musala.atmosphere.server.util.ServerPropertiesLoader;
 
 /**
@@ -138,7 +139,13 @@ public class ClientRequestMonitor {
                     LOGGER.info("Device proxy with RMI ID: " + deviceId + " released due to invocation timeout.");
                     entry.setValue(STARTING_TIMEOUT);
 
-                    poolManager.releaseDevice(deviceId);
+                    try {
+                        poolManager.releaseDevice(deviceId);
+                    } catch (DevicePoolDaoException e) {
+                        String errorMessage = String.format("Releasing device due to invocation timeout with ID %s failed.",
+                                                            deviceId);
+                        LOGGER.error(errorMessage);
+                    }
                 } else {
                     long newTimeout = entry.getValue() + TIMEOUT_STEP;
                     entry.setValue(newTimeout);

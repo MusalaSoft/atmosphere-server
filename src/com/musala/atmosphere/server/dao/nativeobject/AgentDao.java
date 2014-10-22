@@ -3,6 +3,8 @@ package com.musala.atmosphere.server.dao.nativeobject;
 import java.util.HashMap;
 
 import com.musala.atmosphere.server.dao.IAgentDao;
+import com.musala.atmosphere.server.dao.exception.AgentDaoException;
+import com.musala.atmosphere.server.data.model.IAgent;
 
 /**
  * A data access object which handles adding, removing agent, or getting its ID or rmi ID.
@@ -37,5 +39,10 @@ public class AgentDao implements IAgentDao {
     @Override
     public String getAgentId(String rmiId) {
         return rmiIdToAgentId.get(rmiId);
+    }
+
+    @Override
+    public void update(IAgent agent) throws AgentDaoException {
+        // Implementation is not needed.
     }
 }

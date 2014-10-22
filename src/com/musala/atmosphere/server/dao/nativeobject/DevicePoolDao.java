@@ -7,8 +7,9 @@ import java.util.Map.Entry;
 
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
-import com.musala.atmosphere.server.dao.IDeviceDao;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
+import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
+import com.musala.atmosphere.server.data.model.IDevice;
 import com.musala.atmosphere.server.util.DeviceMatchingComparator;
 
 /**
@@ -18,25 +19,25 @@ import com.musala.atmosphere.server.util.DeviceMatchingComparator;
  * 
  */
 public class DevicePoolDao implements IDevicePoolDao {
-    private HashMap<String, IDeviceDao> rmiIdToDeviceDao = new HashMap<String, IDeviceDao>();
+    private HashMap<String, IDevice> rmiIdToDevice = new HashMap<String, IDevice>();
 
     @Override
-    public IDeviceDao addDevice(DeviceInformation device, String rmiId, String agentId) {
-        DeviceDao deviceEntry = new DeviceDao(device, rmiId, agentId);
-        rmiIdToDeviceDao.put(rmiId, deviceEntry);
+    public IDevice addDevice(DeviceInformation device, String rmiId, String agentId) {
+        Device deviceEntry = new Device(device, rmiId, agentId);
+        rmiIdToDevice.put(rmiId, deviceEntry);
 
         return deviceEntry;
     }
 
     @Override
-    public List<IDeviceDao> getDevices(DeviceParameters parameters) {
-        List<IDeviceDao> devicesList = new ArrayList<IDeviceDao>();
+    public List<IDevice> getDevices(DeviceParameters parameters) throws DevicePoolDaoException {
+        List<IDevice> devicesList = new ArrayList<IDevice>();
 
-        for (IDeviceDao deviceDao : rmiIdToDeviceDao.values()) {
-            DeviceInformation deviceInformation = deviceDao.getInformation();
+        for (IDevice device : rmiIdToDevice.values()) {
+            DeviceInformation deviceInformation = device.getInformation();
 
             if (DeviceMatchingComparator.isValidMatch(parameters, deviceInformation)) {
-                devicesList.add(deviceDao);
+                devicesList.add(device);
             }
         }
 
@@ -44,21 +45,21 @@ public class DevicePoolDao implements IDevicePoolDao {
     }
 
     @Override
-    public IDeviceDao getDevice(String id) {
-        return rmiIdToDeviceDao.get(id);
+    public IDevice getDevice(String id) {
+        return rmiIdToDevice.get(id);
     }
 
     @Override
     public boolean hasDevice(String id) {
-        return rmiIdToDeviceDao.containsKey(id);
+        return rmiIdToDevice.containsKey(id);
     }
 
     @Override
     public boolean hasDevice(DeviceParameters parameters) {
-        for (IDeviceDao deviceDao : rmiIdToDeviceDao.values()) {
-            DeviceInformation deviceInformation = deviceDao.getInformation();
+        for (IDevice device : rmiIdToDevice.values()) {
+            DeviceInformation deviceInformation = device.getInformation();
 
-            if (!DeviceMatchingComparator.isValidMatch(parameters, deviceInformation)) {
+            if (DeviceMatchingComparator.isValidMatch(parameters, deviceInformation)) {
                 return true;
             }
         }
@@ -67,22 +68,23 @@ public class DevicePoolDao implements IDevicePoolDao {
     }
 
     @Override
-    public boolean removeDeivces(String agentId) {
-        for (Entry<String, IDeviceDao> idToDeviceDao : rmiIdToDeviceDao.entrySet()) {
-            DeviceDao deviceDAO = (DeviceDao) idToDeviceDao.getValue();
-            if (deviceDAO.getAgentId() == agentId) {
-                String deviceRmiId = idToDeviceDao.getKey();
-                rmiIdToDeviceDao.remove(deviceRmiId);
+    public int removeDevices(String agentId) {
+        int removedCount = 0;
+
+        for (Entry<String, IDevice> idToDevice : rmiIdToDevice.entrySet()) {
+            Device device = (Device) idToDevice.getValue();
+            if (device.getAgentId().equals(agentId)) {
+                String deviceRmiId = idToDevice.getKey();
+                rmiIdToDevice.remove(deviceRmiId);
+                removedCount++;
             }
         }
 
-        return true;
+        return removedCount;
     }
 
     @Override
-    public boolean remove(String id) {
-        rmiIdToDeviceDao.remove(id);
-
-        return true;
+    public void remove(String deviceId) {
+        rmiIdToDevice.remove(deviceId);
     }
 }

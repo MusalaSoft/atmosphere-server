@@ -1,9 +1,12 @@
-package com.musala.atmosphere.server.data.model;
+package com.musala.atmosphere.server.data.model.ormilite;
 
+import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.musala.atmosphere.server.data.db.constant.AgentColumnName;
 import com.musala.atmosphere.server.data.db.constant.TableName;
+import com.musala.atmosphere.server.data.model.IAgent;
 
 /**
  * Entity representing an agent, storing all the useful information about it.
@@ -12,7 +15,7 @@ import com.musala.atmosphere.server.data.db.constant.TableName;
  * 
  */
 @DatabaseTable(tableName = TableName.AGENT)
-public class Agent {
+public class Agent implements IAgent {
     @DatabaseField(columnName = AgentColumnName.ID, generatedId = true)
     private Long id;
 
@@ -28,8 +31,24 @@ public class Agent {
     @DatabaseField(columnName = AgentColumnName.PORT, unique = false, canBeNull = false)
     private int port;
 
+    @ForeignCollectionField(eager = false)
+    private ForeignCollection<Device> devices;
+
     public Agent() {
         // all persisted classes must define a no-arg constructor, used when an object is returned from a query
+    }
+
+    /**
+     * Creates new agent with the given agent ID and RMI id.
+     * 
+     * @param agentId
+     *        - the ID of this agent
+     * @param rmiId
+     *        - the RMI registry id of this agent
+     */
+    public Agent(String agentId, String rmiId) {
+        this.agentId = agentId;
+        this.rmiRegistryId = rmiId;
     }
 
     /**
@@ -125,5 +144,39 @@ public class Agent {
      */
     public void setPort(int port) {
         this.port = port;
+    }
+
+    /**
+     * Gets collection of devices for which the agent is responsible.
+     * 
+     * @return {@link ForeignCollection collection} of devices on this agent.
+     */
+    public ForeignCollection<Device> getDevices() {
+        return devices;
+    }
+
+    /**
+     * Sets collection of devices for which the agent is responsible.
+     * 
+     * @param devices
+     *        - collection of devices running on this agent
+     */
+    public void setDevices(ForeignCollection<Device> devices) {
+        this.devices = devices;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == null) {
+            return false;
+        }
+
+        if (!getClass().equals(object.getClass())) {
+            return false;
+        }
+
+        Agent agent = (Agent) object;
+
+        return agentId.equals(agent.agentId) && rmiRegistryId.equals(agent.rmiRegistryId);
     }
 }
