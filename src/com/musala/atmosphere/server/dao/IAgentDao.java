@@ -17,10 +17,14 @@ public interface IAgentDao {
      *        - the ID of the entry
      * @param rmiId
      *        - the RMI ID of the entry
+     * @param agentIp
+     *        - address of the agent
+     * @param agentPort
+     *        - port that the agent has created it's registry on
      * @throws AgentDaoException
      *         - thrown when adding new agent fails
      */
-    public void add(String agentId, String rmiId) throws AgentDaoException;
+    public void add(String agentId, String rmiId, String agentIp, int agentPort) throws AgentDaoException;
 
     /**
      * Removes the entry of the agent with the given ID from the data source.

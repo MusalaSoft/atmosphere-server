@@ -34,8 +34,6 @@ public class Server {
 
     private static final int AGENT_CONNECTION_CYCLE_WAIT = 300;
 
-    private static final int DEVICE_PRESENCE_CYCLE_WAIT = 300;
-
     private ServerManager serverManager;
 
     private ConsoleControl serverConsole;

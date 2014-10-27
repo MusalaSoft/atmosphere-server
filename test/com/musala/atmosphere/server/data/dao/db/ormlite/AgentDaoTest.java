@@ -34,6 +34,10 @@ public class AgentDaoTest {
 
     private static final String TEST_AGENT_RMI_ID = "rmi_registry_id";
 
+    private static final String TEST_AGENT_IP = "agent_ip";
+
+    private static final int TEST_AGENT_PORT = 1234;
+
     private static final String EXISTING_AGENT_ID = "existing_agent_id";
 
     private static final String EXISTING_AGENT_RMI_ID = "existing_rmi_registry_id";
@@ -55,7 +59,7 @@ public class AgentDaoTest {
 
         when(mockedAgentDao.create(eq(expectedAgentToCreate))).thenReturn(1);
 
-        testAgentDao.add(TEST_AGENT_ID, TEST_AGENT_RMI_ID);
+        testAgentDao.add(TEST_AGENT_ID, TEST_AGENT_RMI_ID, TEST_AGENT_IP, TEST_AGENT_PORT);
         verify(mockedAgentDao, times(1)).create(eq(expectedAgentToCreate));
     }
 
@@ -80,7 +84,7 @@ public class AgentDaoTest {
 
         when(mockedAgentDao.create(expectedAgentToCreate)).thenThrow(new SQLException());
 
-        testAgentDao.add(TEST_AGENT_ID, TEST_AGENT_RMI_ID);
+        testAgentDao.add(TEST_AGENT_ID, TEST_AGENT_RMI_ID, TEST_AGENT_IP, TEST_AGENT_PORT);
         verify(mockedAgentDao, times(1)).create(eq(expectedAgentToCreate));
     }
 

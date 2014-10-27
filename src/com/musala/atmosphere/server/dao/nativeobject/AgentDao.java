@@ -18,7 +18,7 @@ public class AgentDao implements IAgentDao {
     private HashMap<String, String> rmiIdToAgentId = new HashMap<String, String>();
 
     @Override
-    public void add(String agentId, String rmiId) {
+    public void add(String agentId, String rmiId, String agentIp, int agentPort) {
         agentIdToRmiId.put(agentId, rmiId);
         rmiIdToAgentId.put(rmiId, agentId);
     }

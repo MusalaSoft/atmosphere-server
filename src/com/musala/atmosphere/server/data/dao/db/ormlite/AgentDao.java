@@ -34,10 +34,12 @@ public class AgentDao implements IAgentDao {
     }
 
     @Override
-    public void add(String agentId, String rmiId) throws AgentDaoException {
+    public void add(String agentId, String rmiId, String agentIp, int agentPort) throws AgentDaoException {
         Agent agent = new Agent(agentId, rmiId);
 
-        // TODO: Set hostname and port before agent is created.
+        agent.setHostname(agentIp);
+        agent.setPort(agentPort);
+
         try {
             agentDao.create(agent);
         } catch (SQLException e) {

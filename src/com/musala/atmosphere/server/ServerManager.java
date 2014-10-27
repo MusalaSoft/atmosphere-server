@@ -39,7 +39,7 @@ public class ServerManager extends Subscriber {
 
     private AgentAllocator agentAllocator = new AgentAllocator();
 
-    private static final String CONNECT_TO_AGENT_LOGGER_FORMAT = "%s %s %s %d %s";
+    private static final String CONNECT_TO_AGENT_LOGGER_FORMAT = "Connection to Agent with address %s : %d established.";
 
     private int rmiRegistryPort;
 
@@ -201,12 +201,7 @@ public class ServerManager extends Subscriber {
     public void connectToAgent(String ip, int port) throws RemoteException, NotBoundException {
         String agentId = connectToAndRegisterAgent(ip, port);
 
-        String message = String.format(CONNECT_TO_AGENT_LOGGER_FORMAT,
-                                       "Connection to Agent with address [",
-                                       ip,
-                                       ":",
-                                       port,
-                                       "] established.");
+        String message = String.format(CONNECT_TO_AGENT_LOGGER_FORMAT, ip, port);
         LOGGER.info(message);
         publishAllDeviceProxiesForAgent(agentId);
     }
