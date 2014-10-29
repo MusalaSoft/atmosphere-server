@@ -2,6 +2,7 @@ package com.musala.atmosphere.server.dao.nativeobject;
 
 import java.util.HashMap;
 
+import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.dao.IAgentDao;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.data.model.IAgent;
@@ -13,32 +14,18 @@ import com.musala.atmosphere.server.data.model.IAgent;
  * 
  */
 public class AgentDao implements IAgentDao {
-    private HashMap<String, String> agentIdToRmiId = new HashMap<String, String>();
-
-    private HashMap<String, String> rmiIdToAgentId = new HashMap<String, String>();
+    private HashMap<String, Pair<String, Integer>> agentIdToAgentIpAndPort = new HashMap<String, Pair<String, Integer>>();
 
     @Override
-    public void add(String agentId, String rmiId, String agentIp, int agentPort) {
-        agentIdToRmiId.put(agentId, rmiId);
-        rmiIdToAgentId.put(rmiId, agentId);
+    public void add(String agentId, String agentIp, int agentPort) {
+        Pair agentIpAndPort = new Pair(agentIp, agentPort);
+
+        agentIdToAgentIpAndPort.put(agentId, agentIpAndPort);
     }
 
     @Override
     public void remove(String agentId) {
-        String rmiId = agentIdToRmiId.remove(agentId);
-        if (rmiId != null) {
-            rmiIdToAgentId.remove(rmiId);
-        }
-    }
-
-    @Override
-    public String getRmiId(String agentId) {
-        return agentIdToRmiId.get(agentId);
-    }
-
-    @Override
-    public String getAgentId(String rmiId) {
-        return rmiIdToAgentId.get(rmiId);
+        agentIdToAgentIpAndPort.remove(agentId);
     }
 
     @Override

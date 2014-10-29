@@ -22,9 +22,6 @@ public class Agent implements IAgent {
     @DatabaseField(columnName = AgentColumnName.AGENT_ID, index = true, unique = true, canBeNull = false)
     private String agentId;
 
-    @DatabaseField(columnName = AgentColumnName.RMI_REGISTRY_ID, unique = true, canBeNull = false)
-    private String rmiRegistryId;
-
     @DatabaseField(columnName = AgentColumnName.HOSTNAME, unique = false, canBeNull = false)
     private String hostname;
 
@@ -43,12 +40,9 @@ public class Agent implements IAgent {
      * 
      * @param agentId
      *        - the ID of this agent
-     * @param rmiId
-     *        - the RMI registry id of this agent
      */
-    public Agent(String agentId, String rmiId) {
+    public Agent(String agentId) {
         this.agentId = agentId;
-        this.rmiRegistryId = rmiId;
     }
 
     /**
@@ -68,25 +62,6 @@ public class Agent implements IAgent {
      */
     public void setId(Long id) {
         this.id = id;
-    }
-
-    /**
-     * Gets the RMI registry id of this agent.
-     * 
-     * @return the RMI registry id of this agent
-     */
-    public String getRmiRegistryId() {
-        return rmiRegistryId;
-    }
-
-    /**
-     * Sets the RMI registry id for this agent.
-     * 
-     * @param rmiRegistryId
-     *        - the RMI registry id of this agent
-     */
-    public void setRmiRegistryId(String rmiRegistryId) {
-        this.rmiRegistryId = rmiRegistryId;
     }
 
     /**
@@ -177,6 +152,6 @@ public class Agent implements IAgent {
 
         Agent agent = (Agent) object;
 
-        return agentId.equals(agent.agentId) && rmiRegistryId.equals(agent.rmiRegistryId);
+        return agentId.equals(agent.agentId);
     }
 }

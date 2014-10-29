@@ -34,8 +34,8 @@ public class AgentDao implements IAgentDao {
     }
 
     @Override
-    public void add(String agentId, String rmiId, String agentIp, int agentPort) throws AgentDaoException {
-        Agent agent = new Agent(agentId, rmiId);
+    public void add(String agentId, String agentIp, int agentPort) throws AgentDaoException {
+        Agent agent = new Agent(agentId);
 
         agent.setHostname(agentIp);
         agent.setPort(agentPort);
@@ -43,7 +43,7 @@ public class AgentDao implements IAgentDao {
         try {
             agentDao.create(agent);
         } catch (SQLException e) {
-            String message = String.format("Adding agent with ID %s and RMI registry id %s failed.", agentId, rmiId);
+            String message = String.format("Adding agent with ID %s failed", agentId);
             throw new AgentDaoException(message, e);
         }
     }
@@ -80,30 +80,6 @@ public class AgentDao implements IAgentDao {
         }
     }
 
-    @Override
-    public String getRmiId(String agentId) throws AgentDaoException {
-        Agent agent = (Agent) selectByAgentId(agentId);
-
-        if (agent != null) {
-            return agent.getRmiRegistryId();
-        } else {
-            String message = String.format("Agent with ID %s does not exist.", agentId);
-            throw new AgentDaoException(message);
-        }
-    }
-
-    @Override
-    public String getAgentId(String rmiId) throws AgentDaoException {
-        Agent agent = (Agent) selectByRmiId(rmiId);
-
-        if (agent != null) {
-            return agent.getAgentId();
-        } else {
-            String message = String.format("Agent with RMI id %s does not exist.", rmiId);
-            throw new AgentDaoException(message);
-        }
-    }
-
     /**
      * Selects an agent which matches the requested ID.
      * 
@@ -118,24 +94,6 @@ public class AgentDao implements IAgentDao {
             return getAgentByFieldValue(AgentColumnName.AGENT_ID, agentId);
         } catch (SQLException e) {
             String message = String.format("Selecting agent by ID %s failed.", agentId);
-            throw new AgentDaoException(message, e);
-        }
-    }
-
-    /**
-     * Selects an agent which matches the requested RMI id.
-     * 
-     * @param rmiId
-     *        - the agent RMI id to select by
-     * @return {@link IAgent agent} with the requested RMI id or <code>null</code> if such agent is missing
-     * @throws AgentDaoException
-     *         - thrown when getting an agent from the data source fails
-     */
-    public IAgent selectByRmiId(String rmiId) throws AgentDaoException {
-        try {
-            return getAgentByFieldValue(AgentColumnName.RMI_REGISTRY_ID, rmiId);
-        } catch (SQLException e) {
-            String message = String.format("Selecting agent by RMI id %s failed.", rmiId);
             throw new AgentDaoException(message, e);
         }
     }

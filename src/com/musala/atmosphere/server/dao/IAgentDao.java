@@ -15,8 +15,6 @@ public interface IAgentDao {
      * 
      * @param agentId
      *        - the ID of the entry
-     * @param rmiId
-     *        - the RMI ID of the entry
      * @param agentIp
      *        - address of the agent
      * @param agentPort
@@ -24,7 +22,7 @@ public interface IAgentDao {
      * @throws AgentDaoException
      *         - thrown when adding new agent fails
      */
-    public void add(String agentId, String rmiId, String agentIp, int agentPort) throws AgentDaoException;
+    public void add(String agentId, String agentIp, int agentPort) throws AgentDaoException;
 
     /**
      * Removes the entry of the agent with the given ID from the data source.
@@ -46,32 +44,4 @@ public interface IAgentDao {
      * 
      */
     public void update(IAgent agent) throws AgentDaoException;
-
-    /**
-     * Gets the RMI ID of the agent with the given ID.
-     * 
-     * @param agentId
-     *        - ID of the agent
-     * @return the RMI ID of the agent with the given ID
-     * @throws AgentDaoException
-     *         - thrown when retrieving RMI id for the agent from the data source fails or the agent is missing
-     */
-    // TODO: In future it might be changed to return IAgent by agentId. For now it is included in the interface to make
-    // easier the substitution of the
-    // implementation using native objects.
-    public String getRmiId(String agentId) throws AgentDaoException;
-
-    /**
-     * Gets the ID of the agent with the given RMI ID.
-     * 
-     * @param rmiId
-     *        - RMI ID of the agent
-     * @return ID of the agent with the given RMI ID
-     * @throws AgentDaoException
-     *         - thrown when retrieving ID for the agent from the data source fails or the agent is missing
-     */
-    // TODO: In future it might be changed to return IAgent by rmiId. For now it is included in the interface to make
-    // easier the substitution of the
-    // implementation using native objects.
-    public String getAgentId(String rmiId) throws AgentDaoException;
 }
