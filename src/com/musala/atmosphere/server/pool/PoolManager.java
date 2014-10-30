@@ -24,7 +24,6 @@ import com.musala.atmosphere.server.DeviceProxy;
 import com.musala.atmosphere.server.PasskeyAuthority;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
-import com.musala.atmosphere.server.dao.nativeobject.Device;
 import com.musala.atmosphere.server.dao.nativeobject.DevicePoolDao;
 import com.musala.atmosphere.server.data.model.IDevice;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
@@ -106,8 +105,8 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
         DeviceInformation deviceInformation = (DeviceInformation) deviceProxy.route(RoutingAction.GET_DEVICE_INFORMATION);
         String deviceSerialNumber = deviceInformation.getSerialNumber();
 
-        Device deviceDao = (Device) devicePoolDao.getDevice(deviceId);
-        String agentId = deviceDao.getAgentId();
+        IDevice device = devicePoolDao.getDevice(deviceId);
+        String agentId = device.getAgentId();
 
         DevicePublishEvent event = new DeviceUnpublishedEvent(deviceProxy, deviceSerialNumber, agentId);
         eventService.publish(event);
@@ -196,7 +195,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
             throw new NoAvailableDeviceFoundException();
         }
 
-        Device device = (Device) deviceList.get(0);
+        IDevice device = deviceList.get(0);
 
         DeviceInformation deviceInformation = device.getInformation();
         String deviceSerialNumber = deviceInformation.getSerialNumber();
@@ -206,7 +205,15 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
 
         device.allocate();
 
-        String deviceId = device.getId();
+        try {
+            devicePoolDao.update(device);
+        } catch (DevicePoolDaoException e) {
+            String message = String.format("Allocating device with serial number %s failed.",
+                                           deviceInformation.getSerialNumber());
+            LOGGER.error(message, e);
+        }
+
+        String deviceId = device.getDeviceId();
         DeviceProxy deviceProxy = deviceIdToDeviceProxy.get(deviceId);
 
         PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
@@ -247,6 +254,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
         IDevice device = devicePoolDao.getDevice(deviceId);
 
         device.release();
+        devicePoolDao.update(device);
     }
 
     public int getPoolSize() {

@@ -1,5 +1,12 @@
 package com.musala.atmosphere.server.dao.exception;
 
+/**
+ * 
+ * Class for all Runtime exceptions that might be thrown from the device data access object.
+ * 
+ * @author filareta.yordanova
+ * 
+ */
 public class DeviceDaoRuntimeException extends DaoRuntimeException {
     private static final long serialVersionUID = 6611522373486459831L;
 

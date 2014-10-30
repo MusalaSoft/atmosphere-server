@@ -92,4 +92,15 @@ public interface IDevicePoolDao {
      *         - thrown when removing device with the given ID fails
      */
     public void remove(String deviceId) throws DevicePoolDaoException;
+
+    /**
+     * Updates the given {@link IDevice device} the device pool.
+     * 
+     * @param device
+     *        - device that will be updated in pool
+     * @throws DevicePoolDaoException
+     *         - thrown when updating device fails
+     * 
+     */
+    public void update(IDevice device) throws DevicePoolDaoException;
 }

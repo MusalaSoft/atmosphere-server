@@ -432,19 +432,30 @@ public class Device implements IDevice {
     }
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((agent == null) ? 0 : agent.hashCode());
+        result = prime * result + ((rmiRegistryId == null) ? 0 : rmiRegistryId.hashCode());
+        result = prime * result + ((serialNumber == null) ? 0 : serialNumber.hashCode());
+        return result;
+    }
+
+    @Override
     public boolean equals(Object object) {
-        if (object == null) {
-            return false;
+        if (object == this) {
+            return true;
         }
 
-        if (!getClass().equals(object.getClass())) {
+        if (object == null || !getClass().equals(object.getClass())) {
             return false;
         }
 
         Device device = (Device) object;
 
-        return agent.equals(device.agent) && rmiRegistryId.equals(device.rmiRegistryId)
-                && serialNumber.equals(device.serialNumber) && passkey == device.passkey;
+        return (agent == device.agent || (agent != null && agent.equals(device.agent)))
+                && (rmiRegistryId == device.rmiRegistryId || (rmiRegistryId != null && rmiRegistryId.equals(device.rmiRegistryId)))
+                && (serialNumber == device.serialNumber || (serialNumber != null && serialNumber.equals(device.serialNumber)));
     }
 
     @Override
@@ -497,6 +508,21 @@ public class Device implements IDevice {
         }
 
         return deviceInformation;
+    }
+
+    @Override
+    public String getAgentId() {
+        if (agent != null) {
+            return agent.getAgentId();
+        }
+
+        return null;
+    }
+
+    @Override
+    public String getDeviceId() {
+        // For now the unique identifier for the device is its RMI id.
+        return rmiRegistryId;
     }
 
 }

@@ -87,4 +87,9 @@ public class DevicePoolDao implements IDevicePoolDao {
     public void remove(String deviceId) {
         rmiIdToDevice.remove(deviceId);
     }
+
+    @Override
+    public void update(IDevice device) throws DevicePoolDaoException {
+        // No implementation needed.
+    }
 }

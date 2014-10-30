@@ -52,6 +52,8 @@ public class AgentDaoTest {
     @Test
     public void testAddNewAgent() throws Exception {
         Agent expectedAgentToCreate = new Agent(TEST_AGENT_ID);
+        expectedAgentToCreate.setHostname(TEST_AGENT_IP);
+        expectedAgentToCreate.setPort(TEST_AGENT_PORT);
 
         when(mockedAgentDao.create(eq(expectedAgentToCreate))).thenReturn(1);
 
@@ -77,6 +79,8 @@ public class AgentDaoTest {
     @Test(expected = AgentDaoException.class)
     public void testAddAgentThatAlreadyExists() throws Exception {
         Agent expectedAgentToCreate = new Agent(TEST_AGENT_ID);
+        expectedAgentToCreate.setHostname(TEST_AGENT_IP);
+        expectedAgentToCreate.setPort(TEST_AGENT_PORT);
 
         when(mockedAgentDao.create(expectedAgentToCreate)).thenThrow(new SQLException());
 

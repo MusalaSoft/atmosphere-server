@@ -30,4 +30,18 @@ public interface IDevice {
      * @return {@link DeviceInformation information} about the device
      */
     public DeviceInformation getInformation();
+
+    /**
+     * Gets the ID of the agent responsible for this device.
+     * 
+     * @return ID of the agent on which the device is running or <code>null</code> if the agent is not set
+     */
+    public String getAgentId();
+
+    /**
+     * Gets the ID for this device.
+     * 
+     * @return ID of the device
+     */
+    public String getDeviceId();
 }

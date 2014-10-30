@@ -13,6 +13,7 @@ import com.musala.atmosphere.server.dao.IDeviceDao;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
 import com.musala.atmosphere.server.data.dao.db.ormlite.DeviceDao;
+import com.musala.atmosphere.server.data.dao.db.ormlite.DevicePoolDao;
 import com.musala.atmosphere.server.data.db.constant.Property;
 import com.musala.atmosphere.server.data.model.ormilite.Agent;
 import com.musala.atmosphere.server.data.model.ormilite.Device;
@@ -88,8 +89,11 @@ public class DataSourceProvider extends Subscriber implements IDataSourceProvide
                 publishDataSourceCreatedEvent(new DeviceDaoCreatedEvent());
             }
 
-            // TODO: Initialize data access objects here, when the provided interfaces are implemented.
-            publishDataSourceCreatedEvent(new DevicePoolDaoCreatedEvent());
+            if (devicePoolDao == null) {
+                devicePoolDao = new DevicePoolDao((DeviceDao) wrappedDeviceDao, (AgentDao) wrappedAgentDao);
+
+                publishDataSourceCreatedEvent(new DevicePoolDaoCreatedEvent());
+            }
         } catch (SQLException e) {
             LOGGER.error("Connection to the data source failed.", e);
         }

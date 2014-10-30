@@ -60,7 +60,7 @@ public class Device implements IDevice {
      * 
      * @return ID for this device
      */
-    public String getId() {
+    public String getDeviceId() {
         return deviceId;
     }
 

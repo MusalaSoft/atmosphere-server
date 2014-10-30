@@ -2,7 +2,7 @@ package com.musala.atmosphere.server.dao.exception;
 
 /**
  * 
- * Class for all Runtime exceptions that might be thrown form the agent data access objects.
+ * Class for all Runtime exceptions that might be thrown from the agent data access object.
  * 
  * @author filareta.yordanova
  * 

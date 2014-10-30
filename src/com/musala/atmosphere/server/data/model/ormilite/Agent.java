@@ -1,5 +1,7 @@
 package com.musala.atmosphere.server.data.model.ormilite;
 
+import java.util.Collection;
+
 import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
@@ -124,9 +126,9 @@ public class Agent implements IAgent {
     /**
      * Gets collection of devices for which the agent is responsible.
      * 
-     * @return {@link ForeignCollection collection} of devices on this agent.
+     * @return {@link Collection collection} of devices on this agent.
      */
-    public ForeignCollection<Device> getDevices() {
+    public Collection<Device> getDevices() {
         return devices;
     }
 
@@ -141,17 +143,29 @@ public class Agent implements IAgent {
     }
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((agentId == null) ? 0 : agentId.hashCode());
+        result = prime * result + ((hostname == null) ? 0 : hostname.hashCode());
+        result = prime * result + port;
+        return result;
+    }
+
+    @Override
     public boolean equals(Object object) {
-        if (object == null) {
-            return false;
+        if (object == this) {
+            return true;
         }
 
-        if (!getClass().equals(object.getClass())) {
+        if (object == null || !getClass().equals(object.getClass())) {
             return false;
         }
 
         Agent agent = (Agent) object;
 
-        return agentId.equals(agent.agentId);
+        return (agentId == agent.agentId || (agentId != null && agentId.equals(agent.agentId)))
+                && (hostname == agent.hostname || (hostname != null && hostname.equals(agent.hostname)))
+                && port == agent.port;
     }
 }
