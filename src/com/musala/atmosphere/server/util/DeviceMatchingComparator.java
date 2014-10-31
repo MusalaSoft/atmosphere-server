@@ -6,18 +6,19 @@ import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceOs;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
+import com.musala.atmosphere.server.data.model.IDevice;
 
 public class DeviceMatchingComparator implements Comparator<DeviceInformation> {
-    private DeviceParameters requiredDeviceParameters;
+    private DeviceParameters neededDeviceParameters;
 
     public DeviceMatchingComparator(DeviceParameters matchingBase) {
-        this.requiredDeviceParameters = matchingBase;
+        this.neededDeviceParameters = matchingBase;
     }
 
     @Override
     public int compare(DeviceInformation availDeviceFirst, DeviceInformation availDeviceSecond) {
-        int matchingScoreFirst = matchingScore(requiredDeviceParameters, availDeviceFirst);
-        int matchingScoreSecond = matchingScore(requiredDeviceParameters, availDeviceSecond);
+        int matchingScoreFirst = matchingScore(availDeviceFirst);
+        int matchingScoreSecond = matchingScore(availDeviceSecond);
 
         return matchingScoreFirst - matchingScoreSecond;
     }
@@ -27,13 +28,11 @@ public class DeviceMatchingComparator implements Comparator<DeviceInformation> {
      * with different weight. This method will be changed when more complex selection mechanism is discussed. At the
      * moment it is a simple match check.
      * 
-     * @param requiredDevice
-     *        information for a device that is needed.
-     * @param matchDevice
-     *        information for a present device.
-     * @return
+     * @param matchDeviceInformation
+     *        - information for a present device
+     * @return the best matching result
      */
-    private static int matchingScore(DeviceParameters neededDeviceParameters, DeviceInformation matchDeviceInformation) {
+    private int matchingScore(DeviceInformation matchDeviceInformation) {
         int result = 1;
         DeviceType requiredDeviceType = neededDeviceParameters.getDeviceType();
         int requiredDeviceDpi = neededDeviceParameters.getDpi();
@@ -114,18 +113,17 @@ public class DeviceMatchingComparator implements Comparator<DeviceInformation> {
     }
 
     /**
-     * Checks whether a given {@link DeviceInformation} is a valid match for given {@link DeviceParameters}.
+     * Checks whether the {@link DeviceInformation} of given {@link IDevice} is a valid match for the given
+     * {@link DeviceParameters} in the constructor.
      * 
-     * @param neededDeviceParameters
-     *        - {@link DeviceParameters} that need to be matched.
-     * @param availableDeviceInformation
-     *        - {@link DeviceInformation} that is compared to the {@link DeviceParameters}.
-     * @return - True if the {@link DeviceInformation} is a valid match to the {@link DeviceParameters}. False
-     *         otherwise.
+     * @param device
+     *        - {@link IDevice} which {@link DeviceInformation} will be compared to the given {@link DeviceParameters}
+     * @return - True if the {@link DeviceInformation} is a valid match to the {@link DeviceParameters}, false otherwise
      */
-    public static boolean isValidMatch(DeviceParameters neededDeviceParameters,
-                                       DeviceInformation availableDeviceInformation) {
-        int matchScore = matchingScore(neededDeviceParameters, availableDeviceInformation);
+    public boolean isValidMatch(IDevice device) {
+        DeviceInformation availableDeviceInformation = device.getInformation();
+
+        int matchScore = matchingScore(availableDeviceInformation);
         boolean isMatch = matchScore > 0;
         return isMatch;
     }

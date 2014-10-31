@@ -32,11 +32,10 @@ public class DevicePoolDao implements IDevicePoolDao {
     @Override
     public List<IDevice> getDevices(DeviceParameters parameters) throws DevicePoolDaoException {
         List<IDevice> devicesList = new ArrayList<IDevice>();
+        DeviceMatchingComparator comparator = new DeviceMatchingComparator(parameters);
 
         for (IDevice device : rmiIdToDevice.values()) {
-            DeviceInformation deviceInformation = device.getInformation();
-
-            if (DeviceMatchingComparator.isValidMatch(parameters, deviceInformation)) {
+            if (comparator.isValidMatch(device)) {
                 devicesList.add(device);
             }
         }
@@ -56,10 +55,10 @@ public class DevicePoolDao implements IDevicePoolDao {
 
     @Override
     public boolean hasDevice(DeviceParameters parameters) {
-        for (IDevice device : rmiIdToDevice.values()) {
-            DeviceInformation deviceInformation = device.getInformation();
+        DeviceMatchingComparator comparator = new DeviceMatchingComparator(parameters);
 
-            if (DeviceMatchingComparator.isValidMatch(parameters, deviceInformation)) {
+        for (IDevice device : rmiIdToDevice.values()) {
+            if (comparator.isValidMatch(device)) {
                 return true;
             }
         }
