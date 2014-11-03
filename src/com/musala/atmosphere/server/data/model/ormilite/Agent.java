@@ -2,6 +2,9 @@ package com.musala.atmosphere.server.data.model.ormilite;
 
 import java.util.Collection;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
@@ -144,12 +147,7 @@ public class Agent implements IAgent {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((agentId == null) ? 0 : agentId.hashCode());
-        result = prime * result + ((hostname == null) ? 0 : hostname.hashCode());
-        result = prime * result + port;
-        return result;
+        return new HashCodeBuilder(17, 31).append(agentId).append(hostname).append(port).toHashCode();
     }
 
     @Override
@@ -164,8 +162,9 @@ public class Agent implements IAgent {
 
         Agent agent = (Agent) object;
 
-        return (agentId == agent.agentId || (agentId != null && agentId.equals(agent.agentId)))
-                && (hostname == agent.hostname || (hostname != null && hostname.equals(agent.hostname)))
-                && port == agent.port;
+        return new EqualsBuilder().append(agentId, agent.agentId)
+                                  .append(hostname, agent.hostname)
+                                  .append(port, agent.port)
+                                  .isEquals();
     }
 }

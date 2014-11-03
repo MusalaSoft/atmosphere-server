@@ -1,5 +1,8 @@
 package com.musala.atmosphere.server.data.model.ormilite;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.musala.atmosphere.commons.DeviceInformation;
@@ -433,12 +436,7 @@ public class Device implements IDevice {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((agent == null) ? 0 : agent.hashCode());
-        result = prime * result + ((rmiRegistryId == null) ? 0 : rmiRegistryId.hashCode());
-        result = prime * result + ((serialNumber == null) ? 0 : serialNumber.hashCode());
-        return result;
+        return new HashCodeBuilder(17, 31).append(agent).append(rmiRegistryId).append(serialNumber).toHashCode();
     }
 
     @Override
@@ -453,9 +451,10 @@ public class Device implements IDevice {
 
         Device device = (Device) object;
 
-        return (agent == device.agent || (agent != null && agent.equals(device.agent)))
-                && (rmiRegistryId == device.rmiRegistryId || (rmiRegistryId != null && rmiRegistryId.equals(device.rmiRegistryId)))
-                && (serialNumber == device.serialNumber || (serialNumber != null && serialNumber.equals(device.serialNumber)));
+        return new EqualsBuilder().append(agent, device.agent)
+                                  .append(rmiRegistryId, device.rmiRegistryId)
+                                  .append(serialNumber, device.serialNumber)
+                                  .isEquals();
     }
 
     @Override

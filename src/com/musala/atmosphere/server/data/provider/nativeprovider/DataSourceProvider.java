@@ -50,9 +50,7 @@ public class DataSourceProvider extends Subscriber implements IDataSourceProvide
      *        - event, which is received when data source is initialized
      */
     public void inform(DataSourceInitializedEvent event) {
-
         eventService.publish(new DevicePoolDaoCreatedEvent());
         eventService.publish(new AgentDaoCreatedEvent());
-
     }
 }
