@@ -13,7 +13,7 @@ import com.musala.atmosphere.server.command.ServerCommand;
 import com.musala.atmosphere.server.command.ServerCommandFactory;
 import com.musala.atmosphere.server.command.ServerConsoleCommands;
 import com.musala.atmosphere.server.data.IDataSourceManager;
-import com.musala.atmosphere.server.data.fake.FakeDataSourceManager;
+import com.musala.atmosphere.server.data.fake.DataSourceManager;
 import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
 import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
@@ -92,7 +92,7 @@ public class Server {
         // Add subscribers to the event service for device events.
         eventService.subscribe(DeviceEvent.class, registryManager);
 
-        fakeDataSourceManager = new FakeDataSourceManager();
+        fakeDataSourceManager = new DataSourceManager();
 
         dataSourceProvider = new DataSourceProvider();
 
