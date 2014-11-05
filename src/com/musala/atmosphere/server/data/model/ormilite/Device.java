@@ -71,7 +71,7 @@ public class Device implements IDevice {
     @DatabaseField(columnName = DeviceColumnName.RMI_REGISTRY_ID, unique = true, canBeNull = false)
     private String rmiRegistryId;
 
-    @DatabaseField(columnName = DeviceColumnName.PASSKEY, unique = false, canBeNull = false)
+    @DatabaseField(columnName = DeviceColumnName.PASSKEY, canBeNull = false)
     private long passkey;
 
     public Device() {
@@ -89,6 +89,22 @@ public class Device implements IDevice {
     public Device(String serialNumber, String rmiRegistryId) {
         this.serialNumber = serialNumber;
         this.rmiRegistryId = rmiRegistryId;
+    }
+
+    /**
+     * Creates new device with the given serial number, RMI id and passkey.
+     * 
+     * @param serialNumber
+     *        - the serial number of this device
+     * @param rmiRegistryId
+     *        - the RMI registry of this device
+     * @param passkey
+     *        - passkey for validating authority
+     */
+    public Device(String serialNumber, String rmiId, long passkey) {
+        this.serialNumber = serialNumber;
+        this.rmiRegistryId = rmiId;
+        this.passkey = passkey;
     }
 
     /**
@@ -420,6 +436,7 @@ public class Device implements IDevice {
      * 
      * @return the passkey of this device
      */
+    @Override
     public long getPasskey() {
         return passkey;
     }
@@ -523,5 +540,4 @@ public class Device implements IDevice {
         // For now the unique identifier for the device is its RMI id.
         return rmiRegistryId;
     }
-
 }

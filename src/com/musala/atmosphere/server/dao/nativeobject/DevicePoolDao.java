@@ -22,8 +22,8 @@ public class DevicePoolDao implements IDevicePoolDao {
     private HashMap<String, IDevice> rmiIdToDevice = new HashMap<String, IDevice>();
 
     @Override
-    public IDevice addDevice(DeviceInformation device, String rmiId, String agentId) {
-        Device deviceEntry = new Device(device, rmiId, agentId);
+    public IDevice addDevice(DeviceInformation device, String rmiId, String agentId, long passkey) {
+        Device deviceEntry = new Device(device, rmiId, agentId, passkey);
         rmiIdToDevice.put(rmiId, deviceEntry);
 
         return deviceEntry;

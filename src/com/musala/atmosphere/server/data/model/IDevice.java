@@ -44,4 +44,11 @@ public interface IDevice {
      * @return ID of the device
      */
     public String getDeviceId();
+
+    /**
+     * Gets the passkey for this device.
+     * 
+     * @return passkey of the device
+     */
+    public long getPasskey();
 }

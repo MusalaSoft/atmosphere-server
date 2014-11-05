@@ -23,12 +23,15 @@ public interface IDevicePoolDao {
      *        - the ID of the device in the RMI registry
      * @param agentId
      *        - the ID of the agent that the device is connected to
+     * @param passkey
+     *        - passkey for validating authority
      * @return a {@link IDevice data access object} for interacting with the newly created device entry in the data
      *         source or throws {@link DevicePoolDaoException exception} if adding fails
      * @throws DevicePoolDaoException
      *         - thrown when adding device fails
      */
-    public IDevice addDevice(DeviceInformation device, String rmiId, String agentId) throws DevicePoolDaoException;
+    public IDevice addDevice(DeviceInformation device, String rmiId, String agentId, long passkey)
+        throws DevicePoolDaoException;
 
     /**
      * Gets all devices that match the given parameters.

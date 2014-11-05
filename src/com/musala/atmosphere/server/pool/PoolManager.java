@@ -147,9 +147,11 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
             eventService.publish(event);
 
             deviceIdToDeviceProxy.put(deviceId, deviceProxy);
+            PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
+            long devicePasskey = passkeyAuthority.getPasskey(deviceProxy);
 
             try {
-                devicePoolDao.addDevice(deviceInformation, deviceId, onAgentId);
+                devicePoolDao.addDevice(deviceInformation, deviceId, onAgentId, devicePasskey);
             } catch (DevicePoolDaoException e) {
                 String errorMessage = String.format("Failed to add device with ID %s on agent %s.", deviceId, onAgentId);
                 LOGGER.error(errorMessage);
@@ -216,6 +218,8 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
         String deviceId = device.getDeviceId();
         DeviceProxy deviceProxy = deviceIdToDeviceProxy.get(deviceId);
 
+        // TODO: After the passkey will be stored for each device, think of a better solution for getting and validating
+        // this key.
         PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
         long devicePasskey = passkeyAuthority.getPasskey(deviceProxy);
 

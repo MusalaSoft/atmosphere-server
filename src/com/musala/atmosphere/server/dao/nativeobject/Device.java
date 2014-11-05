@@ -18,6 +18,8 @@ public class Device implements IDevice {
 
     private boolean isAllocated;
 
+    private long passkey;
+
     /**
      * Creates new data access object which can be used to allocate, release or get a device's information using the
      * given parameters.
@@ -28,11 +30,14 @@ public class Device implements IDevice {
      *        - RMI {@link String} identifier for the device
      * @param agentId
      *        - the ID of the agent that the device is connected to
+     * @param passkey
+     *        - passkey for validating authority
      */
-    public Device(DeviceInformation deviceInformation, String deviceId, String agentId) {
+    public Device(DeviceInformation deviceInformation, String deviceId, String agentId, long passkey) {
         this.deviceId = deviceId;
         this.deviceInformation = deviceInformation;
         this.agentId = agentId;
+        this.passkey = passkey;
     }
 
     @Override
@@ -55,21 +60,18 @@ public class Device implements IDevice {
         return isAllocated;
     }
 
-    /**
-     * Gets the ID of this device.
-     * 
-     * @return ID for this device
-     */
+    @Override
     public String getDeviceId() {
         return deviceId;
     }
 
-    /**
-     * Gets the ID of the agent on which this device is running.
-     * 
-     * @return ID of the agent responsible for this device
-     */
+    @Override
     public String getAgentId() {
         return agentId;
+    }
+
+    @Override
+    public long getPasskey() {
+        return passkey;
     }
 }

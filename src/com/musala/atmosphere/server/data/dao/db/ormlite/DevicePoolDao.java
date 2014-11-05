@@ -34,12 +34,12 @@ public class DevicePoolDao implements IDevicePoolDao {
     }
 
     @Override
-    public IDevice addDevice(DeviceInformation deviceInformation, String rmiId, String agentId)
+    public IDevice addDevice(DeviceInformation deviceInformation, String rmiId, String agentId, long passkey)
         throws DevicePoolDaoException {
 
         try {
             Agent agent = (Agent) agentDao.selectByAgentId(agentId);
-            Device device = new Device(deviceInformation.getSerialNumber(), rmiId);
+            Device device = new Device(deviceInformation.getSerialNumber(), rmiId, passkey);
             device.setAgent(agent);
 
             deviceDao.add(device);

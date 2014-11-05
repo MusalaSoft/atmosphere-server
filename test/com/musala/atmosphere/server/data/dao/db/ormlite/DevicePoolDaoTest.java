@@ -43,6 +43,8 @@ public class DevicePoolDaoTest {
 
     private static final String TEST_DEVICE_RMI_ID = "rmi_registry_id";
 
+    private static final long TEST_DEVICE_PASSKEY = 123456;
+
     private static final String EXISTING_DEVICE_SERIAL_NUMBER = "existing_serial_number";
 
     private static final String EXISTING_DEVICE_RMI_ID = "existing_rmi_registry_id";
@@ -67,14 +69,15 @@ public class DevicePoolDaoTest {
     public void testAddingNewDevice() throws Exception {
         DeviceInformation deviceInformation = new DeviceInformation();
         deviceInformation.setSerialNumber(TEST_DEVICE_SERIAL_NUMBER);
-        Device expectedDevice = new Device(TEST_DEVICE_SERIAL_NUMBER, TEST_DEVICE_RMI_ID);
+        Device expectedDevice = new Device(TEST_DEVICE_SERIAL_NUMBER, TEST_DEVICE_RMI_ID, TEST_DEVICE_PASSKEY);
         expectedDevice.setAgent(mockedAgent);
 
         when(mockedAgentDao.selectByAgentId(eq(EXISTING_AGENT_ID))).thenReturn(mockedAgent);
 
         Device addedDevice = (Device) testDevicePoolDao.addDevice(deviceInformation,
                                                                   TEST_DEVICE_RMI_ID,
-                                                                  EXISTING_AGENT_ID);
+                                                                  EXISTING_AGENT_ID,
+                                                                  TEST_DEVICE_PASSKEY);
         verify(mockedDeviceDao, times(1)).add(eq(expectedDevice));
 
         assertEquals("Added device is different from the expected one.", expectedDevice, addedDevice);
@@ -84,7 +87,7 @@ public class DevicePoolDaoTest {
     public void testAddingNewDeviceWhenAgentForRequestedIdDoesNotExist() throws Exception {
         DeviceInformation deviceInformation = new DeviceInformation();
         deviceInformation.setSerialNumber(TEST_DEVICE_SERIAL_NUMBER);
-        Device expectedDevice = new Device(TEST_DEVICE_SERIAL_NUMBER, TEST_DEVICE_RMI_ID);
+        Device expectedDevice = new Device(TEST_DEVICE_SERIAL_NUMBER, TEST_DEVICE_RMI_ID, TEST_DEVICE_PASSKEY);
         Agent testAgent = null;
         expectedDevice.setAgent(testAgent);
 
@@ -92,7 +95,7 @@ public class DevicePoolDaoTest {
         doThrow(new DeviceDaoException("Agent for this device is missing!")).when(mockedDeviceDao)
                                                                             .add(eq(expectedDevice));
 
-        testDevicePoolDao.addDevice(deviceInformation, TEST_DEVICE_RMI_ID, TEST_AGENT_ID);
+        testDevicePoolDao.addDevice(deviceInformation, TEST_DEVICE_RMI_ID, TEST_AGENT_ID, TEST_DEVICE_PASSKEY);
 
         verify(mockedDeviceDao, times(1)).add(eq(expectedDevice));
     }
