@@ -32,7 +32,7 @@ import com.musala.atmosphere.server.pool.PoolManager;
  * @author georgi.gaydarov
  * 
  */
-public class ServerManager extends Subscriber {
+public class ServerManager implements Subscriber {
     private static Logger LOGGER = Logger.getLogger(ServerManager.class.getCanonicalName());
 
     private Map<String, String> rmiIdToDeviceId = new HashMap<String, String>();
@@ -255,6 +255,7 @@ public class ServerManager extends Subscriber {
      * @throws DevicePoolDaoException
      *         - if devices for the disconnected agent could not be removed
      */
+
     public void inform(AgentDisconnectedEvent event) throws RemoteException, DevicePoolDaoException {
         String agentId = event.getAgentId();
 
