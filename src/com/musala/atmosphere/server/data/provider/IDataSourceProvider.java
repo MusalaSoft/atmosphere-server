@@ -3,6 +3,7 @@ package com.musala.atmosphere.server.data.provider;
 import com.musala.atmosphere.server.dao.IAgentDao;
 import com.musala.atmosphere.server.dao.IDeviceDao;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
+import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**
  * Common interface responsible for providing data access objects to operate on the data source.
@@ -10,7 +11,7 @@ import com.musala.atmosphere.server.dao.IDevicePoolDao;
  * @author filareta.yordanova
  * 
  */
-public interface IDataSourceProvider {
+public interface IDataSourceProvider extends Subscriber {
     /**
      * Gets data access object for modifying agents in the data source.
      * 

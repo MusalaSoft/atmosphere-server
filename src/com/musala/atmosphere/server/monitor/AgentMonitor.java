@@ -19,7 +19,7 @@ import com.musala.atmosphere.server.monitor.ping.PingRequestHandler;
  * @author filareta.yordanova
  * 
  */
-public class AgentMonitor extends Subscriber {
+public class AgentMonitor implements Subscriber {
     private static final Logger LOGGER = Logger.getLogger(AgentMonitor.class);
 
     private Map<IAgentManager, PingRequestHandler> pingHandlers = Collections.synchronizedMap(new HashMap<IAgentManager, PingRequestHandler>());

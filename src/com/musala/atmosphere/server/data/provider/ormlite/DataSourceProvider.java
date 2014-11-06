@@ -24,7 +24,6 @@ import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSou
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DeviceDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
-import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**
  * Class which creates data access objects for agent, device and device pool and publishes events to the
@@ -33,7 +32,7 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
  * @author filareta.yordanova
  * 
  */
-public class DataSourceProvider extends Subscriber implements IDataSourceProvider {
+public class DataSourceProvider implements IDataSourceProvider {
     private static final Logger LOGGER = Logger.getLogger(DataSourceProvider.class);
 
     private static IAgentDao wrappedAgentDao = null;

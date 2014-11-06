@@ -10,7 +10,6 @@ import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
-import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**
  * Class which creates data access objects for agent, and device pool and publishes events to the
@@ -19,7 +18,7 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
  * @author yavor.stankov
  * 
  */
-public class DataSourceProvider extends Subscriber implements IDataSourceProvider {
+public class DataSourceProvider implements IDataSourceProvider {
 
     private IDevicePoolDao devicePoolDao = new DevicePoolDao();
 

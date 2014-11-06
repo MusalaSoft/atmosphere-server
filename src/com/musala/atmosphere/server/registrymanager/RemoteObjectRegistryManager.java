@@ -20,7 +20,7 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
  * @author yavor.stankov
  * 
  */
-public class RemoteObjectRegistryManager extends Subscriber {
+public class RemoteObjectRegistryManager implements Subscriber {
     private static final Logger LOGGER = Logger.getLogger(RemoteObjectRegistryManager.class);
 
     private static final String DEVICE_RMI_ID_FORMAT = "%s_%s";

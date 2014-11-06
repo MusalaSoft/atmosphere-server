@@ -1,12 +1,19 @@
 package com.musala.atmosphere.server.eventservice;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.eventservice.event.Event;
+import com.musala.atmosphere.server.eventservice.exception.SubscriberMethodInvocationException;
 import com.musala.atmosphere.server.eventservice.filter.Filter;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
@@ -20,7 +27,11 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 public class ServerEventService {
     private static Logger LOGGER = Logger.getLogger(ServerEventService.class);
 
+    private static final String RECEIVER_METHOD_NAME = "inform";
+
     private static Set<Subscription> subscriptions = Collections.synchronizedSet(new HashSet<Subscription>());
+
+    private static Map<Entry<Class<?>, Class<?>>, Method> subscibersMethodsCache = Collections.synchronizedMap(new HashMap<Entry<Class<?>, Class<?>>, Method>());
 
     private static Class<?> eventClass = Event.class;
 
@@ -46,7 +57,7 @@ public class ServerEventService {
 
             if (isEventCompatible && isFilterApplicabale) {
                 Subscriber subscriber = subscription.getSubscriber();
-                subscriber.inform(event);
+                invokeSubscriberMethod(subscriber, event);
             }
         }
     }
@@ -71,6 +82,7 @@ public class ServerEventService {
                                                 subscriber.getClass().getSimpleName(),
                                                 eventType.getSimpleName());
         LOGGER.debug(subscribeMessage);
+
         Subscription subscription = new Subscription(eventType, filter, subscriber);
         synchronized (subscriptions) {
             if (!subscriptions.contains(subscription)) {
@@ -114,5 +126,29 @@ public class ServerEventService {
         LOGGER.debug(unsubscribeMessage);
         Subscription subscription = new Subscription(eventType, filter, subscriber);
         subscriptions.remove(subscription);
+    }
+
+    // TODO: Implement logic for clear cache.
+    private void invokeSubscriberMethod(Subscriber subscriber, Event event) {
+        Class<?> eventClass = event.getClass();
+        Class<?> subscriberClass = subscriber.getClass();
+
+        try {
+            Entry<Class<?>, Class<?>> methodIdentifiers = new Pair<Class<?>, Class<?>>(subscriberClass, eventClass);
+            Method method = subscibersMethodsCache.get(methodIdentifiers);
+
+            if (method == null) {
+                method = subscriber.getClass().getDeclaredMethod(RECEIVER_METHOD_NAME, eventClass);
+                subscibersMethodsCache.put(methodIdentifiers, method);
+            }
+
+            method.invoke(subscriber, event);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
+            String errorMessage = String.format("Failed to invoke %s method with %s.",
+                                                RECEIVER_METHOD_NAME,
+                                                event.getClass().getSimpleName());
+            throw new SubscriberMethodInvocationException(errorMessage, e);
+        }
     }
 }
