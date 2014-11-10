@@ -138,7 +138,7 @@ public class ServerEventService {
             Method method = subscibersMethodsCache.get(methodIdentifiers);
 
             if (method == null) {
-                method = subscriber.getClass().getDeclaredMethod(RECEIVER_METHOD_NAME, eventClass);
+                method = subscriberClass.getDeclaredMethod(RECEIVER_METHOD_NAME, eventClass);
                 subscibersMethodsCache.put(methodIdentifiers, method);
             }
 

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -30,14 +31,20 @@ public class ServerEventServiceTest {
     @BeforeClass
     public static void setUp() {
         testEventservice = new ServerEventService();
-        mockedEvent = new FakeEvent();
         mockedSubscriber = mock(Subscriber.class);
         fakeSubscriber = spy(new FakeSubscriber());
     }
 
+    @Before
+    public void setUpTest() {
+        mockedEvent = new FakeEvent();
+        testEventservice.unsubscribe(FakeEvent.class, null, mockedSubscriber);
+        testEventservice.unsubscribe(FakeEvent.class, null, fakeSubscriber);
+    }
+
     @Test
     public void testPublishedEventIsReceivedSuccessfully() {
-        testEventservice.subscribe(mockedEvent.getClass(), fakeSubscriber);
+        testEventservice.subscribe(FakeEvent.class, fakeSubscriber);
         testEventservice.publish(mockedEvent);
 
         verify(fakeSubscriber, times(1)).inform(eq(mockedEvent));
@@ -45,15 +52,15 @@ public class ServerEventServiceTest {
 
     @Test(expected = SubscriberMethodInvocationException.class)
     public void testReceiverMethodForPublishedEventIsMissing() {
-        testEventservice.subscribe(mockedEvent.getClass(), mockedSubscriber);
+        testEventservice.subscribe(FakeEvent.class, mockedSubscriber);
         testEventservice.publish(mockedEvent);
+    }
+
+    public class FakeEvent implements Event {
     }
 
     public static class FakeSubscriber implements Subscriber {
         public void inform(FakeEvent event) {
         }
-    }
-
-    public static class FakeEvent implements Event {
     }
 }

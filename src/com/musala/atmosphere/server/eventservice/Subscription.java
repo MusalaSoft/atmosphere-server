@@ -1,5 +1,8 @@
 package com.musala.atmosphere.server.eventservice;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import com.musala.atmosphere.server.eventservice.filter.Filter;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
@@ -79,5 +82,28 @@ public class Subscription {
      */
     public void setSubscriber(Subscriber subscriber) {
         this.subscriber = subscriber;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31).append(subscriber).append(filter).append(eventType).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == this) {
+            return true;
+        }
+
+        if (object == null || !getClass().equals(object.getClass())) {
+            return false;
+        }
+
+        Subscription subscription = (Subscription) object;
+
+        return new EqualsBuilder().append(subscriber, subscription.subscriber)
+                                  .append(filter, subscription.filter)
+                                  .append(eventType, subscription.eventType)
+                                  .isEquals();
     }
 }
