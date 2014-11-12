@@ -111,12 +111,12 @@ public class PoolManagerDeviceSelectionTest {
         String deviceId = mockDevInfo.getSerialNumber();
         when(mockedRegistry.lookup(deviceId)).thenReturn(mockedDevice);
         when(mockedDevice.route(eq(RoutingAction.GET_DEVICE_INFORMATION))).thenReturn(mockDevInfo);
-        poolManager.addDevice(deviceId, mockedRegistry, mockedAgentManager);
+        poolManager.addDevice(deviceId, mockedRegistry, AGENT_ID);
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
-        Class<?> pmc = Class.forName("com.musala.atmosphere.server.pool.PoolManager");
+        Class<?> pmc = PoolManager.class;
         Method deviceIdBuild = pmc.getDeclaredMethod("buildDeviceIdentifier", String.class, String.class);
         deviceIdBuild.setAccessible(true);
 
