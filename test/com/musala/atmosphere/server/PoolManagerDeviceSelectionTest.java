@@ -116,7 +116,7 @@ public class PoolManagerDeviceSelectionTest {
 
     @AfterClass
     public static void tearDown() throws Exception {
-        Class<?> pmc = PoolManager.class;
+        Class<?> pmc = Class.forName("com.musala.atmosphere.server.pool.PoolManager");
         Method deviceIdBuild = pmc.getDeclaredMethod("buildDeviceIdentifier", String.class, String.class);
         deviceIdBuild.setAccessible(true);
 
