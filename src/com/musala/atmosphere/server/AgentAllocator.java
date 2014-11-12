@@ -1,5 +1,7 @@
 package com.musala.atmosphere.server;
 
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
@@ -8,12 +10,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.sa.IAgentManager;
-import com.musala.atmosphere.commons.util.Pair;
+import com.musala.atmosphere.commons.sa.RmiStringConstants;
+import com.musala.atmosphere.server.dao.IAgentDao;
+import com.musala.atmosphere.server.dao.exception.AgentDaoException;
+import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
+import com.musala.atmosphere.server.data.provider.nativeprovider.DataSourceProvider;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
+import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**
  * Keeps track of the connected agents and is responsible for agent allocation.
@@ -21,10 +28,12 @@ import com.musala.atmosphere.commons.util.Pair;
  * @author yordan.petrov
  * 
  */
-public class AgentAllocator {
+public class AgentAllocator implements Subscriber {
     private static Logger LOGGER = Logger.getLogger(AgentAllocator.class.getCanonicalName());
 
-    private static Map<String, Pair<IAgentManager, Registry>> agentManagersId = Collections.synchronizedMap(new HashMap<String, Pair<IAgentManager, Registry>>());
+    private static Map<String, Registry> agentIdToRegistry = Collections.synchronizedMap(new HashMap<String, Registry>());
+
+    private static IAgentDao agentDao;
 
     /**
      * Registers that an agent has connected to the server.
@@ -34,97 +43,76 @@ public class AgentAllocator {
      * @param agentRegistry
      *        - the RMI {@link Registry} of the connected agent.
      * @throws RemoteException
+     *         - thrown when connection to agent is lost
+     * @throws AgentDaoException
+     *         - thrown when adding agent in the data source fails
      */
-    public void registerAgent(IAgentManager agentManager, Registry agentRegistry) throws RemoteException {
+    public void registerAgent(IAgentManager agentManager, Registry agentRegistry, String agentIp, int agentPort)
+        throws RemoteException,
+            AgentDaoException {
         String agentId = agentManager.getAgentId();
-        Pair<IAgentManager, Registry> foundAgentRegistryPair = agentManagersId.get(agentId);
-        if (foundAgentRegistryPair != null) {
-            LOGGER.warn("Agent with id " + agentId + " is already registered on the server.");
+
+        if (agentDao.hasAgent(agentId)) {
+            String message = String.format("Agent with ID %s is already registered on the server.", agentId);
+            LOGGER.warn(message);
             return;
         }
 
-        Pair<IAgentManager, Registry> connectedAgentRegistryPair = new Pair<IAgentManager, Registry>(agentManager,
-                                                                                                     agentRegistry);
-        agentManagersId.put(agentId, connectedAgentRegistryPair);
+        agentDao.add(agentId, agentIp, agentPort);
+        agentIdToRegistry.put(agentId, agentRegistry);
     }
 
     /**
      * Unregisters an agent that has been disconnected.
      * 
      * @param agentId
-     *        - the unique indetifier of the agent.
+     *        - the unique identifier of the agent.
+     * @throws AgentDaoException
+     *         - when removing the agent from the data source fails
      */
-    public void unregisterAgent(String agentId) {
-        Pair<IAgentManager, Registry> foundAgentRegistryPair = agentManagersId.remove(agentId);
-
-        if (foundAgentRegistryPair == null) {
-            LOGGER.warn("Agent with id " + agentId + " is not registered on the server.");
-        }
+    public void unregisterAgent(String agentId) throws AgentDaoException {
+        agentDao.remove(agentId);
     }
 
     /**
-     * Gets an {@link IAgentManager} instance of the agent with highest performance score.
+     * Gets the RMI {@link Registry registry} of connected agent by a given unique agent identifier.
      * 
-     * @return an {@link IAgentManager} instance of the agent with highest performance score.
+     * @param agentId
+     *        - the unique agent identifier
+     * @return the RMI {@link Registry registry} of connected agent by a given unique agent identifier
      */
-    public IAgentManager getAgent() {
-        // TODO: Add load balancing logic
-        for (Entry<String, Pair<IAgentManager, Registry>> agentEntry : agentManagersId.entrySet()) {
-            return agentEntry.getValue().getKey();
-        }
-
-        return null;
+    public Registry getAgentRegistry(String agentId) {
+        return agentIdToRegistry.get(agentId);
     }
 
     /**
-     * Gets an {@link IAgentManager}, RMI {@link Registry} {@link Pair} of connected agent by a given unique agent
-     * identifier.
+     * Gets the {@link IAgentManager manager} of connected agent by a given unique agent identifier.
      * 
      * @param agentId
      *        - the unique agent identifier.
-     * @return an {@link IAgentManager}, RMI {@link Registry} {@link Pair} of connected agent by a given unique agent
-     *         identifier.
+     * @return the {@link IAgentManager manager}of connected agent by a given unique agent identifier.
+     * @throws AccessException
+     *         - thrown if finding {@link IAgentManager manager} from the RMI {@link Registry agent registry} fails
+     * @throws RemoteException
+     *         - thrown if connection to agent is lost
+     * @throws NotBoundException
+     *         - thrown if finding {@link IAgentManager manager} from the RMI {@link Registry agent registry} fails
      */
-    public Pair<IAgentManager, Registry> getAgentRegistryPair(String agentId) {
-        return agentManagersId.get(agentId);
-    }
-
-    /**
-     * Gets an {@link IAgentManager} of connected agent by a given unique agent identifier.
-     * 
-     * @param agentId
-     *        - the unique agent identifier.
-     * @return an {@link IAgentManager} of connected agent by a given unique agent identifier.
-     */
-    public IAgentManager getAgentById(String agentId) {
-        return agentManagersId.get(agentId).getKey();
+    public IAgentManager getAgentManager(String agentId) throws AccessException, RemoteException, NotBoundException {
+        Registry agentRegistry = agentIdToRegistry.get(agentId);
+        return (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
     }
 
     /**
      * Checks whether an agent with a given unique identifier has been registered.
      * 
      * @param agentId
-     *        - the unique agent identifier.
+     *        - the unique agent identifier
      * @return <code>true</code> if an agent with such identifier is registered, <code>false</code> if such agent is not
-     *         registered.
+     *         registered
      */
     public boolean hasAgent(String agentId) {
-        return agentManagersId.containsKey(agentId);
-    }
-
-    /**
-     * Gets a list containing the {@link IAgentManager}s of all connected agents.
-     * 
-     * @return a list containing the {@link IAgentManager}s of all connected agents.
-     */
-    public List<IAgentManager> getAllConnectedAgents() {
-        List<IAgentManager> connectedAgentManagerList = new ArrayList<IAgentManager>();
-        synchronized (agentManagersId) {
-            for (Pair<IAgentManager, Registry> agentRegistryPair : agentManagersId.values()) {
-                connectedAgentManagerList.add(agentRegistryPair.getKey());
-            }
-        }
-        return connectedAgentManagerList;
+        return agentDao.hasAgent(agentId);
     }
 
     /**
@@ -133,9 +121,22 @@ public class AgentAllocator {
      * @return a list containing the unique identifiers of all connected agents.
      */
     public List<String> getAllConnectedAgentsIds() {
-        Collection<String> connectedAgentManagersIdSet = agentManagersId.keySet();
-        List<String> connectedAgentManagersIdList = new ArrayList<String>();
-        connectedAgentManagersIdList.addAll(connectedAgentManagersIdSet);
+        // TODO: Use agent data access object to get all available agents stored in the data source
+        Collection<String> connectedAgentManagersIdSet = agentIdToRegistry.keySet();
+        List<String> connectedAgentManagersIdList = new ArrayList<String>(connectedAgentManagersIdSet);
+
         return connectedAgentManagersIdList;
+    }
+
+    /**
+     * Informs agent allocator for {@link AgentDaoCreatedEvent event} received when an {@link AgentDao data access
+     * object} for agents is created.
+     * 
+     * @param event
+     *        - event, which is received when data access object for agents is created
+     */
+    public void inform(AgentDaoCreatedEvent event) {
+        IDataSourceProvider dataSourceProvider = new DataSourceProvider();
+        agentDao = dataSourceProvider.getAgentDao();
     }
 }

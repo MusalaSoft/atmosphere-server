@@ -32,4 +32,9 @@ public class AgentDao implements IAgentDao {
     public void update(IAgent agent) throws AgentDaoException {
         // Implementation is not needed.
     }
+
+    @Override
+    public boolean hasAgent(String agentId) {
+        return agentIdToAgentIpAndPort.containsKey(agentId);
+    }
 }

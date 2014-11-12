@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import com.j256.ormlite.dao.Dao;
 import com.musala.atmosphere.server.dao.IAgentDao;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
@@ -21,6 +23,8 @@ import com.musala.atmosphere.server.data.model.ormilite.Agent;
  * 
  */
 public class AgentDao implements IAgentDao {
+    private static final Logger LOGGER = Logger.getLogger(AgentDao.class);
+
     private Dao<Agent, String> agentDao;
 
     /**
@@ -109,6 +113,17 @@ public class AgentDao implements IAgentDao {
         }
 
         return null;
+    }
+
+    @Override
+    public boolean hasAgent(String agentId) {
+        try {
+            return getAgentByFieldValue(AgentColumnName.AGENT_ID, agentId) != null;
+        } catch (SQLException e) {
+            String message = String.format("Getting agent with ID %s from the data source fails.", agentId);
+            LOGGER.error(message, e);
+            return false;
+        }
     }
 
 }

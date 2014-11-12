@@ -44,4 +44,13 @@ public interface IAgentDao {
      * 
      */
     public void update(IAgent agent) throws AgentDaoException;
+
+    /**
+     * Checks if agent with the given ID exists in the data source.
+     * 
+     * @param agentId
+     *        - unique identifier used for search criterion
+     * @return <code>true</code> if agent with this ID exists and <code>false</code> otherwise
+     */
+    public boolean hasAgent(String agentId);
 }

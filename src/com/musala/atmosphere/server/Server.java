@@ -47,13 +47,13 @@ public class Server {
 
     private RemoteObjectRegistryManager registryManager;
 
-    private IDataSourceManager fakeDataSourceManager;
+    private IDataSourceManager dataSourceManager;
 
     private IDataSourceProvider dataSourceProvider;
 
     private int serverRmiPort;
 
-    private boolean closed;
+    private boolean isConnected;
 
     /**
      * Creates a Server component bound on specified in the properties file port.
@@ -91,13 +91,12 @@ public class Server {
         // Add subscribers to the event service for device events.
         eventService.subscribe(DeviceEvent.class, registryManager);
 
-        fakeDataSourceManager = new DataSourceManager();
-
+        dataSourceManager = new DataSourceManager();
         dataSourceProvider = new DataSourceProvider();
 
         eventService.subscribe(DataSourceInitializedEvent.class, dataSourceProvider);
 
-        closed = false;
+        isConnected = false;
         LOGGER.info("Server instance created succesfully.");
     }
 
@@ -114,7 +113,7 @@ public class Server {
      * Starts the Server thread if it is not already running.
      */
     public void run() {
-        fakeDataSourceManager.initialize();
+        dataSourceManager.initialize();
         currentServerState.run();
     }
 
@@ -137,9 +136,10 @@ public class Server {
         // Remove subscribers from event service.
         eventService.unsubscribe(AgentEvent.class, null, agentMonitor);
         eventService.unsubscribe(AgentEvent.class, null, serverManager);
+        eventService.unsubscribe(DataSourceInitializedEvent.class, null, dataSourceProvider);
 
         serverManager.close();
-        closed = true;
+        isConnected = true;
     }
 
     /**
@@ -224,7 +224,7 @@ public class Server {
      * @return true if the server is closed, false otherwise.
      */
     private boolean isClosed() {
-        return closed;
+        return isConnected;
     }
 
     /**

@@ -1,7 +1,9 @@
 package com.musala.atmosphere.server.data.dao.db.ormlite;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -174,6 +176,34 @@ public class AgentDaoTest {
         verify(mockedAgentDao, times(1)).queryForFieldValuesArgs(eq(query));
 
         assertNull("Found an agent matching the requested ID, even though it does not exist.", receivedAgent);
+    }
+
+    @Test
+    public void testHasAgentWithIdWhenAgentExists() throws Exception {
+        List<Agent> resultsList = getFakeResultList();
+        Map<String, Object> query = new HashMap<String, Object>();
+        query.put(AgentColumnName.AGENT_ID, EXISTING_AGENT_ID);
+
+        when(mockedAgentDao.queryForFieldValuesArgs(eq(query))).thenReturn(resultsList);
+
+        boolean hasAgent = testAgentDao.hasAgent(EXISTING_AGENT_ID);
+        verify(mockedAgentDao, times(1)).queryForFieldValuesArgs(eq(query));
+
+        assertTrue("Result is different from the expected, agent with the requested ID was not found.", hasAgent);
+    }
+
+    @Test
+    public void testHasAgentWithIdWhenAgentDoesNotExist() throws Exception {
+        List<Agent> resultsList = new ArrayList<Agent>();
+        Map<String, Object> query = new HashMap<String, Object>();
+        query.put(AgentColumnName.AGENT_ID, TEST_AGENT_ID);
+
+        when(mockedAgentDao.queryForFieldValuesArgs(eq(query))).thenReturn(resultsList);
+
+        boolean hasAgent = testAgentDao.hasAgent(TEST_AGENT_ID);
+        verify(mockedAgentDao, times(1)).queryForFieldValuesArgs(eq(query));
+
+        assertFalse("Returned result is different from the expected, agent with the given ID actualy exists.", hasAgent);
     }
 
     private List<Agent> getFakeResultList() {

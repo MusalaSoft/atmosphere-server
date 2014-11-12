@@ -17,7 +17,6 @@ import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformatio
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.IClientBuilder;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
-import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.sa.exceptions.NoAvailableDeviceFoundException;
 import com.musala.atmosphere.server.DeviceProxy;
@@ -130,20 +129,19 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
      * @return the ID of the device in the pool if it was successfully inserted, or <code>null</code> otherwise
      * 
      */
-    public String addDevice(String deviceRmiId, Registry agentRegistry, IAgentManager agentManager) {
+    public String addDevice(String deviceRmiId, Registry agentRegistry, String agentId) {
         try {
             IWrapDevice deviceWrapper = (IWrapDevice) agentRegistry.lookup(deviceRmiId);
 
             DeviceInformation deviceInformation = (DeviceInformation) deviceWrapper.route(RoutingAction.GET_DEVICE_INFORMATION);
 
             String deviceSerialNumber = deviceInformation.getSerialNumber();
-            String onAgentId = agentManager.getAgentId();
 
-            String deviceId = buildDeviceIdentifier(onAgentId, deviceSerialNumber);
+            String deviceId = buildDeviceIdentifier(agentId, deviceSerialNumber);
 
             DeviceProxy deviceProxy = new DeviceProxy(deviceWrapper, deviceId);
 
-            DevicePublishEvent event = new DevicePublishedEvent(deviceProxy, deviceSerialNumber, onAgentId);
+            DevicePublishEvent event = new DevicePublishedEvent(deviceProxy, deviceSerialNumber, agentId);
             eventService.publish(event);
 
             deviceIdToDeviceProxy.put(deviceId, deviceProxy);
@@ -151,9 +149,9 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
             long devicePasskey = passkeyAuthority.getPasskey(deviceProxy);
 
             try {
-                devicePoolDao.addDevice(deviceInformation, deviceId, onAgentId, devicePasskey);
+                devicePoolDao.addDevice(deviceInformation, deviceId, agentId, devicePasskey);
             } catch (DevicePoolDaoException e) {
-                String errorMessage = String.format("Failed to add device with ID %s on agent %s.", deviceId, onAgentId);
+                String errorMessage = String.format("Failed to add device with ID %s on agent %s.", deviceId, agentId);
                 LOGGER.error(errorMessage);
             }
 

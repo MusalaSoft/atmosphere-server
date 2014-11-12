@@ -16,13 +16,14 @@ import org.apache.log4j.Logger;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
-import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
+import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
 import com.musala.atmosphere.server.dao.nativeobject.DevicePoolDao;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentConnectedEvent;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentDisconnectedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 import com.musala.atmosphere.server.pool.PoolManager;
 
@@ -79,10 +80,8 @@ public class ServerManager implements Subscriber {
         } else {
             // The agent which sends the event is registered to the server
             if (isConnected) {
-                Pair<IAgentManager, Registry> agentRegistryPair = agentAllocator.getAgentRegistryPair(onAgent);
-                IAgentManager agentManager = agentRegistryPair.getKey();
-                Registry agentRegistry = agentRegistryPair.getValue();
-                String deviceId = poolManager.addDevice(changedDeviceRmiId, agentRegistry, agentManager);
+                Registry agentRegistry = agentAllocator.getAgentRegistry(onAgent);
+                String deviceId = poolManager.addDevice(changedDeviceRmiId, agentRegistry, onAgent);
                 rmiIdToDeviceId.put(changedDeviceRmiId, deviceId);
             } else {
                 String deviceId = rmiIdToDeviceId.get(changedDeviceRmiId);
@@ -106,6 +105,8 @@ public class ServerManager implements Subscriber {
      *         - if failed to publish the {@link ServerManager} in the RMI registry
      */
     public ServerManager(int rmiPort) throws RemoteException {
+        eventService.subscribe(AgentDaoCreatedEvent.class, agentAllocator);
+
         // Publish this ServerManager in the RMI registry
         try {
             // TODO: Extract this logic to the RemoteObjectregistryManager
@@ -117,7 +118,6 @@ public class ServerManager implements Subscriber {
 
             LOGGER.info("PoolManager instance published in RMI (port " + rmiPort + ") under the identifier '"
                     + poolManagerRmiPublishString + "'.");
-
             String connectionRequestReceiverRmiString = RmiStringConstants.CONNECTION_REQUEST_RECEIVER.toString();
             connectionRequestReceiver = new ConnectionRequestReceiver(this);
             rmiRegistry.rebind(connectionRequestReceiverRmiString, connectionRequestReceiver);
@@ -210,9 +210,16 @@ public class ServerManager implements Subscriber {
         // Get the agent rmi stub
         Registry agentRegistry = LocateRegistry.getRegistry(ip, port);
         IAgentManager agent = (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
+        String agentId = agent.getAgentId();
 
         // Add the agent stub to the agent lists
-        agentAllocator.registerAgent(agent, agentRegistry);
+        try {
+            agentAllocator.registerAgent(agent, agentRegistry, ip, port);
+        } catch (AgentDaoException e) {
+            String errorMessage = String.format("Failed to add agent with ID %s in the data source when trying to register the agent.",
+                                                agentId);
+            LOGGER.error(errorMessage, e);
+        }
 
         // Register the server for event notifications
         String serverIpForAgent = agent.getInvokerIpAddress();
@@ -222,17 +229,16 @@ public class ServerManager implements Subscriber {
         AgentConnectedEvent agentConnectedEvent = new AgentConnectedEvent(agent, agentRegistry);
         eventService.publish(agentConnectedEvent);
 
-        return agent.getAgentId();
+        return agentId;
     }
 
-    private void publishAllDeviceProxiesForAgent(String agentId) throws RemoteException {
-        Pair<IAgentManager, Registry> agentRegistryPair = agentAllocator.getAgentRegistryPair(agentId);
-        IAgentManager agentManager = agentRegistryPair.getKey();
+    private void publishAllDeviceProxiesForAgent(String agentId) throws RemoteException, NotBoundException {
+        IAgentManager agentManager = agentAllocator.getAgentManager(agentId);
         List<String> deviceWrappers = agentManager.getAllDeviceRmiIdentifiers();
-        Registry agentRegistry = agentRegistryPair.getValue();
+        Registry agentRegistry = agentAllocator.getAgentRegistry(agentId);
 
         for (String wrapperRmiId : deviceWrappers) {
-            poolManager.addDevice(wrapperRmiId, agentRegistry, agentManager);
+            poolManager.addDevice(wrapperRmiId, agentRegistry, agentId);
         }
     }
 
@@ -268,7 +274,7 @@ public class ServerManager implements Subscriber {
      * Informs server manager for {@link AgentConnectedEvent event} received when an agent connects.
      * 
      * @param event
-     *        - event, which is received when an agent is connected.
+     *        - event, which is received when an agent is connected
      */
     public void inform(AgentConnectedEvent event) {
         // TODO: Re-factor agent allocator to use events on agent connected.
