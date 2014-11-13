@@ -9,6 +9,7 @@ import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
 
 /**
  * Class which creates data access objects for agent, and device pool and publishes events to the
@@ -48,7 +49,7 @@ public class DataSourceProvider implements IDataSourceProvider {
      *        - event, which is received when data source is initialized
      */
     public void inform(DataSourceInitializedEvent event) {
-        // eventService.publish(new DevicePoolDaoCreatedEvent());
+        eventService.publish(new DevicePoolDaoCreatedEvent());
         eventService.publish(new AgentDaoCreatedEvent());
     }
 }
