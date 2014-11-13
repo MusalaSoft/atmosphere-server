@@ -29,6 +29,9 @@ public class DataSourceManager implements IDataSourceManager {
     @Override
     public void initialize() {
         flywayDataHandler.setDataSource(Property.DATABASE_URL, null, null);
+
+        // Drops the database if it already exists.
+        flywayDataHandler.clean();
         flywayDataHandler.setCallbacks(dataSourceCallback);
 
         String currentDir = System.getProperty("user.dir");
