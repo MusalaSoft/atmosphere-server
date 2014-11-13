@@ -19,11 +19,13 @@ import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
-import com.musala.atmosphere.server.dao.nativeobject.DevicePoolDao;
+import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
+import com.musala.atmosphere.server.data.provider.nativeprovider.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentConnectedEvent;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentDisconnectedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 import com.musala.atmosphere.server.pool.PoolManager;
 
@@ -45,6 +47,8 @@ public class ServerManager implements Subscriber {
     private int rmiRegistryPort;
 
     private Registry rmiRegistry;
+
+    private IDevicePoolDao devicePoolDao;
 
     private AgentEventSender agentChangeNotifier;
 
@@ -265,7 +269,6 @@ public class ServerManager implements Subscriber {
     public void inform(AgentDisconnectedEvent event) throws RemoteException, DevicePoolDaoException {
         String agentId = event.getAgentId();
 
-        IDevicePoolDao devicePoolDao = new DevicePoolDao();
         devicePoolDao.removeDevices(agentId);
         LOGGER.debug("An agent disconnected event is received.");
     }
@@ -280,6 +283,11 @@ public class ServerManager implements Subscriber {
         // TODO: Re-factor agent allocator to use events on agent connected.
 
         LOGGER.debug("An agent connected event is received.");
+    }
+
+    public void inform(DevicePoolDaoCreatedEvent event) {
+        IDataSourceProvider dataSoureceProvider = new DataSourceProvider();
+        devicePoolDao = dataSoureceProvider.getDevicePoolDao();
     }
 
     /**

@@ -19,9 +19,11 @@ import com.musala.atmosphere.server.data.provider.nativeprovider.DataSourceProvi
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.device.DeviceEvent;
 import com.musala.atmosphere.server.monitor.AgentMonitor;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
+import com.musala.atmosphere.server.pool.PoolManager;
 import com.musala.atmosphere.server.registrymanager.RemoteObjectRegistryManager;
 import com.musala.atmosphere.server.state.ServerState;
 import com.musala.atmosphere.server.state.StoppedServer;
@@ -95,6 +97,10 @@ public class Server {
         dataSourceProvider = new DataSourceProvider();
 
         eventService.subscribe(DataSourceInitializedEvent.class, dataSourceProvider);
+
+        PoolManager poolManager = PoolManager.getInstance();
+
+        eventService.subscribe(DevicePoolDaoCreatedEvent.class, poolManager);
 
         isConnected = false;
         LOGGER.info("Server instance created succesfully.");

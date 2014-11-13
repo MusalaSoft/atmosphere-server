@@ -23,12 +23,15 @@ import com.musala.atmosphere.server.DeviceProxy;
 import com.musala.atmosphere.server.PasskeyAuthority;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
-import com.musala.atmosphere.server.dao.nativeobject.DevicePoolDao;
 import com.musala.atmosphere.server.data.model.IDevice;
+import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
+import com.musala.atmosphere.server.data.provider.nativeprovider.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishEvent;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishedEvent;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DeviceUnpublishedEvent;
+import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 import com.musala.atmosphere.server.registrymanager.RemoteObjectRegistryManager;
 
 /**
@@ -38,7 +41,7 @@ import com.musala.atmosphere.server.registrymanager.RemoteObjectRegistryManager;
  * @author yavor.stankov
  * 
  */
-public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
+public class PoolManager extends UnicastRemoteObject implements IClientBuilder, Subscriber {
     private static final long serialVersionUID = -5077918124351182199L;
 
     private static final String DEVICE_RMI_ID_FORMAT = "%s_%s";
@@ -49,7 +52,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
 
     private ServerEventService eventService = new ServerEventService();
 
-    private IDevicePoolDao devicePoolDao = new DevicePoolDao();
+    private IDevicePoolDao devicePoolDao;
 
     private HashMap<String, DeviceProxy> deviceIdToDeviceProxy = new HashMap<String, DeviceProxy>();
 
@@ -259,8 +262,9 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder {
         devicePoolDao.update(device);
     }
 
-    public int getPoolSize() {
-        return deviceIdToDeviceProxy.size();
+    public void inform(DevicePoolDaoCreatedEvent event) {
+        IDataSourceProvider dataSoureceProvider = new DataSourceProvider();
+        devicePoolDao = dataSoureceProvider.getDevicePoolDao();
     }
 
     private static String buildDeviceIdentifier(String onAgentId, String deviceSerialNumber) {
