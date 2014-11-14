@@ -18,7 +18,7 @@ public class AgentDao implements IAgentDao {
 
     @Override
     public void add(String agentId, String agentIp, int agentPort) {
-        Pair agentIpAndPort = new Pair(agentIp, agentPort);
+        Pair<String, Integer> agentIpAndPort = new Pair<String, Integer>(agentIp, agentPort);
 
         agentIdToAgentIpAndPort.put(agentId, agentIpAndPort);
     }

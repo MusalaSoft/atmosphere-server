@@ -93,6 +93,8 @@ public class Server {
         // Add subscribers to the event service for device events.
         eventService.subscribe(DeviceEvent.class, registryManager);
 
+        eventService.subscribe(DevicePoolDaoCreatedEvent.class, serverManager);
+
         dataSourceManager = new DataSourceManager();
         dataSourceProvider = new DataSourceProvider();
 

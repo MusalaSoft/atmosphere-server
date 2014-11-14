@@ -264,13 +264,18 @@ public class ServerManager implements Subscriber {
      *         - if could not get the agent ID
      * @throws DevicePoolDaoException
      *         - if devices for the disconnected agent could not be removed
+     * @throws AgentDaoException
+     *         - if the disconnected agent can not be removed
      */
 
-    public void inform(AgentDisconnectedEvent event) throws RemoteException, DevicePoolDaoException {
+    public void inform(AgentDisconnectedEvent event) throws RemoteException, DevicePoolDaoException, AgentDaoException {
         String agentId = event.getAgentId();
-
         devicePoolDao.removeDevices(agentId);
-        LOGGER.debug("An agent disconnected event is received.");
+        agentAllocator.unregisterAgent(agentId);
+
+        String debugMessage = String.format("Unregister agent with ID %s from server and remove all devices attached on it",
+                                            agentId);
+        LOGGER.debug(debugMessage);
     }
 
     /**
