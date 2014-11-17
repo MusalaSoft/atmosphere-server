@@ -1,7 +1,6 @@
 package com.musala.atmosphere.server.data.provider.nativeprovider;
 
 import com.musala.atmosphere.server.dao.IAgentDao;
-import com.musala.atmosphere.server.dao.IDeviceDao;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.dao.nativeobject.AgentDao;
 import com.musala.atmosphere.server.dao.nativeobject.DevicePoolDao;
@@ -29,11 +28,6 @@ public class DataSourceProvider implements IDataSourceProvider {
     @Override
     public IAgentDao getAgentDao() {
         return agentDao;
-    }
-
-    @Override
-    public IDeviceDao getDeviceDao() {
-        return null;
     }
 
     @Override

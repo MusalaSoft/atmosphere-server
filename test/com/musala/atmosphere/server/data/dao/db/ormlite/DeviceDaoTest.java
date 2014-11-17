@@ -166,7 +166,7 @@ public class DeviceDaoTest {
 
         when(mockedDeviceDao.queryForFieldValuesArgs(eq(query))).thenReturn(resultsList);
 
-        IDevice receivedDevice = testDeviceDao.selectByRmiId(EXISTING_DEVICE_RMI_ID);
+        IDevice receivedDevice = testDeviceDao.selectById(EXISTING_DEVICE_RMI_ID);
         verify(mockedDeviceDao, times(1)).queryForFieldValuesArgs(eq(query));
 
         assertEquals("Device found for the requested RMI id is different from the expected one.",
@@ -182,7 +182,7 @@ public class DeviceDaoTest {
 
         when(mockedDeviceDao.queryForFieldValuesArgs(eq(query))).thenReturn(resultsList);
 
-        IDevice receivedDevice = testDeviceDao.selectByRmiId(TEST_DEVICE_RMI_ID);
+        IDevice receivedDevice = testDeviceDao.selectById(TEST_DEVICE_RMI_ID);
         verify(mockedDeviceDao, times(1)).queryForFieldValuesArgs(eq(query));
 
         assertNull("Find a device matching the requested RMI id, even though it does not exist.", receivedDevice);

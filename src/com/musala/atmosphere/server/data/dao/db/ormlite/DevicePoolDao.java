@@ -63,7 +63,7 @@ public class DevicePoolDao implements IDevicePoolDao {
     @Override
     public IDevice getDevice(String id) throws DevicePoolDaoException {
         try {
-            return deviceDao.selectByRmiId(id);
+            return deviceDao.selectById(id);
         } catch (DeviceDaoException e) {
             throw new DevicePoolDaoException(e.getMessage(), e);
         }
@@ -73,7 +73,7 @@ public class DevicePoolDao implements IDevicePoolDao {
     public boolean hasDevice(String id) {
         IDevice selectedDevice;
         try {
-            selectedDevice = deviceDao.selectByRmiId(id);
+            selectedDevice = deviceDao.selectById(id);
         } catch (DeviceDaoException e) {
             String message = String.format("Device with ID %s was not found.", id);
             LOGGER.error(message, e);

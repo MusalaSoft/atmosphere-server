@@ -13,10 +13,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.j256.ormlite.support.ConnectionSource;
-import com.musala.atmosphere.server.dao.IAgentDao;
-import com.musala.atmosphere.server.dao.IDeviceDao;
-import com.musala.atmosphere.server.dao.IDevicePoolDao;
-import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
+import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
+import com.musala.atmosphere.server.data.dao.db.ormlite.DeviceDao;
+import com.musala.atmosphere.server.data.dao.db.ormlite.DevicePoolDao;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
@@ -37,13 +36,13 @@ public class DataSourceProviderTest {
     private static ConnectionSource mockedConnectionSource;
 
     @Mock
-    private static IAgentDao mockedAgentDao;
+    private static AgentDao mockedAgentDao;
 
     @Mock
-    private static IDeviceDao mockedDeviceDao;
+    private static DeviceDao mockedDeviceDao;
 
     @Mock
-    private static IDevicePoolDao mockedDevicePoolDao;
+    private static DevicePoolDao mockedDevicePoolDao;
 
     @InjectMocks
     private static DataSourceProvider dataSourceProvider;
@@ -64,9 +63,9 @@ public class DataSourceProviderTest {
 
     @Test
     public void testNotCreatedDaosWhenDataSourceInitializedEventIsMissing() {
-        IAgentDao agentDao = dataSourceProvider.getAgentDao();
-        IDeviceDao deviceDao = dataSourceProvider.getDeviceDao();
-        IDevicePoolDao devicePoolDao = dataSourceProvider.getDevicePoolDao();
+        AgentDao agentDao = dataSourceProvider.getAgentDao();
+        DeviceDao deviceDao = dataSourceProvider.getDeviceDao();
+        DevicePoolDao devicePoolDao = dataSourceProvider.getDevicePoolDao();
 
         assertNull("Agent data access object was created.", agentDao);
         assertNull("Device data access object was created.", deviceDao);

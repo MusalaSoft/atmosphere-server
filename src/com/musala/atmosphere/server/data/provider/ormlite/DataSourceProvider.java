@@ -8,9 +8,6 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
-import com.musala.atmosphere.server.dao.IAgentDao;
-import com.musala.atmosphere.server.dao.IDeviceDao;
-import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
 import com.musala.atmosphere.server.data.dao.db.ormlite.DeviceDao;
 import com.musala.atmosphere.server.data.dao.db.ormlite.DevicePoolDao;
@@ -35,29 +32,33 @@ import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.Dev
 public class DataSourceProvider implements IDataSourceProvider {
     private static final Logger LOGGER = Logger.getLogger(DataSourceProvider.class);
 
-    private static IAgentDao wrappedAgentDao = null;
+    private static AgentDao wrappedAgentDao = null;
 
-    private static IDeviceDao wrappedDeviceDao = null;
+    private static DeviceDao wrappedDeviceDao = null;
 
-    private static IDevicePoolDao devicePoolDao = null;
+    private static DevicePoolDao devicePoolDao = null;
 
     private static ServerEventService eventService = new ServerEventService();
 
     private static ConnectionSource connectionSource = null;
 
     @Override
-    public IAgentDao getAgentDao() {
+    public AgentDao getAgentDao() {
         return wrappedAgentDao;
     }
 
     @Override
-    public IDeviceDao getDeviceDao() {
-        return wrappedDeviceDao;
+    public DevicePoolDao getDevicePoolDao() {
+        return devicePoolDao;
     }
 
-    @Override
-    public IDevicePoolDao getDevicePoolDao() {
-        return devicePoolDao;
+    /**
+     * Gets data access object for modifying devices in the data source.
+     * 
+     * @return a {@link DeviceDao device data access object}
+     */
+    public DeviceDao getDeviceDao() {
+        return wrappedDeviceDao;
     }
 
     /**
@@ -89,7 +90,7 @@ public class DataSourceProvider implements IDataSourceProvider {
             }
 
             if (devicePoolDao == null) {
-                devicePoolDao = new DevicePoolDao((DeviceDao) wrappedDeviceDao, (AgentDao) wrappedAgentDao);
+                devicePoolDao = new DevicePoolDao(wrappedDeviceDao, wrappedAgentDao);
 
                 publishDataSourceCreatedEvent(new DevicePoolDaoCreatedEvent());
             }

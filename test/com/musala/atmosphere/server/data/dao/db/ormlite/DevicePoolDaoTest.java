@@ -107,10 +107,10 @@ public class DevicePoolDaoTest {
         Device expectedDevice = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_RMI_ID);
         expectedDevice.setAgent(mockedAgent);
 
-        when(mockedDeviceDao.selectByRmiId(eq(EXISTING_DEVICE_RMI_ID))).thenReturn(expectedDevice);
+        when(mockedDeviceDao.selectById(eq(EXISTING_DEVICE_RMI_ID))).thenReturn(expectedDevice);
 
         Device device = (Device) testDevicePoolDao.getDevice(EXISTING_DEVICE_RMI_ID);
-        verify(mockedDeviceDao, times(1)).selectByRmiId(eq(EXISTING_DEVICE_RMI_ID));
+        verify(mockedDeviceDao, times(1)).selectById(eq(EXISTING_DEVICE_RMI_ID));
 
         assertEquals("Getting device by ID returned result different from the expected.", expectedDevice, device);
     }
@@ -119,10 +119,10 @@ public class DevicePoolDaoTest {
     public void testGetDeviceWhichDoesNotExist() throws Exception {
         Device expectedDevice = null;
 
-        when(mockedDeviceDao.selectByRmiId(eq(TEST_DEVICE_RMI_ID))).thenReturn(expectedDevice);
+        when(mockedDeviceDao.selectById(eq(TEST_DEVICE_RMI_ID))).thenReturn(expectedDevice);
 
         Device device = (Device) testDevicePoolDao.getDevice(TEST_DEVICE_RMI_ID);
-        verify(mockedDeviceDao, times(1)).selectByRmiId(eq(TEST_DEVICE_RMI_ID));
+        verify(mockedDeviceDao, times(1)).selectById(eq(TEST_DEVICE_RMI_ID));
 
         assertNull("Expected that device with the requested RMI id would not be found.", device);
     }
@@ -134,10 +134,10 @@ public class DevicePoolDaoTest {
         Device expectedDevice = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_RMI_ID);
         expectedDevice.setAgent(mockedAgent);
 
-        when(mockedDeviceDao.selectByRmiId(eq(EXISTING_DEVICE_RMI_ID))).thenReturn(expectedDevice);
+        when(mockedDeviceDao.selectById(eq(EXISTING_DEVICE_RMI_ID))).thenReturn(expectedDevice);
 
         boolean isDeviceFound = testDevicePoolDao.hasDevice(EXISTING_DEVICE_RMI_ID);
-        verify(mockedDeviceDao, times(1)).selectByRmiId(eq(EXISTING_DEVICE_RMI_ID));
+        verify(mockedDeviceDao, times(1)).selectById(eq(EXISTING_DEVICE_RMI_ID));
 
         assertTrue("Device with the requested RMI id was not found.", isDeviceFound);
     }
@@ -146,10 +146,10 @@ public class DevicePoolDaoTest {
     public void testHasDeviceWithUnexistingId() throws Exception {
         Device expectedDevice = null;
 
-        when(mockedDeviceDao.selectByRmiId(eq(TEST_DEVICE_RMI_ID))).thenReturn(expectedDevice);
+        when(mockedDeviceDao.selectById(eq(TEST_DEVICE_RMI_ID))).thenReturn(expectedDevice);
 
         boolean isDeviceFound = testDevicePoolDao.hasDevice(TEST_DEVICE_RMI_ID);
-        verify(mockedDeviceDao, times(1)).selectByRmiId(eq(TEST_DEVICE_RMI_ID));
+        verify(mockedDeviceDao, times(1)).selectById(eq(TEST_DEVICE_RMI_ID));
 
         assertFalse("Expected that device matching the requested RMI id would not be found.", isDeviceFound);
     }

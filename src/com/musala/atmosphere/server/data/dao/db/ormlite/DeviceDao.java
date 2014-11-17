@@ -16,7 +16,6 @@ import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceOs;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
-import com.musala.atmosphere.server.dao.IDeviceDao;
 import com.musala.atmosphere.server.dao.exception.DeviceDaoException;
 import com.musala.atmosphere.server.dao.exception.DeviceDaoRuntimeException;
 import com.musala.atmosphere.server.data.db.constant.DeviceColumnName;
@@ -29,7 +28,7 @@ import com.musala.atmosphere.server.data.model.ormilite.Device;
  * @author filareta.yordanova
  * 
  */
-public class DeviceDao implements IDeviceDao {
+public class DeviceDao {
     private Dao<Device, String> deviceDao;
 
     /**
@@ -42,7 +41,15 @@ public class DeviceDao implements IDeviceDao {
         this.deviceDao = deviceDao;
     }
 
-    @Override
+    /**
+     * Updates device properties in the data source.
+     * 
+     * @param device
+     *        - device that will be updated in the data source
+     * @throws DeviceDaoException
+     *         thrown when updating device fails
+     * 
+     */
     public void update(IDevice device) throws DeviceDaoException {
         if (device == null) {
             throw new DeviceDaoRuntimeException("You are trying to update device that is not present.");
@@ -58,7 +65,14 @@ public class DeviceDao implements IDeviceDao {
         }
     }
 
-    @Override
+    /**
+     * Adds new device in the data source.
+     * 
+     * @param device
+     *        - device to be added in the data source
+     * @throws DeviceDaoException
+     *         thrown when adding new device fails
+     */
     public void add(IDevice device) throws DeviceDaoException {
         if (device == null) {
             throw new DeviceDaoRuntimeException("The device you are trying to add is null.");
@@ -74,7 +88,14 @@ public class DeviceDao implements IDeviceDao {
         }
     }
 
-    @Override
+    /**
+     * Removes a device with the given ID from the data source.
+     * 
+     * @param deviceId
+     *        - the ID of the device to be removed
+     * @throws DeviceDaoException
+     *         thrown when removing device fails
+     */
     public void remove(String deviceId) throws DeviceDaoException {
         try {
             Device deviceToRemove = getDeviceByFieldValue(DeviceColumnName.RMI_REGISTRY_ID, deviceId);
@@ -91,41 +112,34 @@ public class DeviceDao implements IDeviceDao {
     }
 
     /**
-     * Selects device by RMI id.
+     * Selects device by its unique ID.
      * 
-     * @param rmiId
-     *        - RMI id to be used as a match criterion
-     * @return {@link IDevice device} matching the requested RMI id.
+     * @param id
+     *        - ID to be used as a match criterion
+     * @return {@link IDevice device} matching the requested ID, or <code>null</code> if no device with such ID is found
      * @throws DeviceDaoException
-     *         - thrown when retrieving from the data source for the given RMI id fails
+     *         thrown when retrieving device from the data source fails
      */
-    public IDevice selectByRmiId(String rmiId) throws DeviceDaoException {
+    public IDevice selectById(String id) throws DeviceDaoException {
         try {
-            return getDeviceByFieldValue(DeviceColumnName.RMI_REGISTRY_ID, rmiId);
+            return getDeviceByFieldValue(DeviceColumnName.RMI_REGISTRY_ID, id);
         } catch (SQLException e) {
             String message = String.format("Getting ID for device with RMI id %s failed, because data source failed.",
-                                           rmiId);
+                                           id);
             throw new DeviceDaoException(message, e);
         }
     }
 
-    private Device getDeviceByFieldValue(String fieldName, Object fieldValue) throws SQLException {
-        Map<String, Object> query = new HashMap<String, Object>();
-        query.put(fieldName, fieldValue);
-
-        List<Device> resultList = deviceDao.queryForFieldValuesArgs(query);
-
-        if (!resultList.isEmpty()) {
-            return resultList.get(0);
-        }
-
-        return null;
-    }
-
-    // Will be used by Device Pool Dao
-    // TODO: Decide what kind of tests should be added - unit or integration. Fake database can be created for executing
-    // the queries.
-    /* package */List<IDevice> filterDevicesByParameters(DeviceParameters parameters) throws DeviceDaoException {
+    /**
+     * Gets all {@link IDevice devices} that match the given parameters.
+     * 
+     * @param parameters
+     *        - the parameters to select devices by
+     * @return a {@link List list} of devices matching the given parameters
+     * @throws DeviceDaoException
+     *         thrown when retrieving devices from the data source fails
+     */
+    public List<IDevice> filterDevicesByParameters(DeviceParameters parameters) throws DeviceDaoException {
         Map<String, Object> queryMap = buildQueryMap(parameters);
 
         DeviceType deviceType = parameters.getDeviceType();
@@ -160,6 +174,19 @@ public class DeviceDao implements IDeviceDao {
             String message = String.format("No device, matching the requested parameters %s, is found.", parameters);
             throw new DeviceDaoException(message, e);
         }
+    }
+
+    private Device getDeviceByFieldValue(String fieldName, Object fieldValue) throws SQLException {
+        Map<String, Object> query = new HashMap<String, Object>();
+        query.put(fieldName, fieldValue);
+
+        List<Device> resultList = deviceDao.queryForFieldValuesArgs(query);
+
+        if (!resultList.isEmpty()) {
+            return resultList.get(0);
+        }
+
+        return null;
     }
 
     private Map<String, Object> buildQueryMap(DeviceParameters parameters) {
