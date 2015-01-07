@@ -7,7 +7,7 @@ import org.junit.Test;
 public class ServerPropertiesLoaderTest {
 
     @Test
-    public void test() {
+    public void testPropertiesLoader() {
         int poolManagerPort = 0;
         poolManagerPort = ServerPropertiesLoader.getPoolManagerRmiPort();
         assertNotSame("Returns property.", 0, poolManagerPort);

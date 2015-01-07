@@ -32,7 +32,7 @@ public class AgentDaoTestUtils {
     public static class AgentDaoFakeSubscriber implements Subscriber {
 
         public void inform(AgentDaoCreatedEvent event) {
-            testAgentDao = (AgentDao) dataSourceProvider.getAgentDao();
+            testAgentDao = dataSourceProvider.getAgentDao();
         }
     }
 
@@ -41,16 +41,16 @@ public class AgentDaoTestUtils {
      * 
      * @return <@link AgentDao> that manages the table of the agents
      */
-    public void setUpDatabase() {
-        DataSourceManager dataSourceManager = new DataSourceManager(new DataSourceCallback());
-
+    public void setUpDatabase(){
         eventService = new ServerEventService();
         dataSourceProvider = new DataSourceProvider();
+
         fakeSubscriber = new AgentDaoFakeSubscriber();
 
-        eventService.subscribe(AgentDaoCreatedEvent.class, fakeSubscriber);
         eventService.subscribe(DataSourceInitializedEvent.class, dataSourceProvider);
+        eventService.subscribe(AgentDaoCreatedEvent.class, fakeSubscriber);
 
+        DataSourceManager dataSourceManager = new DataSourceManager(new DataSourceCallback());
         dataSourceManager.initialize();
     }
 
