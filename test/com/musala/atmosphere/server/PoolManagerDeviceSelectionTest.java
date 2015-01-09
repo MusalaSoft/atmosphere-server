@@ -221,7 +221,7 @@ public class PoolManagerDeviceSelectionTest {
         DeviceParameters parameters = new DeviceParameters();
         parameters.setRam(128);
 
-        when(devicePoolDao.getDevices(parameters)).thenReturn(deviceList);
+        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
         String deviceId = deviceDescriptor.getDeviceId();
 
@@ -239,7 +239,7 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setResolutionHeight(600);
         parameters.setResolutionWidth(800);
 
-        when(devicePoolDao.getDevices(eq(parameters))).thenReturn(deviceList);
+        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
         String deviceId = deviceDescriptor.getDeviceId();
 
@@ -256,7 +256,7 @@ public class PoolManagerDeviceSelectionTest {
         DeviceParameters parameters = new DeviceParameters();
         parameters.setRam(128);
 
-        when(devicePoolDao.getDevices(eq(parameters))).thenReturn(deviceList);
+        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
         String deviceId = deviceDescriptor.getDeviceId();
 
@@ -274,7 +274,7 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setDpi(240);
 
         List<IDevice> deviceList = Arrays.asList(secondDevice);
-        when(devicePoolDao.getDevices(eq(parameters))).thenReturn(deviceList);
+        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
         String deviceId = deviceDescriptor.getDeviceId();
 
@@ -293,7 +293,7 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setRam(512);
 
         List<IDevice> deviceList = Arrays.asList(thirdDevice);
-        when(devicePoolDao.getDevices(eq(parameters))).thenReturn(deviceList);
+        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
         String deviceId = deviceDescriptor.getDeviceId();
 
@@ -312,7 +312,7 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setDpi(180);
 
         List<IDevice> deviceList = Arrays.asList(fourthDevice);
-        when(devicePoolDao.getDevices(eq(parameters))).thenReturn(deviceList);
+        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
         String deviceId = deviceDescriptor.getDeviceId();
 
@@ -331,7 +331,7 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setCameraPresent(true);
 
         List<IDevice> deviceList = Arrays.asList(fourthDevice);
-        when(devicePoolDao.getDevices(eq(parameters))).thenReturn(deviceList);
+        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
         String deviceId = deviceDescriptor.getDeviceId();
 
@@ -349,7 +349,7 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setCameraPresent(false);
 
         List<IDevice> deviceList = Arrays.asList(fifthDevice);
-        when(devicePoolDao.getDevices(eq(parameters))).thenReturn(deviceList);
+        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
         DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
         String deviceId = deviceDescriptor.getDeviceId();
 
@@ -369,7 +369,7 @@ public class PoolManagerDeviceSelectionTest {
         parameters.setCameraPresent(true);
 
         List<IDevice> deviceList = Arrays.asList();
-        when(devicePoolDao.getDevices(eq(parameters))).thenReturn(deviceList);
+        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
 
         poolManager.allocateDevice(parameters);
     }
