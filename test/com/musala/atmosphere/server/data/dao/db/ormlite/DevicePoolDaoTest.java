@@ -240,7 +240,7 @@ public class DevicePoolDaoTest {
         List<IDevice> expectedResultList = new ArrayList<IDevice>();
         expectedResultList.add(attachedDevice);
 
-        when(mockedDeviceDao.filterDevicesByParameters(eq(deviceParameters), eq(false))).thenReturn(expectedResultList);
+        when(mockedDeviceDao.filterDevicesByParameters(eq(deviceParameters))).thenReturn(expectedResultList);
         List<IDevice> actualResultList = testDevicePoolDao.getDevices(deviceParameters);
 
         assertEquals("Devices found by the given device parameters do not match the expected result.",
@@ -255,7 +255,7 @@ public class DevicePoolDaoTest {
 
         List<IDevice> resultList = new ArrayList<IDevice>();
 
-        when(mockedDeviceDao.filterDevicesByParameters(eq(deviceParameters), eq(false))).thenReturn(resultList);
+        when(mockedDeviceDao.filterDevicesByParameters(eq(deviceParameters))).thenReturn(resultList);
         List<IDevice> actualResultList = testDevicePoolDao.getDevices(deviceParameters);
 
         assertTrue("Expected that no devices matching the requested parameters would be found.",
@@ -269,7 +269,7 @@ public class DevicePoolDaoTest {
 
         List<IDevice> resultList = new ArrayList<IDevice>();
 
-        when(mockedDeviceDao.filterDevicesByParameters(eq(deviceParameters), eq(false))).thenReturn(resultList);
+        when(mockedDeviceDao.filterDevicesByParameters(eq(deviceParameters))).thenReturn(resultList);
         boolean isDeviceFound = testDevicePoolDao.hasDevice(deviceParameters);
 
         assertFalse("Expected that device matching the requested parameters would not be found.", isDeviceFound);
@@ -286,7 +286,7 @@ public class DevicePoolDaoTest {
         expectedResultList.add(attachedDevice);
 
         when(mockedDeviceDao.filterDevicesByParameters(eq(deviceParameters), eq(false))).thenReturn(expectedResultList);
-        boolean isDeviceFound = testDevicePoolDao.hasDevice(deviceParameters);
+        boolean isDeviceFound = testDevicePoolDao.hasDevice(deviceParameters, false);
 
         assertTrue("Finding device for the requested parameters failed.", isDeviceFound);
     }
