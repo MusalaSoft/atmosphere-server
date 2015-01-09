@@ -25,7 +25,7 @@ public interface IDevice {
     public boolean isAllocated();
 
     /**
-     * Gets the information of the device from the data source.
+     * Gets the information of the device in the data source.
      * 
      * @return {@link DeviceInformation information} about the device
      */
@@ -51,4 +51,12 @@ public interface IDevice {
      * @return passkey of the device
      */
     public long getPasskey();
+
+    /**
+     * Sets the information of the device in the data source.
+     * 
+     * @param information
+     *        - the device {@link DeviceInformation information} to be set
+     */
+    public void setDeviceInformation(DeviceInformation information);
 }

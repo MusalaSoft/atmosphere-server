@@ -94,17 +94,30 @@ public class Device implements IDevice {
     /**
      * Creates new device with the given serial number, RMI id and passkey.
      * 
-     * @param serialNumber
-     *        - the serial number of this device
+     * @param deviceInformation
+     *        - the {@link DeviceInformation information} of this device
      * @param rmiRegistryId
      *        - the RMI registry of this device
      * @param passkey
      *        - passkey for validating authority
      */
-    public Device(String serialNumber, String rmiId, long passkey) {
-        this.serialNumber = serialNumber;
-        this.rmiRegistryId = rmiId;
-        this.passkey = passkey;
+    public Device(DeviceInformation deviceInformation, String rmiId, long passkeyAuthority) {
+        apiLevel = deviceInformation.getApiLevel();
+        cpu = deviceInformation.getCpu();
+        dpi = deviceInformation.getDpi();
+        manufacturer = deviceInformation.getManufacturer();
+        model = deviceInformation.getModel();
+        os = deviceInformation.getOS();
+        ram = deviceInformation.getRam();
+        Pair<Integer, Integer> resolution = deviceInformation.getResolution();
+        resolutionWidth = resolution.getValue();
+        resolutionHeight = resolution.getKey();
+        serialNumber = deviceInformation.getSerialNumber();
+        isEmulator = deviceInformation.isEmulator();
+        isTablet = deviceInformation.isTablet();
+        hasCamera = deviceInformation.hasCamera();
+        rmiRegistryId = rmiId;
+        passkey = passkeyAuthority;
     }
 
     /**
@@ -539,5 +552,23 @@ public class Device implements IDevice {
     public String getDeviceId() {
         // For now the unique identifier for the device is its RMI id.
         return rmiRegistryId;
+    }
+
+    @Override
+    public void setDeviceInformation(DeviceInformation information) {
+        apiLevel = information.getApiLevel();
+        cpu = information.getCpu();
+        dpi = information.getDpi();
+        manufacturer = information.getManufacturer();
+        model = information.getModel();
+        os = information.getOS();
+        ram = information.getRam();
+        Pair<Integer, Integer> resolution = information.getResolution();
+        resolutionWidth = resolution.getValue();
+        resolutionHeight = resolution.getKey();
+        serialNumber = information.getSerialNumber();
+        isEmulator = information.isEmulator();
+        isTablet = information.isTablet();
+        hasCamera = information.hasCamera();
     }
 }

@@ -141,8 +141,34 @@ public class DeviceDao {
      */
     public List<IDevice> filterDevicesByParameters(DeviceParameters parameters) throws DeviceDaoException {
         Map<String, Object> queryMap = buildQueryMap(parameters);
-
         DeviceType deviceType = parameters.getDeviceType();
+
+        return queryDevicesByType(queryMap, deviceType);
+    }
+
+    /**
+     * Gets all {@link IDevice devices} that match the given parameters and allocation criterion.
+     * 
+     * @param parameters
+     *        - the parameters to select devices by
+     * @param isAllocated
+     *        - if <code>true</code> only allocated devices are filtered, otherwise devices are selected from the free
+     *        ones
+     * @return a {@link List list} of devices matching the given parameters
+     * @throws DeviceDaoException
+     *         thrown when retrieving devices from the data source fails
+     */
+    public List<IDevice> filterDevicesByParameters(DeviceParameters parameters, boolean isAllocated)
+        throws DeviceDaoException {
+        Map<String, Object> queryMap = buildQueryMap(parameters);
+        queryMap.put(DeviceColumnName.IS_ALLOCATED, isAllocated);
+        DeviceType deviceType = parameters.getDeviceType();
+
+        return queryDevicesByType(queryMap, deviceType);
+    }
+
+    private List<IDevice> queryDevicesByType(Map<String, Object> queryMap, DeviceType deviceType)
+        throws DeviceDaoException {
         boolean isEmulator = false;
         boolean queryAllDeviceTypes = true;
 
@@ -171,7 +197,7 @@ public class DeviceDao {
             List<Device> deviceResultList = queryDevicesByParameters(queryMap, isEmulator, queryAllDeviceTypes);
             return new ArrayList<IDevice>(deviceResultList);
         } catch (SQLException e) {
-            String message = String.format("No device, matching the requested parameters %s, is found.", parameters);
+            String message = String.format("No device, matching the given query %s and type %s.", queryMap, deviceType);
             throw new DeviceDaoException(message, e);
         }
     }
@@ -232,7 +258,17 @@ public class DeviceDao {
     private List<Device> queryDevicesByParameters(Map<String, Object> query,
                                                   boolean isEmulator,
                                                   boolean queryAllDeviceTypes) throws SQLException {
+
+        // Results are ordered by is_emulator column. If devices are preferred, results are ordered in ascending order.
+        // When emulators are preferred descending ordering is used.
+        boolean isAscendingOrder = !isEmulator;
         QueryBuilder<Device, String> deviceQueryBuilder = deviceDao.queryBuilder();
+
+        if (query.isEmpty() && queryAllDeviceTypes) {
+            deviceQueryBuilder.orderBy(DeviceColumnName.IS_EMULATOR, isAscendingOrder);
+            deviceQueryBuilder.prepare();
+            return deviceQueryBuilder.query();
+        }
 
         Set<Entry<String, Object>> querySet = query.entrySet();
         Iterator<Entry<String, Object>> iterator = querySet.iterator();
@@ -252,8 +288,6 @@ public class DeviceDao {
             queryWhereClause = queryWhereClause.eq(DeviceColumnName.IS_EMULATOR, isEmulator);
         }
 
-        // Devices first (is_emulator = 0) -> ascending order, emulators first (is_emulator = 1) -> descending order
-        boolean isAscendingOrder = !isEmulator;
         deviceQueryBuilder.orderBy(DeviceColumnName.IS_EMULATOR, isAscendingOrder);
 
         deviceQueryBuilder.prepare();

@@ -20,7 +20,7 @@ import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
 import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
-import com.musala.atmosphere.server.data.provider.nativeprovider.DataSourceProvider;
+import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentConnectedEvent;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentDisconnectedEvent;

@@ -46,6 +46,21 @@ public interface IDevicePoolDao {
     public List<IDevice> getDevices(DeviceParameters parameters) throws DevicePoolDaoException;
 
     /**
+     * Gets all devices that match the given parameters and allocation criterion.
+     * 
+     * @param parameters
+     *        - the parameters that the requested devices should match
+     * @param isAllocated
+     *        - if <code>true</code> only allocated devices are filtered, otherwise devices are selected from the free
+     *        ones
+     * @return a {@link List list} of {@link IDevice devices} that match the passed parameters or throws
+     *         {@link DevicePoolDaoException exception} if the operation fails
+     * @throws DevicePoolDaoException
+     *         - thrown when getting devices with the requested {@link DeviceParameters parameters} fails
+     */
+    public List<IDevice> getDevices(DeviceParameters parameters, boolean isAllocated) throws DevicePoolDaoException;
+
+    /**
      * Gets a device by its ID.
      * 
      * @param id
@@ -74,6 +89,18 @@ public interface IDevicePoolDao {
      * @return <code>true</code> if device matching the given parameters exists, and <code>false</code> otherwise
      */
     public boolean hasDevice(DeviceParameters parameters);
+
+    /**
+     * Checks if the data source contains a device that matches the given parameters and allocation criterion.
+     * 
+     * @param parameters
+     *        - the parameters to be checked
+     * @param isAllocated
+     *        - if <code>true</code> only allocated devices are filtered, otherwise devices are selected from the free
+     *        ones
+     * @return <code>true</code> if device matching the given parameters exists, and <code>false</code> otherwise
+     */
+    public boolean hasDevice(DeviceParameters parameters, boolean isAllocated);
 
     /**
      * Removes the devices connected to the agent with the given ID from the data source.

@@ -18,7 +18,7 @@ import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.server.dao.IAgentDao;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
-import com.musala.atmosphere.server.data.provider.nativeprovider.DataSourceProvider;
+import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 

@@ -25,7 +25,7 @@ import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
 import com.musala.atmosphere.server.data.model.IDevice;
 import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
-import com.musala.atmosphere.server.data.provider.nativeprovider.DataSourceProvider;
+import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishEvent;
@@ -178,7 +178,8 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
      * @throws DevicePoolDaoException
      */
     public void removeAllDevices() throws RemoteException, CommandFailedException, DevicePoolDaoException {
-        for (String deviceId : deviceIdToDeviceProxy.keySet()) {
+        List<String> devicesToRemove = new ArrayList<String>(deviceIdToDeviceProxy.keySet());
+        for (String deviceId : devicesToRemove) {
             removeDevice(deviceId);
         }
     }
@@ -187,15 +188,18 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
     public synchronized DeviceAllocationInformation allocateDevice(DeviceParameters deviceParameters)
         throws RemoteException {
         List<IDevice> deviceList = new ArrayList<IDevice>();
+        String errorMessage = String.format("No devices matching the requested parameters %s were found",
+                                            deviceParameters);
+        boolean isAllocated = false;
 
         try {
-            deviceList = devicePoolDao.getDevices(deviceParameters);
+            deviceList = devicePoolDao.getDevices(deviceParameters, isAllocated);
         } catch (DevicePoolDaoException e) {
-            throw new NoAvailableDeviceFoundException();
+            throw new NoAvailableDeviceFoundException(errorMessage, e);
         }
 
         if (deviceList.isEmpty()) {
-            throw new NoAvailableDeviceFoundException();
+            throw new NoAvailableDeviceFoundException(errorMessage);
         }
 
         IDevice device = deviceList.get(0);
@@ -258,8 +262,10 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
         IDevice device = devicePoolDao.getDevice(deviceId);
 
-        device.release();
-        devicePoolDao.update(device);
+        if (device != null) {
+            device.release();
+            devicePoolDao.update(device);
+        }
     }
 
     public void inform(DevicePoolDaoCreatedEvent event) {

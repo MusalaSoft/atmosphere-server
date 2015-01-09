@@ -91,4 +91,16 @@ public class DevicePoolDao implements IDevicePoolDao {
     public void update(IDevice device) throws DevicePoolDaoException {
         // No implementation needed.
     }
+
+    @Override
+    public List<IDevice> getDevices(DeviceParameters parameters, boolean isAllocated) throws DevicePoolDaoException {
+        // FIXME: If this implementation is used in future it must be fixed to filter devices also by allocation.
+        return getDevices(parameters);
+    }
+
+    @Override
+    public boolean hasDevice(DeviceParameters parameters, boolean isAllocated) {
+        // FIXME: If this implementation is used in future it must be fixed to filter devices also by allocation.
+        return hasDevice(parameters);
+    }
 }

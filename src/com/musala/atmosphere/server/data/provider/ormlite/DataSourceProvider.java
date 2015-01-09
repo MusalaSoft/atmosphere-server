@@ -8,6 +8,7 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.support.DatabaseConnection;
 import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
 import com.musala.atmosphere.server.data.dao.db.ormlite.DeviceDao;
 import com.musala.atmosphere.server.data.dao.db.ormlite.DevicePoolDao;
@@ -42,6 +43,10 @@ public class DataSourceProvider implements IDataSourceProvider {
 
     private static ConnectionSource connectionSource = null;
 
+    // TODO: Use a better fix in the future.
+    @SuppressWarnings("unused")
+    private static DatabaseConnection keepAliveConnection = null;
+
     @Override
     public AgentDao getAgentDao() {
         return wrappedAgentDao;
@@ -73,6 +78,7 @@ public class DataSourceProvider implements IDataSourceProvider {
         try {
             if (connectionSource == null) {
                 connectionSource = new JdbcConnectionSource(Property.DATABASE_URL);
+                keepAliveConnection = connectionSource.getReadOnlyConnection();
             }
 
             if (wrappedAgentDao == null) {

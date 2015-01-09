@@ -13,9 +13,10 @@ import com.musala.atmosphere.server.command.ServerCommand;
 import com.musala.atmosphere.server.command.ServerCommandFactory;
 import com.musala.atmosphere.server.command.ServerConsoleCommands;
 import com.musala.atmosphere.server.data.IDataSourceManager;
-import com.musala.atmosphere.server.data.fake.DataSourceManager;
+import com.musala.atmosphere.server.data.db.flyway.DataSourceCallback;
+import com.musala.atmosphere.server.data.db.flyway.DataSourceManager;
 import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
-import com.musala.atmosphere.server.data.provider.nativeprovider.DataSourceProvider;
+import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
@@ -95,7 +96,7 @@ public class Server {
 
         eventService.subscribe(DevicePoolDaoCreatedEvent.class, serverManager);
 
-        dataSourceManager = new DataSourceManager();
+        dataSourceManager = new DataSourceManager(new DataSourceCallback());
         dataSourceProvider = new DataSourceProvider();
 
         eventService.subscribe(DataSourceInitializedEvent.class, dataSourceProvider);

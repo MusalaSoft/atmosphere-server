@@ -74,4 +74,9 @@ public class Device implements IDevice {
     public long getPasskey() {
         return passkey;
     }
+
+    @Override
+    public void setDeviceInformation(DeviceInformation information) {
+        deviceInformation = information;
+    }
 }
