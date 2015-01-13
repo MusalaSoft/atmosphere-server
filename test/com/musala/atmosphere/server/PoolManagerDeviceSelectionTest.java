@@ -27,13 +27,13 @@ import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformatio
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceOs;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
-import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.sa.exceptions.NoAvailableDeviceFoundException;
 import com.musala.atmosphere.commons.util.Pair;
-import com.musala.atmosphere.server.dao.nativeobject.Device;
-import com.musala.atmosphere.server.dao.nativeobject.DevicePoolDao;
+import com.musala.atmosphere.server.data.dao.db.ormlite.DevicePoolDao;
 import com.musala.atmosphere.server.data.model.IDevice;
+import com.musala.atmosphere.server.data.model.ormilite.Agent;
+import com.musala.atmosphere.server.data.model.ormilite.Device;
 import com.musala.atmosphere.server.pool.PoolManager;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -51,6 +51,16 @@ public class PoolManagerDeviceSelectionTest {
     private final static String FOURTH_DEVICE_SERIAL_NUMBER = "mockdevice4";
 
     private static final String FIFTH_DEVICE_SERIAL_NUMBER = "mockdevice5";
+
+    private final static String FIRST_DEVICE_RMI_ID = "rmiId1";
+
+    private final static String SECOND_DEVICE_RMI_ID = "rmiId2";
+
+    private final static String THIRD_DEVICE_RMI_ID = "rmiId3";
+
+    private final static String FOURTH_DEVICE_RMI_ID = "rmiId4";
+
+    private static final String FIFTH_DEVICE_RMI_ID = "rmiId5";
 
     private static final long FIRST_DEVICE_PASSKEY = 1;
 
@@ -74,6 +84,8 @@ public class PoolManagerDeviceSelectionTest {
 
     private static List<IDevice> deviceList;
 
+    private static Agent mockedAgent;
+
     @InjectMocks
     private static PoolManager poolManager = PoolManager.getInstance();
 
@@ -82,12 +94,10 @@ public class PoolManagerDeviceSelectionTest {
 
     private static Registry mockedRegistry;
 
-    private static IAgentManager mockedAgentManager;
-
     @BeforeClass
     public static void setUp() throws Exception {
-        mockedAgentManager = mock(IAgentManager.class);
-        when(mockedAgentManager.getAgentId()).thenReturn(AGENT_ID);
+        mockedAgent = mock(Agent.class);
+        when(mockedAgent.getAgentId()).thenReturn(AGENT_ID);
 
         devicePoolDao = mock(DevicePoolDao.class);
 
@@ -138,15 +148,17 @@ public class PoolManagerDeviceSelectionTest {
         mockedDeviceInfoFive.setDpi(314);
         mockedDeviceInfoFive.setCamera(false);
 
-        firstDevice = new Device(mockedDeviceInfoOne, FIRST_DEVICE_SERIAL_NUMBER, AGENT_ID, FIRST_DEVICE_PASSKEY);
-        secondDevice = new Device(mockedDeviceInfoTwo, SECOND_DEVICE_SERIAL_NUMBER, AGENT_ID, SECOND_DEVICE_PASSKEY);
-        thirdDevice = new Device(mockedDeviceInfoThree, THIRD_DEVICE_SERIAL_NUMBER, AGENT_ID, THIRD_DEVICE_PASSKEY);
-        fourthDevice = new Device(mockedDeviceInfoFour, FOURTH_DEVICE_SERIAL_NUMBER, AGENT_ID, FOURTH_DEVICE_PASSKEY);
-        fifthDevice = new Device(mockedDeviceInfoFive, FIFTH_DEVICE_SERIAL_NUMBER, AGENT_ID, FIFTH_DEVICE_PASSKEY);
+        firstDevice = new Device(mockedDeviceInfoOne, FIRST_DEVICE_RMI_ID, FIRST_DEVICE_PASSKEY);
+        secondDevice = new Device(mockedDeviceInfoTwo, SECOND_DEVICE_RMI_ID, SECOND_DEVICE_PASSKEY);
+        thirdDevice = new Device(mockedDeviceInfoThree, THIRD_DEVICE_RMI_ID, THIRD_DEVICE_PASSKEY);
+        fourthDevice = new Device(mockedDeviceInfoFour, FOURTH_DEVICE_RMI_ID, FOURTH_DEVICE_PASSKEY);
+        fifthDevice = new Device(mockedDeviceInfoFive, FIFTH_DEVICE_RMI_ID, FIFTH_DEVICE_PASSKEY);
 
         deviceList = Arrays.asList(firstDevice, secondDevice, thirdDevice, fourthDevice, fifthDevice);
 
         for (IDevice device : deviceList) {
+            Device deviceModel = (Device) device;
+            deviceModel.setAgent(mockedAgent);
             registerMockedDevice(device);
         }
     }
