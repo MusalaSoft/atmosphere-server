@@ -192,7 +192,7 @@ public class DeviceDaoIntegrationTest implements Subscriber {
         String deviceToUpdateId = deviceToUpdate.getDeviceId();
         Device deviceToUpdateEntity = (Device) deviceDao.selectById(deviceToUpdateId);
 
-        deviceToUpdateEntity.setHasCamera(true);
+        deviceToUpdateEntity.setCamera(true);
         deviceDao.update(deviceToUpdateEntity);
 
         boolean isDeviceUpdated = isDeviceEqualInDataSource(deviceToUpdateId, deviceToUpdateEntity);

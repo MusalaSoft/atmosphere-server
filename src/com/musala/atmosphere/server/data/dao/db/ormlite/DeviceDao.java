@@ -224,6 +224,7 @@ public class DeviceDao {
         int resolutionHeight = parameters.getResolutionHeight();
         int resolutionWidth = parameters.getResolutionWidth();
         String serialNumber = parameters.getSerialNumber();
+        Boolean hasCamera = parameters.hasCameraPresent();
 
         Map<String, Object> queryMap = new HashMap<String, Object>();
 
@@ -250,6 +251,10 @@ public class DeviceDao {
         }
         if (!serialNumber.equals(DeviceParameters.SERIALNUMBER_NO_PREFERENCE)) {
             queryMap.put(DeviceColumnName.SERIAL_NUMBER, serialNumber);
+        }
+
+        if (hasCamera != null && !hasCamera.equals(DeviceParameters.HAS_CAMERA_NO_PREFERENCE)) {
+            queryMap.put(DeviceColumnName.HAS_CAMERA, hasCamera);
         }
 
         return queryMap;

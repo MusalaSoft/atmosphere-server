@@ -440,7 +440,7 @@ public class Device implements IDevice {
      * @param hasCamera
      *        - indicates whether this device has camera
      */
-    public void setHasCamera(Boolean hasCamera) {
+    public void setCamera(Boolean hasCamera) {
         this.hasCamera = hasCamera;
     }
 
