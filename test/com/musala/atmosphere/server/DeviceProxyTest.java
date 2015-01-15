@@ -22,6 +22,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.PowerProperties;
 import com.musala.atmosphere.commons.RoutingAction;
 import com.musala.atmosphere.commons.SmsMessage;
@@ -29,9 +30,18 @@ import com.musala.atmosphere.commons.beans.PhoneNumber;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.util.Pair;
+import com.musala.atmosphere.server.dao.IDevicePoolDao;
+import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
+import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
 
 public class DeviceProxyTest {
+    private final static int SERVER_MANAGER_RMI_PORT = 1980;
+
+    private static final String AGENT_ID = "123123";
+
+    private final static String TEST_IP_ADDRESS = "localhost";
+
     private IWrapDevice innerDeviceWrapperMock;
 
     private static Field deviceProxyMonitorField;
@@ -40,22 +50,35 @@ public class DeviceProxyTest {
 
     private DeviceProxy deviceProxy;
 
-    private long proxyPasskey;
+    private static long proxyPasskey = 1;
 
     private static final String DEVICE_ID = "12345_123";
 
+    private static final String SERIAL_NUMBER = "12345";
+
     private final static PhoneNumber PHONE_NUMBER = new PhoneNumber("123");
+
+    private static DataSourceProvider dataSourceProvider = new DataSourceProvider();
+
+    private static AgentDao agentDao;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         // mock the ClientRequestMonitor singleton
-        // mockMonitor = SingletonMocker.mockSingleton(ClientRequestMonitor.class);
         mockMonitor = mock(ClientRequestMonitor.class);
         Mockito.doNothing().when(mockMonitor).restartTimerForDevice(DEVICE_ID);
 
         // set proxy's ClientRequestMonitor field with the mocked monitor
         deviceProxyMonitorField = DeviceProxy.class.getDeclaredField("timeoutMonitor");
         deviceProxyMonitorField.setAccessible(true);
+
+        agentDao = dataSourceProvider.getAgentDao();
+
+        if (agentDao != null) {
+            agentDao.add(AGENT_ID, TEST_IP_ADDRESS, SERVER_MANAGER_RMI_PORT);
+        }
+        IDevicePoolDao devicePoolDao = dataSourceProvider.getDevicePoolDao();
+        devicePoolDao.addDevice(new DeviceInformation(), DEVICE_ID, AGENT_ID, proxyPasskey);
     }
 
     @Before
@@ -63,8 +86,8 @@ public class DeviceProxyTest {
         // instantiate the mocked device
         innerDeviceWrapperMock = mock(IWrapDevice.class);
         deviceProxy = new DeviceProxy(innerDeviceWrapperMock, DEVICE_ID);
+
         when(innerDeviceWrapperMock.route(any(RoutingAction.class))).thenReturn(RoutingAction.CALL_ACCEPT);
-        proxyPasskey = PasskeyAuthority.getInstance().getPasskey(deviceProxy);
         deviceProxyMonitorField.set(deviceProxy, mockMonitor);
     }
 

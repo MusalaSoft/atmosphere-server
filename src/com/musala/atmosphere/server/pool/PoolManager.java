@@ -12,10 +12,11 @@ import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.RoutingAction;
-import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.IClientBuilder;
+import com.musala.atmosphere.commons.cs.exception.DeviceNotFoundException;
+import com.musala.atmosphere.commons.cs.exception.InvalidPasskeyException;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.sa.exceptions.NoAvailableDeviceFoundException;
@@ -101,9 +102,6 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
     public void removeDevice(String deviceId) throws RemoteException, CommandFailedException, DevicePoolDaoException {
         DeviceProxy deviceProxy = deviceIdToDeviceProxy.get(deviceId);
 
-        PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
-        passkeyAuthority.removeDevice(deviceProxy);
-
         DeviceInformation deviceInformation = (DeviceInformation) deviceProxy.route(RoutingAction.GET_DEVICE_INFORMATION);
         String deviceSerialNumber = deviceInformation.getSerialNumber();
 
@@ -148,8 +146,8 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
             eventService.publish(event);
 
             deviceIdToDeviceProxy.put(deviceId, deviceProxy);
-            PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
-            long devicePasskey = passkeyAuthority.getPasskey(deviceProxy);
+
+            long devicePasskey = PasskeyAuthority.generatePasskey();
 
             try {
                 devicePoolDao.addDevice(deviceInformation, deviceId, agentId, devicePasskey);
@@ -221,17 +219,12 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
         }
 
         String deviceId = device.getDeviceId();
-        DeviceProxy deviceProxy = deviceIdToDeviceProxy.get(deviceId);
 
-        // TODO: After the passkey will be stored for each device, think of a better solution for getting and validating
-        // this key.
-        PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
-        long devicePasskey = passkeyAuthority.getPasskey(deviceProxy);
+        long devicePasskey = device.getPasskey();
 
         DeviceAllocationInformation allocatedDeviceDescriptor = new DeviceAllocationInformation(bestMatchDeviceRmiId,
                                                                                                 devicePasskey,
                                                                                                 deviceId);
-
         ClientRequestMonitor deviceMonitor = new ClientRequestMonitor();
         deviceMonitor.restartTimerForDevice(bestMatchDeviceRmiId);
 
@@ -241,20 +234,29 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
     @Override
     public void releaseDevice(DeviceAllocationInformation allocatedDeviceDescriptor)
         throws RemoteException,
-            InvalidPasskeyException {
+            InvalidPasskeyException,
+            DeviceNotFoundException {
         String deviceId = allocatedDeviceDescriptor.getDeviceId();
-        DeviceProxy deviceProxy = deviceIdToDeviceProxy.get(deviceId);
+        long currentPasskey = allocatedDeviceDescriptor.getProxyPasskey();
 
-        long passkey = allocatedDeviceDescriptor.getProxyPasskey();
+        PasskeyAuthority.validatePasskey(currentPasskey, deviceId);
 
-        PasskeyAuthority passkeyAuthority = PasskeyAuthority.getInstance();
-        passkeyAuthority.validatePasskey(deviceProxy, passkey);
+        long passkey = PasskeyAuthority.generatePasskey(currentPasskey);
+
+        try {
+            IDevice device = devicePoolDao.getDevice(deviceId);
+            device.setPasskey(passkey);
+            devicePoolDao.update(device);
+        } catch (DevicePoolDaoException e) {
+            String errorMessage = String.format("Failed to reset the passkey of a device.");
+            throw new DeviceNotFoundException(errorMessage);
+        }
 
         try {
             releaseDevice(deviceId);
         } catch (DevicePoolDaoException e) {
-            String errorMessage = String.format("Failed to release device with ID %s.", deviceId);
-            LOGGER.error(errorMessage);
+            String errorMessage = String.format("Failed to release a device.");
+            throw new DeviceNotFoundException(errorMessage);
         }
     }
 

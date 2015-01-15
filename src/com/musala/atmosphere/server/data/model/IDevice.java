@@ -53,6 +53,14 @@ public interface IDevice {
     public long getPasskey();
 
     /**
+     * Sets the passkey for this device.
+     * 
+     * @param passkey
+     *        - the passkey for this device
+     */
+    public void setPasskey(long passkey);
+
+    /**
      * Sets the information of the device in the data source.
      * 
      * @param information

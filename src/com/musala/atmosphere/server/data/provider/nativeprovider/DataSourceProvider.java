@@ -19,11 +19,11 @@ import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.Dev
  */
 public class DataSourceProvider implements IDataSourceProvider {
 
-    private IDevicePoolDao devicePoolDao = new DevicePoolDao();
+    private static IDevicePoolDao devicePoolDao = new DevicePoolDao();
 
-    private IAgentDao agentDao = new AgentDao();
+    private static IAgentDao agentDao = new AgentDao();
 
-    private ServerEventService eventService = new ServerEventService();
+    private static ServerEventService eventService = new ServerEventService();
 
     @Override
     public IAgentDao getAgentDao() {

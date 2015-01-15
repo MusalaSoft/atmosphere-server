@@ -76,6 +76,11 @@ public class Device implements IDevice {
     }
 
     @Override
+    public void setPasskey(long passkey) {
+        this.passkey = passkey;
+    }
+
+    @Override
     public void setDeviceInformation(DeviceInformation information) {
         deviceInformation = information;
     }

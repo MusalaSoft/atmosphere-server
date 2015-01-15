@@ -3,9 +3,12 @@ package com.musala.atmosphere.server;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import org.apache.log4j.Logger;
+
 import com.musala.atmosphere.commons.RoutingAction;
-import com.musala.atmosphere.commons.cs.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
+import com.musala.atmosphere.commons.cs.exception.DeviceNotFoundException;
+import com.musala.atmosphere.commons.cs.exception.InvalidPasskeyException;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
@@ -18,11 +21,11 @@ import com.musala.atmosphere.server.pool.ClientRequestMonitor;
  * 
  */
 public class DeviceProxy extends UnicastRemoteObject implements IClientDevice {
+    private final static Logger LOGGER = Logger.getLogger(DeviceProxy.class);
+
     private static final long serialVersionUID = -2645952387036199816L;
 
     private final IWrapDevice wrappedDevice;
-
-    private PasskeyAuthority passkeyAuthority;
 
     private ClientRequestMonitor timeoutMonitor = new ClientRequestMonitor();
 
@@ -31,15 +34,16 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice {
     public DeviceProxy(IWrapDevice deviceToWrap, String deviceId) throws RemoteException {
         this.deviceId = deviceId;
         wrappedDevice = deviceToWrap;
-        passkeyAuthority = PasskeyAuthority.getInstance();
     }
 
     @Override
     public Object route(long invocationPasskey, RoutingAction action, Object... args)
         throws RemoteException,
             CommandFailedException,
-            InvalidPasskeyException {
-        passkeyAuthority.validatePasskey(this, invocationPasskey);
+            InvalidPasskeyException,
+            DeviceNotFoundException {
+        PasskeyAuthority.validatePasskey(invocationPasskey, deviceId);
+
         timeoutMonitor.restartTimerForDevice(deviceId);
 
         return route(action, args);
@@ -55,5 +59,4 @@ public class DeviceProxy extends UnicastRemoteObject implements IClientDevice {
             throw new RuntimeException("Connection to device failed.", e);
         }
     }
-
 }
