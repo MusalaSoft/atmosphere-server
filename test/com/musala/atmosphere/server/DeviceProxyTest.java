@@ -20,7 +20,9 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.PowerProperties;
@@ -30,18 +32,14 @@ import com.musala.atmosphere.commons.beans.PhoneNumber;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.util.Pair;
-import com.musala.atmosphere.server.dao.IDevicePoolDao;
-import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
+import com.musala.atmosphere.server.data.dao.db.ormlite.DevicePoolDao;
+import com.musala.atmosphere.server.data.model.IDevice;
+import com.musala.atmosphere.server.data.model.ormilite.Device;
 import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
 
+@RunWith(MockitoJUnitRunner.class)
 public class DeviceProxyTest {
-    private final static int SERVER_MANAGER_RMI_PORT = 1980;
-
-    private static final String AGENT_ID = "123123";
-
-    private final static String TEST_IP_ADDRESS = "localhost";
-
     private IWrapDevice innerDeviceWrapperMock;
 
     private static Field deviceProxyMonitorField;
@@ -54,13 +52,11 @@ public class DeviceProxyTest {
 
     private static final String DEVICE_ID = "12345_123";
 
-    private static final String SERIAL_NUMBER = "12345";
-
     private final static PhoneNumber PHONE_NUMBER = new PhoneNumber("123");
 
-    private static DataSourceProvider dataSourceProvider = new DataSourceProvider();
+    private static DevicePoolDao devicePoolDao;
 
-    private static AgentDao agentDao;
+    private static IDevice device;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -72,13 +68,14 @@ public class DeviceProxyTest {
         deviceProxyMonitorField = DeviceProxy.class.getDeclaredField("timeoutMonitor");
         deviceProxyMonitorField.setAccessible(true);
 
-        agentDao = dataSourceProvider.getAgentDao();
+        device = new Device(new DeviceInformation(), DEVICE_ID, proxyPasskey);
 
-        if (agentDao != null) {
-            agentDao.add(AGENT_ID, TEST_IP_ADDRESS, SERVER_MANAGER_RMI_PORT);
-        }
-        IDevicePoolDao devicePoolDao = dataSourceProvider.getDevicePoolDao();
-        devicePoolDao.addDevice(new DeviceInformation(), DEVICE_ID, AGENT_ID, proxyPasskey);
+        devicePoolDao = mock(DevicePoolDao.class);
+        when(devicePoolDao.getDevice(eq(DEVICE_ID))).thenReturn(device);
+
+        Field poolDao = DataSourceProvider.class.getDeclaredField("devicePoolDao");
+        poolDao.setAccessible(true);
+        poolDao.set(null, devicePoolDao);
     }
 
     @Before
