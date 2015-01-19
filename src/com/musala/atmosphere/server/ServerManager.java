@@ -110,6 +110,7 @@ public class ServerManager implements Subscriber {
      */
     public ServerManager(int rmiPort) throws RemoteException {
         eventService.subscribe(AgentDaoCreatedEvent.class, agentAllocator);
+        eventService.subscribe(DevicePoolDaoCreatedEvent.class, poolManager);
 
         // Publish this ServerManager in the RMI registry
         try {

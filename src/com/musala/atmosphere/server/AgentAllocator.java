@@ -72,6 +72,7 @@ public class AgentAllocator implements Subscriber {
      */
     public void unregisterAgent(String agentId) throws AgentDaoException {
         agentDao.remove(agentId);
+        agentIdToRegistry.remove(agentId);
     }
 
     /**
@@ -100,6 +101,11 @@ public class AgentAllocator implements Subscriber {
      */
     public IAgentManager getAgentManager(String agentId) throws AccessException, RemoteException, NotBoundException {
         Registry agentRegistry = agentIdToRegistry.get(agentId);
+
+        if (agentRegistry == null) {
+            return null;
+        }
+
         return (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
     }
 
