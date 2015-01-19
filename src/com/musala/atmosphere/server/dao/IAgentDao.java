@@ -1,5 +1,7 @@
 package com.musala.atmosphere.server.dao;
 
+import java.util.List;
+
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.data.model.IAgent;
 
@@ -53,4 +55,13 @@ public interface IAgentDao {
      * @return <code>true</code> if agent with this ID exists and <code>false</code> otherwise
      */
     public boolean hasAgent(String agentId);
+
+    /**
+     * Used to get all agents that are registered in the data source.
+     * 
+     * @return List containing all the agents in the data source.
+     * @throws AgentDaoException
+     *         - thrown when getting of the agents fails.
+     */
+    public List<IAgent> getPresentAgents();
 }

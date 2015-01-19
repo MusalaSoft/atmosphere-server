@@ -5,7 +5,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +16,7 @@ import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.server.dao.IAgentDao;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
+import com.musala.atmosphere.server.data.model.IAgent;
 import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
 import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
@@ -121,11 +121,13 @@ public class AgentAllocator implements Subscriber {
      * @return a list containing the unique identifiers of all connected agents.
      */
     public List<String> getAllConnectedAgentsIds() {
-        // TODO: Use agent data access object to get all available agents stored in the data source
-        Collection<String> connectedAgentManagersIdSet = agentIdToRegistry.keySet();
-        List<String> connectedAgentManagersIdList = new ArrayList<String>(connectedAgentManagersIdSet);
+        List<IAgent> agentsList = agentDao.getPresentAgents();
+        List<String> connectedAgentsIds = new ArrayList<String>();
+        for (IAgent agent : agentsList) {
+            connectedAgentsIds.add(agent.getAgentId());
+        }
 
-        return connectedAgentManagersIdList;
+        return connectedAgentsIds;
     }
 
     /**

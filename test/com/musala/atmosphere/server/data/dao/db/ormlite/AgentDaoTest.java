@@ -206,6 +206,31 @@ public class AgentDaoTest {
         assertFalse("Returned result is different from the expected, agent with the given ID actualy exists.", hasAgent);
     }
 
+    @Test
+    public void testGetAgentsWhenThereAreNoAgents() throws Exception {
+        List<IAgent> receivedAgentsList = testAgentDao.getPresentAgents();
+        assertTrue("The list is not empty when no agents were added.", receivedAgentsList.isEmpty());
+    }
+
+    @Test
+    public void testGetAgentsWhenThereAreExistingAgents() throws Exception {
+        Agent expectedAgentToCreate = new Agent(TEST_AGENT_ID);
+        expectedAgentToCreate.setHostname(TEST_AGENT_IP);
+        expectedAgentToCreate.setPort(TEST_AGENT_PORT);
+        List<Agent> expectedAgentsList = new ArrayList<Agent>();
+        expectedAgentsList.add(expectedAgentToCreate);
+
+        when(mockedAgentDao.create(eq(expectedAgentToCreate))).thenReturn(1);
+        when(mockedAgentDao.queryForAll()).thenReturn(expectedAgentsList);
+
+        testAgentDao.add(TEST_AGENT_ID, TEST_AGENT_IP, TEST_AGENT_PORT);
+        final int EXPECTED_AGENTS_COUNT = 1;
+        int receivedAgentsCount = testAgentDao.getPresentAgents().size();
+        IAgent receivedAgent = testAgentDao.getPresentAgents().get(0);
+        assertEquals("Received agents count is different than expected.", receivedAgentsCount, EXPECTED_AGENTS_COUNT);
+        assertEquals("The rceived agent is different from the added one.", receivedAgent, expectedAgentToCreate);
+    }
+
     private List<Agent> getFakeResultList() {
         List<Agent> resultsList = new ArrayList<Agent>();
         Agent existingAgent = new Agent();

@@ -1,6 +1,7 @@
 package com.musala.atmosphere.server.dao.nativeobject;
 
 import java.util.HashMap;
+import java.util.List;
 
 import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.dao.IAgentDao;
@@ -36,5 +37,11 @@ public class AgentDao implements IAgentDao {
     @Override
     public boolean hasAgent(String agentId) {
         return agentIdToAgentIpAndPort.containsKey(agentId);
+    }
+
+    @Override
+    public List<IAgent> getPresentAgents() {
+        // Implementation is not needed because this class will be removed
+        return null;
     }
 }

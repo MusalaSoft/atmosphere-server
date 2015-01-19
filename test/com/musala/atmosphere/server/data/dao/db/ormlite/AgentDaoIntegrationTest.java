@@ -3,8 +3,10 @@ package com.musala.atmosphere.server.data.dao.db.ormlite;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.dao.exception.AgentDaoRuntimeException;
 import com.musala.atmosphere.server.data.db.constant.AgentColumnName;
 import com.musala.atmosphere.server.data.db.constant.Property;
+import com.musala.atmosphere.server.data.model.IAgent;
 import com.musala.atmosphere.server.data.model.ormilite.Agent;
 
 /**
@@ -58,6 +61,8 @@ public class AgentDaoIntegrationTest {
 
     private static Dao<Agent, String> ormliteAgentDao;
 
+    private static final int EXPECTED_AGENTS_COUNT = 2;
+
     @BeforeClass
     public static void setUpTest() throws Exception {
         agentDaoTestUtils = new AgentDaoTestUtils();
@@ -94,6 +99,7 @@ public class AgentDaoIntegrationTest {
     public void afterTest() throws Exception {
         deleteAgent(TEST_AGENT_ID);
         deleteAgent(SECOND_TEST_AGENT_ID);
+        deleteAgent(UPDATED_TEST_AGENT_ID);
     }
 
     @AfterClass
@@ -181,5 +187,38 @@ public class AgentDaoIntegrationTest {
     @Test
     public void testSelectAgentByIdWhenAgentDoesNotExist() throws Exception {
         agentDaoTestUtils.assertSelectNonExistingAgentById(TEST_AGENT_ID);
+    }
+
+    @Test
+    public void testGetAgentsWhenThereAreOneAgentOnly() throws Exception {
+        agentDaoTestUtils.assertAddNewAgent(testAgent);
+        List<IAgent> receivedAgentsList = testAgentDao.getPresentAgents();
+
+        IAgent receivedAgent = receivedAgentsList.get(0);
+        assertEquals("The received agent is different from the one added in the data source.", receivedAgent, testAgent);
+    }
+
+    @Test
+    public void testGetAgentsWhenThereAreManyAgents() throws Exception {
+        agentDaoTestUtils.assertAddNewAgent(testAgent);
+        agentDaoTestUtils.assertAddNewAgent(secondTestAgent);
+        List<IAgent> expectedAgentsList = new ArrayList<IAgent>();
+        expectedAgentsList.add(testAgent);
+        expectedAgentsList.add(secondTestAgent);
+
+        List<IAgent> receivedAgentsList = testAgentDao.getPresentAgents();
+        assertEquals("The received agent is different from the one added in the data source.",
+                     receivedAgentsList,
+                     expectedAgentsList);
+        assertEquals("The count of the received agents is different from the expected one.",
+                     receivedAgentsList.size(),
+                     EXPECTED_AGENTS_COUNT);
+    }
+
+    @Test
+    public void testGetAgentsWhenThereAreNone() throws Exception {
+        List<IAgent> receivedAgentsList = testAgentDao.getPresentAgents();
+        assertTrue("Received list is not empty when there are no present agents in the data source.",
+                   receivedAgentsList.isEmpty());
     }
 }

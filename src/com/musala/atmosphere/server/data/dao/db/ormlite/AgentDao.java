@@ -1,6 +1,7 @@
 package com.musala.atmosphere.server.data.dao.db.ormlite;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,4 +127,13 @@ public class AgentDao implements IAgentDao {
         }
     }
 
+    @Override
+    public List<IAgent> getPresentAgents() {
+        try {
+            List<Agent> agentsFromDataSource = agentDao.queryForAll();
+            return new ArrayList<IAgent>(agentsFromDataSource);
+        } catch (SQLException e) {
+            return new ArrayList<IAgent>();
+        }
+    }
 }

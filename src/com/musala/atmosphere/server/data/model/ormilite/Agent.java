@@ -69,11 +69,7 @@ public class Agent implements IAgent {
         this.id = id;
     }
 
-    /**
-     * Gets the ID of this agent.
-     * 
-     * @return the ID of this agent
-     */
+    @Override
     public String getAgentId() {
         return agentId;
     }
