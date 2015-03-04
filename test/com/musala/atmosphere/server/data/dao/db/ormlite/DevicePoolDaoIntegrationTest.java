@@ -77,6 +77,8 @@ public class DevicePoolDaoIntegrationTest {
 
     private static final int NON_EXISTENT_API_LEVEL = 256;
 
+    private static final String SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE = "The count of the selected device is different than expected.";
+
     private static void initializeTestConstants() throws AgentDaoException {
         for (int i = 0; i < 3; i++) {
             testAgentIds[i] = "test Agent Id " + i;
@@ -257,7 +259,7 @@ public class DevicePoolDaoIntegrationTest {
 
         DeviceParameters deviceParameters = new DeviceParameters();
         deviceParameters.setRam(testRam[0]);
-        deviceParameters.setApiLevel(TEST_API_LEVEL);
+        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
 
         List<IDevice> devices = testDevicePoolDao.getDevices(deviceParameters);
         assertTrue("A device with the given deviceParameters is not present in the received result list.",
@@ -285,7 +287,7 @@ public class DevicePoolDaoIntegrationTest {
 
         DeviceParameters deviceParameters = new DeviceParameters();
         deviceParameters.setRam(testRam[0]);
-        deviceParameters.setApiLevel(TEST_API_LEVEL);
+        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
 
         List<IDevice> devices = testDevicePoolDao.getDevices(deviceParameters);
         assertTrue("A device with the given deviceParameters is not present in the given List.",
@@ -306,7 +308,7 @@ public class DevicePoolDaoIntegrationTest {
 
         DeviceParameters deviceParameters = new DeviceParameters();
         deviceParameters.setRam(NON_EXISTING_RAM);
-        deviceParameters.setApiLevel(TEST_API_LEVEL);
+        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
 
         List<IDevice> devices = testDevicePoolDao.getDevices(deviceParameters);
         assertTrue("Expected empty result list, but instead received list containig devices when there should be none.",
@@ -323,10 +325,10 @@ public class DevicePoolDaoIntegrationTest {
 
         DeviceParameters deviceParameters = new DeviceParameters();
         deviceParameters.setRam(testRam[0]);
-        deviceParameters.setApiLevel(TEST_API_LEVEL);
+        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
 
         DeviceParameters nonExistentDeviceParameters = new DeviceParameters();
-        nonExistentDeviceParameters.setApiLevel(NON_EXISTENT_API_LEVEL);
+        nonExistentDeviceParameters.setTargetApiLevel(NON_EXISTENT_API_LEVEL);
 
         assertTrue("The device searched by it's ID is not found when present. ",
                    testDevicePoolDao.hasDevice(testRmiIds[0]));
@@ -345,7 +347,7 @@ public class DevicePoolDaoIntegrationTest {
         deviceInformation.setRam(testRam[0]);
 
         DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setApiLevel(TEST_API_LEVEL);
+        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
         deviceParameters.setRam(testRam[0]);
 
         IDevice firstAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
@@ -409,7 +411,7 @@ public class DevicePoolDaoIntegrationTest {
 
         DeviceParameters deviceParameters = new DeviceParameters();
         deviceParameters.setRam(testRam[0]);
-        deviceParameters.setApiLevel(TEST_API_LEVEL);
+        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
 
         IDevice firstAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
                                                                testRmiIds[0],
@@ -447,7 +449,7 @@ public class DevicePoolDaoIntegrationTest {
         secondDeviceInformation.setRam(testRam[1]);
 
         DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setApiLevel(TEST_API_LEVEL);
+        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
 
         IDevice firstAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
                                                                testRmiIds[0],
@@ -552,6 +554,148 @@ public class DevicePoolDaoIntegrationTest {
     @Test(expected = DevicePoolDaoRuntimeException.class)
     public void testRemoveDevicesByGivenNonExistingAgentId() throws Exception {
         testDevicePoolDao.removeDevices(NON_EXISTING_AGENT_ID);
+    }
+
+    @Test
+    public void testSelectingRangeOfDevicesByApiLevel() throws Exception {
+        populateDeviceBase();
+
+        DeviceParameters deviceParameters = new DeviceParameters();
+        deviceParameters.setMinApiLevel(15);
+        deviceParameters.setMaxApiLevel(19);
+        int expectedDevicesSelected = 1;
+
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
+
+        assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
+                     expectedDevicesSelected,
+                     receivedDevices.size());
+    }
+
+    @Test
+    public void testSelectingDevicesByMinimumApiLevel() throws Exception {
+        populateDeviceBase();
+
+        DeviceParameters deviceParameters = new DeviceParameters();
+        deviceParameters.setMinApiLevel(16);
+        int expectedDevicesSelected = 2;
+
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
+
+        assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
+                     expectedDevicesSelected,
+                     receivedDevices.size());
+    }
+
+    @Test
+    public void testSelectingDevicesByMaximumApiLevel() throws Exception {
+        populateDeviceBase();
+
+        DeviceParameters deviceParameters = new DeviceParameters();
+        deviceParameters.setMaxApiLevel(21);
+        int expectedDevicesSelected = 3;
+
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
+
+        assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
+                     expectedDevicesSelected,
+                     receivedDevices.size());
+    }
+
+    @Test
+    public void testSelectingDevicesByApiLevelNegativeRange() throws Exception {
+        populateDeviceBase();
+
+        DeviceParameters deviceParameters = new DeviceParameters();
+        deviceParameters.setMinApiLevel(19);
+        deviceParameters.setMaxApiLevel(15);
+        int expectedDevicesSelected = 1;
+
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
+
+        assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
+                     expectedDevicesSelected,
+                     receivedDevices.size());
+    }
+
+    @Test
+    public void testSelectingDeviceWhenGivenRangeAndTargetApi() throws Exception {
+        populateDeviceBase();
+
+        int EXPECTED_API_LEVEL = 16;
+        DeviceParameters deviceParameters = new DeviceParameters();
+        deviceParameters.setTargetApiLevel(EXPECTED_API_LEVEL);
+        deviceParameters.setMinApiLevel(9);
+        deviceParameters.setMaxApiLevel(21);
+        int expectedDevicesSelected = 1;
+
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
+        assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
+                     expectedDevicesSelected,
+                     receivedDevices.size());
+
+        IDevice receivedDevice = receivedDevices.get(0);
+        DeviceInformation receivedDeviceInformation = receivedDevice.getInformation();
+        assertEquals("The received device is with different API version than the wanted one.",
+                     EXPECTED_API_LEVEL,
+                     receivedDeviceInformation.getApiLevel());
+    }
+
+    @Test
+    public void testSelectingDevicesWithTargetApiLevelAndMinimum() throws Exception {
+        populateDeviceBase();
+
+        DeviceParameters parameters = new DeviceParameters();
+        parameters.setTargetApiLevel(20);
+        parameters.setMinApiLevel(19);
+        int expectedDevicesSelected = 1;
+
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(parameters);
+
+        assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
+                     expectedDevicesSelected,
+                     receivedDevices.size());
+    }
+
+    @Test
+    public void testSelectingDevicesWithTargetApiLevelAndMaximum() throws Exception {
+        populateDeviceBase();
+
+        DeviceParameters parameters = new DeviceParameters();
+        parameters.setTargetApiLevel(12);
+        parameters.setMaxApiLevel(17);
+        int expectedDevicesSelected = 2;
+
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(parameters);
+
+        assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
+                     expectedDevicesSelected,
+                     receivedDevices.size());
+
+        DeviceParameters changedMaxAndTargetParameters = new DeviceParameters();
+        changedMaxAndTargetParameters.setTargetApiLevel(16);
+        changedMaxAndTargetParameters.setMaxApiLevel(25);
+        int expectedDevicesSelecedAfterSetMinAndTagetApiLevel = 1;
+
+        List<IDevice> receivedDevicesTargetApiLevel = testDevicePoolDao.getDevices(changedMaxAndTargetParameters);
+
+        assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
+                     expectedDevicesSelecedAfterSetMinAndTagetApiLevel,
+                     receivedDevicesTargetApiLevel.size());
+    }
+
+    private void populateDeviceBase() throws Exception {
+        DeviceInformation firstDeviceInformation = new DeviceInformation();
+        firstDeviceInformation.setApiLevel(10);
+        testDevicePoolDao.addDevice(firstDeviceInformation, testRmiIds[0], testAgentIds[0], testPasskeys[0]);
+
+        DeviceInformation secondDeviceInformation = new DeviceInformation();
+        secondDeviceInformation.setApiLevel(16);
+        testDevicePoolDao.addDevice(secondDeviceInformation, testRmiIds[1], testAgentIds[1], testPasskeys[1]);
+
+        DeviceInformation thirdDeviceInformation = new DeviceInformation();
+        thirdDeviceInformation.setApiLevel(21);
+        testDevicePoolDao.addDevice(thirdDeviceInformation, testRmiIds[2], testAgentIds[1], testPasskeys[2]);
     }
 
     /**

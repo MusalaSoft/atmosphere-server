@@ -16,6 +16,7 @@ import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceOs;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
+import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.dao.exception.DeviceDaoException;
 import com.musala.atmosphere.server.dao.exception.DeviceDaoRuntimeException;
 import com.musala.atmosphere.server.data.db.constant.DeviceColumnName;
@@ -140,10 +141,9 @@ public class DeviceDao {
      *         thrown when retrieving devices from the data source fails
      */
     public List<IDevice> filterDevicesByParameters(DeviceParameters parameters) throws DeviceDaoException {
-        Map<String, Object> queryMap = buildQueryMap(parameters);
-        DeviceType deviceType = parameters.getDeviceType();
+        Map<String, Pair<Object, WhereClauseOperator>> queryMap = buildQueryMap(parameters);
 
-        return queryDevicesByType(queryMap, deviceType);
+        return queryDevicesByType(queryMap, parameters);
     }
 
     /**
@@ -160,17 +160,19 @@ public class DeviceDao {
      */
     public List<IDevice> filterDevicesByParameters(DeviceParameters parameters, boolean isAllocated)
         throws DeviceDaoException {
-        Map<String, Object> queryMap = buildQueryMap(parameters);
-        queryMap.put(DeviceColumnName.IS_ALLOCATED, isAllocated);
-        DeviceType deviceType = parameters.getDeviceType();
+        Map<String, Pair<Object, WhereClauseOperator>> queryMap = buildQueryMap(parameters);
+        Pair<Object, WhereClauseOperator> isAlocatedPair = new Pair<Object, WhereClauseOperator>(isAllocated,
+                                                                                                 WhereClauseOperator.EQUAL);
+        queryMap.put(DeviceColumnName.IS_ALLOCATED, isAlocatedPair);
 
-        return queryDevicesByType(queryMap, deviceType);
+        return queryDevicesByType(queryMap, parameters);
     }
 
-    private List<IDevice> queryDevicesByType(Map<String, Object> queryMap, DeviceType deviceType)
-        throws DeviceDaoException {
+    private List<IDevice> queryDevicesByType(Map<String, Pair<Object, WhereClauseOperator>> queryMap,
+                                             DeviceParameters parameters) throws DeviceDaoException {
         boolean isEmulator = false;
         boolean queryAllDeviceTypes = true;
+        DeviceType deviceType = parameters.getDeviceType();
 
         try {
             switch (deviceType) {
@@ -194,7 +196,10 @@ public class DeviceDao {
                     break;
             }
 
-            List<Device> deviceResultList = queryDevicesByParameters(queryMap, isEmulator, queryAllDeviceTypes);
+            List<Device> deviceResultList = queryDevicesByParameters(queryMap,
+                                                                     isEmulator,
+                                                                     queryAllDeviceTypes,
+                                                                     parameters);
             return new ArrayList<IDevice>(deviceResultList);
         } catch (SQLException e) {
             String message = String.format("No device, matching the given query %s and type %s.", queryMap, deviceType);
@@ -215,8 +220,8 @@ public class DeviceDao {
         return null;
     }
 
-    private Map<String, Object> buildQueryMap(DeviceParameters parameters) {
-        int apiLevel = parameters.getApiLevel();
+    private Map<String, Pair<Object, WhereClauseOperator>> buildQueryMap(DeviceParameters parameters) {
+        int apiLevel = parameters.getTargetApiLevel();
         int dpi = parameters.getDpi();
         String model = parameters.getModel();
         DeviceOs os = parameters.getOs();
@@ -225,73 +230,158 @@ public class DeviceDao {
         int resolutionWidth = parameters.getResolutionWidth();
         String serialNumber = parameters.getSerialNumber();
         Boolean hasCamera = parameters.hasCameraPresent();
+        int minApiLevel = parameters.getMinApiLevel();
+        int maxApiLevel = parameters.getMaxApiLevel();
 
-        Map<String, Object> queryMap = new HashMap<String, Object>();
+        Map<String, Pair<Object, WhereClauseOperator>> queryMap = new HashMap<String, Pair<Object, WhereClauseOperator>>();
 
-        if (apiLevel != DeviceParameters.API_LEVEL_NO_PREFERENCE) {
-            queryMap.put(DeviceColumnName.API_LEVEL, apiLevel);
+        if (minApiLevel != DeviceParameters.MIN_API_LEVEL_NO_PREFERENCE
+                && maxApiLevel != DeviceParameters.MAX_API_LEVEL_NO_PREFERENCE) {
+            Pair<Object, WhereClauseOperator> rangeApiLevelPair = new Pair<Object, WhereClauseOperator>(apiLevel,
+                                                                                                        WhereClauseOperator.BETWEEN);
+            queryMap.put(DeviceColumnName.API_LEVEL, rangeApiLevelPair);
+        } else if (maxApiLevel != DeviceParameters.MAX_API_LEVEL_NO_PREFERENCE) {
+            Pair<Object, WhereClauseOperator> maxApiLevelPair = new Pair<Object, WhereClauseOperator>(maxApiLevel,
+                                                                                                      WhereClauseOperator.LESS_OR_EQUAL);
+            queryMap.put(DeviceColumnName.API_LEVEL, maxApiLevelPair);
+        } else if (minApiLevel != DeviceParameters.MIN_API_LEVEL_NO_PREFERENCE) {
+            Pair<Object, WhereClauseOperator> minApiLevelPair = new Pair<Object, WhereClauseOperator>(minApiLevel,
+                                                                                                      WhereClauseOperator.GREATER_OR_EQUAL);
+            queryMap.put(DeviceColumnName.API_LEVEL, minApiLevelPair);
+        } else if (apiLevel != DeviceParameters.TARGET_API_LEVEL_NO_PREFERENCE) {
+            Pair<Object, WhereClauseOperator> apiLevelPair = new Pair<Object, WhereClauseOperator>(apiLevel,
+                                                                                                   WhereClauseOperator.EQUAL);
+            queryMap.put(DeviceColumnName.API_LEVEL, apiLevelPair);
         }
+
         if (dpi != DeviceParameters.DPI_NO_PREFERENCE) {
-            queryMap.put(DeviceColumnName.DPI, dpi);
+            Pair<Object, WhereClauseOperator> dpiPair = new Pair<Object, WhereClauseOperator>(dpi,
+                                                                                              WhereClauseOperator.EQUAL);
+            queryMap.put(DeviceColumnName.DPI, dpiPair);
         }
+
         if (!model.equals(DeviceParameters.MODEL_NO_PREFERENCE)) {
-            queryMap.put(DeviceColumnName.MODEL, model);
+            Pair<Object, WhereClauseOperator> modelPair = new Pair<Object, WhereClauseOperator>(model,
+                                                                                                WhereClauseOperator.EQUAL);
+            queryMap.put(DeviceColumnName.MODEL, modelPair);
         }
+
         if (!os.equals(DeviceParameters.DEVICE_OS_NO_PREFERENCE)) {
-            queryMap.put(DeviceColumnName.OS, os.toString());
+            Pair<Object, WhereClauseOperator> osPair = new Pair<Object, WhereClauseOperator>(os.toString(),
+                                                                                             WhereClauseOperator.EQUAL);
+            queryMap.put(DeviceColumnName.OS, osPair);
         }
+
         if (ram != DeviceParameters.RAM_NO_PREFERENCE) {
-            queryMap.put(DeviceColumnName.RAM, ram);
+            Pair<Object, WhereClauseOperator> ramPair = new Pair<Object, WhereClauseOperator>(ram,
+                                                                                              WhereClauseOperator.EQUAL);
+            queryMap.put(DeviceColumnName.RAM, ramPair);
         }
+
         if (resolutionHeight != DeviceParameters.RESOLUTION_HEIGHT_NO_PREFERENCE) {
-            queryMap.put(DeviceColumnName.RESOLUTION_HEIGHT, resolutionHeight);
+            Pair<Object, WhereClauseOperator> resolutionHeightPair = new Pair<Object, WhereClauseOperator>(resolutionHeight,
+                                                                                                           WhereClauseOperator.EQUAL);
+            queryMap.put(DeviceColumnName.RESOLUTION_HEIGHT, resolutionHeightPair);
         }
+
         if (resolutionWidth != DeviceParameters.RESOLUTION_WIDTH_NO_PREFERENCE) {
-            queryMap.put(DeviceColumnName.RESOLUTION_WIDTH, resolutionWidth);
+            Pair<Object, WhereClauseOperator> resolutionWidthPair = new Pair<Object, WhereClauseOperator>(resolutionWidth,
+                                                                                                          WhereClauseOperator.EQUAL);
+            queryMap.put(DeviceColumnName.RESOLUTION_WIDTH, resolutionWidthPair);
         }
+
         if (!serialNumber.equals(DeviceParameters.SERIALNUMBER_NO_PREFERENCE)) {
-            queryMap.put(DeviceColumnName.SERIAL_NUMBER, serialNumber);
+            Pair<Object, WhereClauseOperator> serialNumberPair = new Pair<Object, WhereClauseOperator>(serialNumber,
+                                                                                                       WhereClauseOperator.EQUAL);
+            queryMap.put(DeviceColumnName.SERIAL_NUMBER, serialNumberPair);
         }
 
         if (hasCamera != null && !hasCamera.equals(DeviceParameters.HAS_CAMERA_NO_PREFERENCE)) {
-            queryMap.put(DeviceColumnName.HAS_CAMERA, hasCamera);
+            Pair<Object, WhereClauseOperator> hasCameraPair = new Pair<Object, WhereClauseOperator>(hasCamera,
+                                                                                                    WhereClauseOperator.EQUAL);
+            queryMap.put(DeviceColumnName.HAS_CAMERA, hasCameraPair);
         }
 
         return queryMap;
     }
 
-    private List<Device> queryDevicesByParameters(Map<String, Object> query,
+    private List<Device> queryDevicesByParameters(Map<String, Pair<Object, WhereClauseOperator>> whereClausesQuery,
                                                   boolean isEmulator,
-                                                  boolean queryAllDeviceTypes) throws SQLException {
+                                                  boolean queryAllDeviceTypes,
+                                                  DeviceParameters parameters) throws SQLException {
 
         // Results are ordered by is_emulator column. If devices are preferred, results are ordered in ascending order.
         // When emulators are preferred descending ordering is used.
         boolean isAscendingOrder = !isEmulator;
+
         QueryBuilder<Device, String> deviceQueryBuilder = deviceDao.queryBuilder();
 
-        if (query.isEmpty() && queryAllDeviceTypes) {
+        // If DeviceParameters has set DEVICE_ONLY or EMULATOR_ONLY. Add them to the WhereClausesQuery
+        if (!queryAllDeviceTypes) {
+            Pair<Object, WhereClauseOperator> isEmulatorPair = new Pair<Object, WhereClauseOperator>(isEmulator,
+                                                                                                     WhereClauseOperator.EQUAL);
+            whereClausesQuery.put(DeviceColumnName.IS_EMULATOR, isEmulatorPair);
+        }
+
+        if (whereClausesQuery.isEmpty() && queryAllDeviceTypes) {
             deviceQueryBuilder.orderBy(DeviceColumnName.IS_EMULATOR, isAscendingOrder);
             deviceQueryBuilder.prepare();
             return deviceQueryBuilder.query();
         }
 
-        Set<Entry<String, Object>> querySet = query.entrySet();
-        Iterator<Entry<String, Object>> iterator = querySet.iterator();
-        Where<Device, String> queryWhereClause = deviceQueryBuilder.where();
+        int minApiLevel = parameters.getMinApiLevel();
+        int maxApiLevel = parameters.getMaxApiLevel();
+        int targetApiLevel = parameters.getTargetApiLevel();
 
-        while (iterator.hasNext()) {
-            Entry<String, Object> criterion = iterator.next();
+        // Creates Query for selecting Device with the given TargetApiLevel if there is such.
+        // It is used in order to be determined that there are No devices with the TargetApi and we can use the given
+        // Range (Min, Max).
+        if (targetApiLevel != DeviceParameters.TARGET_API_LEVEL_NO_PREFERENCE) {
+            QueryBuilder<Device, String> deviceQueryBuilderTargetApiLevel = deviceDao.queryBuilder();
+            deviceQueryBuilderTargetApiLevel.where().eq(DeviceColumnName.API_LEVEL, targetApiLevel);
 
-            if (!iterator.hasNext() && queryAllDeviceTypes) {
-                queryWhereClause = queryWhereClause.eq(criterion.getKey(), criterion.getValue());
-            } else {
-                queryWhereClause = queryWhereClause.eq(criterion.getKey(), criterion.getValue()).and();
+            deviceQueryBuilderTargetApiLevel.prepare();
+            List<Device> avaibleDevices = deviceQueryBuilderTargetApiLevel.query();
+
+            // If there are available Devices For the TargetApiVersion Then Add it to the query map.
+            if (!avaibleDevices.isEmpty()) {
+                Pair<Object, WhereClauseOperator> apiLevelPair = new Pair<Object, WhereClauseOperator>(targetApiLevel,
+                                                                                                       WhereClauseOperator.EQUAL);
+                whereClausesQuery.put(DeviceColumnName.API_LEVEL, apiLevelPair);
             }
         }
 
-        if (!queryAllDeviceTypes) {
-            queryWhereClause = queryWhereClause.eq(DeviceColumnName.IS_EMULATOR, isEmulator);
+        Where<Device, String> queryWhereClause = deviceQueryBuilder.where();
+        Set<Entry<String, Pair<Object, WhereClauseOperator>>> querySet = whereClausesQuery.entrySet();
+        Iterator<Entry<String, Pair<Object, WhereClauseOperator>>> iterator = querySet.iterator();
+
+        // Builds WHERE Clauses
+        while (iterator.hasNext()) {
+            Entry<String, Pair<Object, WhereClauseOperator>> criterion = iterator.next();
+            Pair<Object, WhereClauseOperator> criterionWhereClause = criterion.getValue();
+            WhereClauseOperator criterionWhereClauseOperator = criterionWhereClause.getValue();
+
+            switch (criterionWhereClauseOperator) {
+                case EQUAL:
+                    queryWhereClause = queryWhereClause.eq(criterion.getKey(), criterionWhereClause.getKey());
+                    break;
+                case GREATER_OR_EQUAL:
+                    queryWhereClause = queryWhereClause.ge(criterion.getKey(), criterionWhereClause.getKey());
+                    break;
+                case LESS_OR_EQUAL:
+                    queryWhereClause = queryWhereClause.le(criterion.getKey(), criterionWhereClause.getKey());
+                    break;
+                case BETWEEN:
+                    queryWhereClause = queryWhereClause.between(criterion.getKey(), minApiLevel, maxApiLevel);
+                    break;
+                default:
+                    break;
+            }
         }
+
+        int whereClausesCount = whereClausesQuery.size();
+        // Add AND between the WhereClauses added in the QueryMap.
+        queryWhereClause = queryWhereClause.and(whereClausesCount);
 
         deviceQueryBuilder.orderBy(DeviceColumnName.IS_EMULATOR, isAscendingOrder);
 

@@ -20,13 +20,13 @@ public class EmulatorToDeviceParametersConverter {
      */
     public static EmulatorParameters convert(DeviceParameters deviceParameters) {
         EmulatorParameters emulatorParameters = new EmulatorParameters();
-        int deviceApiLevel = deviceParameters.getApiLevel();
+        int deviceApiLevel = deviceParameters.getTargetApiLevel();
         int deviceResolutionWidth = deviceParameters.getResolutionWidth();
         int deviceResolutionHeight = deviceParameters.getResolutionHeight();
         int deviceDpi = deviceParameters.getDpi();
         int deviceRam = deviceParameters.getRam();
 
-        if (deviceApiLevel != DeviceParameters.API_LEVEL_NO_PREFERENCE) {
+        if (deviceApiLevel != DeviceParameters.TARGET_API_LEVEL_NO_PREFERENCE) {
             emulatorParameters.setApiLevel(deviceApiLevel);
         }
 

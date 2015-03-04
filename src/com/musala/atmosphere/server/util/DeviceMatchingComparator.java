@@ -43,7 +43,7 @@ public class DeviceMatchingComparator implements Comparator<DeviceInformation> {
         int requiredDeviceResH = neededDeviceParameters.getResolutionHeight();
         int requiredDeviceResW = neededDeviceParameters.getResolutionWidth();
         Boolean requiredDeviceCameraPresence = neededDeviceParameters.hasCameraPresent();
-        int requiredDeviceApiVersion = neededDeviceParameters.getApiLevel();
+        int requiredDeviceApiVersion = neededDeviceParameters.getTargetApiLevel();
 
         if (requiredDeviceType != DeviceParameters.DEVICE_TYPE_NO_PREFERENCE) {
             if (requiredDeviceType == DeviceType.DEVICE_ONLY) {
@@ -104,7 +104,7 @@ public class DeviceMatchingComparator implements Comparator<DeviceInformation> {
                 return 0;
             }
         }
-        if (requiredDeviceApiVersion != DeviceParameters.API_LEVEL_NO_PREFERENCE) {
+        if (requiredDeviceApiVersion != DeviceParameters.TARGET_API_LEVEL_NO_PREFERENCE) {
             if (requiredDeviceApiVersion != matchDeviceInformation.getApiLevel()) {
                 return 0;
             }
