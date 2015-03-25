@@ -11,9 +11,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.musala.atmosphere.commons.DeviceInformation;
-import com.musala.atmosphere.commons.cs.clientbuilder.DeviceOs;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
-import com.musala.atmosphere.commons.cs.clientbuilder.DeviceType;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceOs;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceType;
 import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
 import com.musala.atmosphere.server.data.dao.db.ormlite.DeviceDao;
 import com.musala.atmosphere.server.data.db.flyway.DataSourceCallback;
