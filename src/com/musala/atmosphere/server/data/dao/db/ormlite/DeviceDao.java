@@ -25,16 +25,16 @@ import com.musala.atmosphere.server.data.model.ormilite.Device;
 
 /**
  * Common class that provides data access object for executing operations with devices from the data source.
- * 
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 public class DeviceDao {
     private Dao<Device, String> deviceDao;
 
     /**
      * Creates new DeviceDao with the given data access object.
-     * 
+     *
      * @param deviceDao
      *        - data access object responsible for operations with devices from the data source
      */
@@ -44,12 +44,12 @@ public class DeviceDao {
 
     /**
      * Updates device properties in the data source.
-     * 
+     *
      * @param device
      *        - device that will be updated in the data source
      * @throws DeviceDaoException
      *         thrown when updating device fails
-     * 
+     *
      */
     public void update(IDevice device) throws DeviceDaoException {
         if (device == null) {
@@ -68,7 +68,7 @@ public class DeviceDao {
 
     /**
      * Adds new device in the data source.
-     * 
+     *
      * @param device
      *        - device to be added in the data source
      * @throws DeviceDaoException
@@ -91,7 +91,7 @@ public class DeviceDao {
 
     /**
      * Removes a device with the given ID from the data source.
-     * 
+     *
      * @param deviceId
      *        - the ID of the device to be removed
      * @throws DeviceDaoException
@@ -114,7 +114,7 @@ public class DeviceDao {
 
     /**
      * Selects device by its unique ID.
-     * 
+     *
      * @param id
      *        - ID to be used as a match criterion
      * @return {@link IDevice device} matching the requested ID, or <code>null</code> if no device with such ID is found
@@ -133,7 +133,7 @@ public class DeviceDao {
 
     /**
      * Gets all {@link IDevice devices} that match the given parameters.
-     * 
+     *
      * @param parameters
      *        - the parameters to select devices by
      * @return a {@link List list} of devices matching the given parameters
@@ -148,7 +148,7 @@ public class DeviceDao {
 
     /**
      * Gets all {@link IDevice devices} that match the given parameters and allocation criterion.
-     * 
+     *
      * @param parameters
      *        - the parameters to select devices by
      * @param isAllocated

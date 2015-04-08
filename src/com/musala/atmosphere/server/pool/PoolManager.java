@@ -38,9 +38,9 @@ import com.musala.atmosphere.server.registrymanager.RemoteObjectRegistryManager;
 /**
  * Class which is responsible for iterating with the devices in the pool. It also sending events to
  * {@link RemoteObjectRegistryManager} when e device is add to the pool or removed.
- * 
+ *
  * @author yavor.stankov
- * 
+ *
  */
 public class PoolManager extends UnicastRemoteObject implements IClientBuilder, Subscriber {
     private static final long serialVersionUID = -5077918124351182199L;
@@ -62,7 +62,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
     /**
      * Creates an instance (or gets the current if such instance already exists) of the {@link PoolManager PoolManager}.
-     * 
+     *
      * @return PoolManager Instance
      */
     public static PoolManager getInstance() {
@@ -88,12 +88,12 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
     /**
      * Refreshes the current state of the device - removes the device from the pool if it is not present on an Agent
      * anymore and remove the device from the server's RMI registry.
-     * 
+     *
      * @param deviceId
      *        - the device ID
      * @throws CommandFailedException
      *         - if failed to get device information, because of shell exception
-     * 
+     *
      * @throws RemoteException
      *         - if failed to get the device information from the DeviceProxy
      * @throws DevicePoolDaoException
@@ -102,17 +102,15 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
     public void removeDevice(String deviceId) throws RemoteException, CommandFailedException, DevicePoolDaoException {
         DeviceProxy deviceProxy = deviceIdToDeviceProxy.get(deviceId);
 
-        DeviceInformation deviceInformation = (DeviceInformation) deviceProxy.route(RoutingAction.GET_DEVICE_INFORMATION);
-        String deviceSerialNumber = deviceInformation.getSerialNumber();
-
         IDevice device = devicePoolDao.getDevice(deviceId);
+        DeviceInformation deviceInformation = device.getInformation();
+        String deviceSerialNumber = deviceInformation.getSerialNumber();
         String agentId = device.getAgentId();
 
         DevicePublishEvent event = new DeviceUnpublishedEvent(deviceProxy, deviceSerialNumber, agentId);
         eventService.publish(event);
 
         devicePoolDao.remove(deviceId);
-
         deviceIdToDeviceProxy.remove(deviceId);
 
         LOGGER.info("Device with id " + deviceId + " disconnected and removed.");
@@ -120,7 +118,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
     /**
      * Adds a device to the pool.
-     * 
+     *
      * @param deviceRmiId
      *        - RMI string identifier for the device wrapper stub on the Agent registry
      * @param agentRegistry
@@ -128,7 +126,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
      * @param agentManager
      *        - the {@link AgentManager AgentManager} that published the {@link IWrapDevice IWrapDevice} we are wrapping
      * @return the ID of the device in the pool if it was successfully inserted, or <code>null</code> otherwise
-     * 
+     *
      */
     public String addDevice(String deviceRmiId, Registry agentRegistry, String agentId) {
         try {
@@ -170,7 +168,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
     /**
      * Remove all devices from the pool.
-     * 
+     *
      * @throws CommandFailedException
      * @throws RemoteException
      * @throws DevicePoolDaoException
@@ -184,7 +182,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
     @Override
     public synchronized DeviceAllocationInformation allocateDevice(DeviceParameters deviceParameters)
-        throws RemoteException {
+            throws RemoteException {
         List<IDevice> deviceList = new ArrayList<IDevice>();
         String errorMessage = String.format("No devices matching the requested parameters %s were found",
                                             deviceParameters);
@@ -233,7 +231,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
     @Override
     public void releaseDevice(DeviceAllocationInformation allocatedDeviceDescriptor)
-        throws RemoteException,
+            throws RemoteException,
             InvalidPasskeyException,
             DeviceNotFoundException {
         String deviceId = allocatedDeviceDescriptor.getDeviceId();

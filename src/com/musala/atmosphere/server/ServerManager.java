@@ -31,9 +31,9 @@ import com.musala.atmosphere.server.pool.PoolManager;
 
 /**
  * Class that is responsible for managing device selection/distribution.
- * 
+ *
  * @author georgi.gaydarov
- * 
+ *
  */
 public class ServerManager implements Subscriber {
     private static Logger LOGGER = Logger.getLogger(ServerManager.class.getCanonicalName());
@@ -60,7 +60,7 @@ public class ServerManager implements Subscriber {
 
     /**
      * Adds or removes a device with given ID from the agent's device list.
-     * 
+     *
      * @param onAgent
      *        - the ID of the Agent
      * @param changedDeviceRmiId
@@ -91,6 +91,7 @@ public class ServerManager implements Subscriber {
                 String deviceId = rmiIdToDeviceId.get(changedDeviceRmiId);
                 try {
                     poolManager.removeDevice(deviceId);
+                    rmiIdToDeviceId.remove(changedDeviceRmiId);
                 } catch (DevicePoolDaoException e) {
                     String errorMessage = String.format("Failed to remove device with ID %s.", deviceId);
                     LOGGER.error(errorMessage);
@@ -102,7 +103,7 @@ public class ServerManager implements Subscriber {
     /**
      * Creates a new {@link ServerManager ServerManager} instance that opens an RMI registry on a specific port and
      * waits for a client connection.
-     * 
+     *
      * @param rmiPort
      *        port, on which the RMI registry for the new {@link ServerManager ServerManager} will be opened
      * @throws RemoteException
@@ -193,7 +194,7 @@ public class ServerManager implements Subscriber {
 
     /**
      * Connects to an Agent and adds it to the internal list of available agents to work with.
-     * 
+     *
      * @param ip
      *        address of the agent we want to connect to.
      * @param port
@@ -243,13 +244,14 @@ public class ServerManager implements Subscriber {
         Registry agentRegistry = agentAllocator.getAgentRegistry(agentId);
 
         for (String wrapperRmiId : deviceWrappers) {
-            poolManager.addDevice(wrapperRmiId, agentRegistry, agentId);
+            String deviceId = poolManager.addDevice(wrapperRmiId, agentRegistry, agentId);
+            rmiIdToDeviceId.put(wrapperRmiId, deviceId);
         }
     }
 
     /**
      * Gets the list of all connected Agent IDs.
-     * 
+     *
      * @return List<String> of Agent IDs.
      */
     public List<String> getAllConnectedAgentIds() {
@@ -258,7 +260,7 @@ public class ServerManager implements Subscriber {
 
     /**
      * Informs server manager for {@link AgentDisconnectedEvent event} received when an agent disconnects.
-     * 
+     *
      * @param event
      *        - event, which is received when an agent is disconnected
      * @throws RemoteException
@@ -281,7 +283,7 @@ public class ServerManager implements Subscriber {
 
     /**
      * Informs server manager for {@link AgentConnectedEvent event} received when an agent connects.
-     * 
+     *
      * @param event
      *        - event, which is received when an agent is connected
      */
@@ -298,7 +300,7 @@ public class ServerManager implements Subscriber {
 
     /**
      * Gets the server's RMI registry.
-     * 
+     *
      * @return server's RMI registry
      */
     public Registry getRegistry() {

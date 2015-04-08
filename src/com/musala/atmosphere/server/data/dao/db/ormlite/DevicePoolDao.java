@@ -17,9 +17,9 @@ import com.musala.atmosphere.server.data.model.ormilite.Device;
 
 /**
  * Common class that provides data access object for executing operations with devices and agents from the data source.
- * 
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 public class DevicePoolDao implements IDevicePoolDao {
     private static final Logger LOGGER = Logger.getLogger(DevicePoolDao.class.getSimpleName());
