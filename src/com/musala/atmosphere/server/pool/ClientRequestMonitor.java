@@ -141,6 +141,7 @@ public class ClientRequestMonitor {
 
                     try {
                         poolManager.releaseDevice(deviceId);
+                        deviceIdToTimeout.remove(deviceId);
                     } catch (DevicePoolDaoException e) {
                         String errorMessage = String.format("Releasing device due to invocation timeout with ID %s failed.",
                                                             deviceId);
