@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.data.dao.db.ormlite;
+package com.musala.atmosphere.server.data.db.ormlite;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -21,6 +21,7 @@ import com.j256.ormlite.dao.Dao;
 import com.musala.atmosphere.server.dao.exception.DeviceDaoException;
 import com.musala.atmosphere.server.dao.exception.DeviceDaoRuntimeException;
 import com.musala.atmosphere.server.data.db.constant.DeviceColumnName;
+import com.musala.atmosphere.server.data.db.ormlite.DeviceDao;
 import com.musala.atmosphere.server.data.model.IDevice;
 import com.musala.atmosphere.server.data.model.ormilite.Agent;
 import com.musala.atmosphere.server.data.model.ormilite.Device;

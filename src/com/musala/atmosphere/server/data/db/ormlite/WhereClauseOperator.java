@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.data.dao.db.ormlite;
+package com.musala.atmosphere.server.data.db.ormlite;
 /**
  * Enumerates all actions that can be invoked on a query builder instance in the {@link DeviceDao} selection of a wanted devices.
  * 

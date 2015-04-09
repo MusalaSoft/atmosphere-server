@@ -2,6 +2,7 @@ package com.musala.atmosphere.server.data;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -11,13 +12,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.musala.atmosphere.commons.DeviceInformation;
-import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceOs;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelectorBuilder;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceType;
-import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
-import com.musala.atmosphere.server.data.dao.db.ormlite.DeviceDao;
 import com.musala.atmosphere.server.data.db.flyway.DataSourceCallback;
 import com.musala.atmosphere.server.data.db.flyway.DataSourceManager;
+import com.musala.atmosphere.server.data.db.ormlite.AgentDao;
+import com.musala.atmosphere.server.data.db.ormlite.DeviceDao;
 import com.musala.atmosphere.server.data.model.IDevice;
 import com.musala.atmosphere.server.data.model.ormilite.Agent;
 import com.musala.atmosphere.server.data.model.ormilite.Device;
@@ -34,6 +36,8 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
  * 
  */
 public class DeviceDaoSelectionIntegrationTest {
+    private static final int[] NONEXISTENT_DEVICE_TARGET_API_LEVELS = {13, 20};
+
     private static final String[] TEST_DEVICE_SERIAL_NUMBERS = {"emulator", "device1", "device2", "device3"};
 
     private static final String[] TEST_DEVICE_RMI_IDS = {"rmiId1", "rmiId2", "rmiId3", "rmiId4"};
@@ -49,7 +53,7 @@ public class DeviceDaoSelectionIntegrationTest {
     private static final DeviceOs[] TEST_DEVICE_OS = {DeviceOs.JELLY_BEAN_MR1_4_2_1, DeviceOs.KITKAT_4_4,
             DeviceOs.JELLY_BEAN_MR1_4_2_2, DeviceOs.JELLY_BEAN_MR2_4_3};
 
-    private static final String UNEXISTING_DEVICE_SERIAL_NUMBER = "unexisting";
+    private static final String NONEXISTENT_DEVICE_SERIAL_NUMBER = "nonexistent";
 
     private static final String TEST_AGENT_ID = "test_agent_id";
 
@@ -91,6 +95,9 @@ public class DeviceDaoSelectionIntegrationTest {
         DataSourceManager dataSourceManager = new DataSourceManager(new DataSourceCallback());
         dataSourceManager.initialize();
 
+        assertNotNull("Initialization of the database failed. ", agentDao);
+        assertNotNull("Initialization of the database failed. ", deviceDao);
+
         // initialize a test agent entry in the data source to attach the devices to
         agentDao.add(TEST_AGENT_ID, TEST_AGENT_IP, TEST_AGENT_PORT);
 
@@ -101,16 +108,17 @@ public class DeviceDaoSelectionIntegrationTest {
 
     @Test
     public void testFilterDevicesWhenNoSpecificDeviceParametersAreRequired() throws Exception {
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(new DeviceParameters());
+        DeviceSelector deviceSelector = new DeviceSelectorBuilder().build();
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertFalse(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
     }
 
     @Test
     public void testFilterDevicesWhenMatchingEmulatorOnlyQuery() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.EMULATOR_ONLY);
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.EMULATOR_ONLY);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertFalse(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
 
@@ -120,9 +128,9 @@ public class DeviceDaoSelectionIntegrationTest {
 
     @Test
     public void testFilterDevicesWhenMatchingDeviceOnlyQuery() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.DEVICE_ONLY);
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.DEVICE_ONLY);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
         assertFalse(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
 
         DeviceInformation resultDeviceInformation = receivedDevices.get(0).getInformation();
@@ -131,9 +139,9 @@ public class DeviceDaoSelectionIntegrationTest {
 
     @Test
     public void testFilterDevicesWhenMatchingDevicePreferredQuery() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.DEVICE_PREFERRED);
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.DEVICE_PREFERRED);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertFalse(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
 
@@ -143,9 +151,9 @@ public class DeviceDaoSelectionIntegrationTest {
 
     @Test
     public void testFilterDevicesWhenMatchingEmulatorPreferredQuery() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.EMULATOR_PREFERRED);
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.EMULATOR_PREFERRED);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertFalse(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
 
@@ -155,10 +163,10 @@ public class DeviceDaoSelectionIntegrationTest {
 
     @Test
     public void testFilterDevicesWhenNoDeviceWithRequestedOsIsAvailable() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.DEVICE_PREFERRED);
-        deviceParameters.setOs(TEST_DEVICE_OS[0]);
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.DEVICE_PREFERRED)
+                                                                                 .deviceOs(TEST_DEVICE_OS[0]);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertFalse(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
 
@@ -168,12 +176,12 @@ public class DeviceDaoSelectionIntegrationTest {
 
     @Test
     public void testFilterDevicesByMoreThanOneParameterWhenPreferredTypeDoesNotMatchRequirements() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.DEVICE_PREFERRED);
-        deviceParameters.setCameraPresent(TEST_DEVICE_CAMERA_AVAILABILITY[0]);
-        deviceParameters.setTargetApiLevel(TEST_DEVICE_API_LEVELS[0]);
-        deviceParameters.setRam(TEST_DEVICE_RAM_VALUES[0]);
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.DEVICE_PREFERRED)
+                                                                                 .isCameraAvailable(TEST_DEVICE_CAMERA_AVAILABILITY[0])
+                                                                                 .targetApi(TEST_DEVICE_API_LEVELS[0])
+                                                                                 .ramCapacity(TEST_DEVICE_RAM_VALUES[0]);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertFalse(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
 
@@ -183,11 +191,11 @@ public class DeviceDaoSelectionIntegrationTest {
 
     @Test
     public void testFilterDevicesByMoreThanOneParameterWhenPreferredTypeMatchesRequirements() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.DEVICE_PREFERRED);
-        deviceParameters.setTargetApiLevel(TEST_DEVICE_API_LEVELS[0]);
-        deviceParameters.setRam(TEST_DEVICE_RAM_VALUES[0]);
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.DEVICE_PREFERRED)
+                                                                                 .targetApi(TEST_DEVICE_API_LEVELS[0])
+                                                                                 .ramCapacity(TEST_DEVICE_RAM_VALUES[0]);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertFalse(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
 
@@ -198,39 +206,38 @@ public class DeviceDaoSelectionIntegrationTest {
     @Test
     public void testFilterDevicesByMoreThanOneParameterAndTypeSpecifiedWhenNoDeviceMatchesRequirements()
         throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.DEVICE_ONLY);
-        deviceParameters.setTargetApiLevel(TEST_DEVICE_API_LEVELS[1]);
-        deviceParameters.setRam(TEST_DEVICE_RAM_VALUES[3]);
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.DEVICE_ONLY)
+                                                                                 .targetApi(TEST_DEVICE_API_LEVELS[1])
+                                                                                 .ramCapacity(TEST_DEVICE_RAM_VALUES[3]);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertTrue(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
     }
 
     @Test
     public void testFilterDevicesByMoreThanOneParameterWhenAvailableResultIsNotFromRequiredType() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.DEVICE_ONLY);
-        deviceParameters.setCameraPresent(TEST_DEVICE_CAMERA_AVAILABILITY[0]);
-        deviceParameters.setTargetApiLevel(TEST_DEVICE_API_LEVELS[0]);
-        deviceParameters.setRam(TEST_DEVICE_RAM_VALUES[0]);
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.DEVICE_ONLY)
+                                                                                 .isCameraAvailable(TEST_DEVICE_CAMERA_AVAILABILITY[0])
+                                                                                 .targetApi(TEST_DEVICE_API_LEVELS[0])
+                                                                                 .ramCapacity(TEST_DEVICE_RAM_VALUES[0]);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertTrue(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
     }
 
     @Test
     public void testFilterDevicesThatAreNotAllocatedWhenNoFreeDeviceIsAvailable() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.DEVICE_PREFERRED);
-        deviceParameters.setOs(TEST_DEVICE_OS[0]);
-        deviceParameters.setCameraPresent(TEST_DEVICE_CAMERA_AVAILABILITY[0]);
-        deviceParameters.setTargetApiLevel(TEST_DEVICE_API_LEVELS[0]);
-        deviceParameters.setRam(TEST_DEVICE_RAM_VALUES[0]);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.DEVICE_PREFERRED)
+                                                                                 .isCameraAvailable(TEST_DEVICE_CAMERA_AVAILABILITY[0])
+                                                                                 .targetApi(TEST_DEVICE_API_LEVELS[0])
+                                                                                 .ramCapacity(TEST_DEVICE_RAM_VALUES[0]);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
         allocateDevices(TEST_DEVICE_SERIAL_NUMBERS[0]);
 
         boolean isAllocated = false;
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters, isAllocated);
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, isAllocated);
 
         assertFalse(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
 
@@ -241,29 +248,29 @@ public class DeviceDaoSelectionIntegrationTest {
 
     @Test
     public void testFilterDevicesThatAreNotAllocatedByParametersWhenNoFreeDeviceIsAvailable() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.DEVICE_PREFERRED);
-        deviceParameters.setTargetApiLevel(TEST_DEVICE_API_LEVELS[0]);
-        deviceParameters.setRam(TEST_DEVICE_RAM_VALUES[0]);
-        allocateDevices(UNEXISTING_DEVICE_SERIAL_NUMBER);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.DEVICE_PREFERRED)
+                                                                                 .serialNumber(NONEXISTENT_DEVICE_SERIAL_NUMBER)
+                                                                                 .targetApi(TEST_DEVICE_API_LEVELS[0])
+                                                                                 .ramCapacity(TEST_DEVICE_RAM_VALUES[0]);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
 
         boolean isAllocated = false;
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters, isAllocated);
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, isAllocated);
 
         assertTrue(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
-        releaseDevices(UNEXISTING_DEVICE_SERIAL_NUMBER);
+        releaseDevices(NONEXISTENT_DEVICE_SERIAL_NUMBER);
     }
 
     @Test
     public void testFilterDevicesThatAreNotAllocatedByParametersWhenNoFreeEmulatorIsAvailable() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.EMULATOR_PREFERRED);
-        deviceParameters.setTargetApiLevel(TEST_DEVICE_API_LEVELS[2]);
-        deviceParameters.setRam(TEST_DEVICE_RAM_VALUES[2]);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.EMULATOR_PREFERRED)
+                                                                                 .targetApi(TEST_DEVICE_API_LEVELS[2])
+                                                                                 .ramCapacity(TEST_DEVICE_RAM_VALUES[2]);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
         allocateDevices(TEST_DEVICE_SERIAL_NUMBERS[2]);
 
         boolean isAllocated = false;
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters, isAllocated);
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, isAllocated);
 
         assertFalse(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
 
@@ -274,62 +281,64 @@ public class DeviceDaoSelectionIntegrationTest {
 
     @Test
     public void testFilterDevicesWithNoPreferenceWhenNoFreeDevicesAreAvailable() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setDeviceType(DeviceType.NO_PREFERENCE);
-        allocateDevices(UNEXISTING_DEVICE_SERIAL_NUMBER);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.NO_PREFERENCE);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+        allocateDevices(NONEXISTENT_DEVICE_SERIAL_NUMBER);
 
         boolean isAllocated = false;
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters, isAllocated);
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, isAllocated);
 
         assertTrue(EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE, receivedDevices.isEmpty());
-        releaseDevices(UNEXISTING_DEVICE_SERIAL_NUMBER);
+        releaseDevices(NONEXISTENT_DEVICE_SERIAL_NUMBER);
     }
 
     @Test
     public void testFilterDevicesWithGivenRangeAndTargetApiLevel() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setMinApiLevel(12);
-        deviceParameters.setMaxApiLevel(21);
-        deviceParameters.setTargetApiLevel(18);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().targetApi(TEST_DEVICE_API_LEVELS[3])
+                                                                                 .minApi(12)
+                                                                                 .maxApi(21);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
         int expectedDevicesSelected = 1;
 
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertEquals(DEVICES_LIST_MISMATCH_ERROR_MESSAGE, expectedDevicesSelected, receivedDevices.size());
 
         IDevice device = receivedDevices.get(0);
         DeviceInformation deviceInformation = device.getInformation();
-        assertEquals(DEVICE_API_LEVEL_MISMATCH_ERROR_MESSAGE, 18, deviceInformation.getApiLevel());
+        assertEquals(DEVICE_API_LEVEL_MISMATCH_ERROR_MESSAGE,
+                     TEST_DEVICE_API_LEVELS[3],
+                     deviceInformation.getApiLevel());
     }
 
     @Test
     public void testFilterDevicesWithGivenRangeAndNotFoundDeviceWithTargetApiLevel() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setMinApiLevel(12);
-        deviceParameters.setMaxApiLevel(21);
-        deviceParameters.setTargetApiLevel(12);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().targetApi(NONEXISTENT_DEVICE_TARGET_API_LEVELS[0])
+                                                                                 .minApi(12)
+                                                                                 .maxApi(21);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
         int expectedDevicesSelected = 4;
 
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertEquals(DEVICES_LIST_MISMATCH_ERROR_MESSAGE, expectedDevicesSelected, receivedDevices.size());
     }
 
     @Test
     public void testFilterDevicesWithGivenMinimumAndTargetApi() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setMinApiLevel(18);
-        deviceParameters.setTargetApiLevel(20);
-
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
-
-        assertEquals(DEVICES_LIST_MISMATCH_ERROR_MESSAGE, 2, receivedDevices.size());
-
-        deviceParameters.setMinApiLevel(14);
-        deviceParameters.setTargetApiLevel(17);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().targetApi(NONEXISTENT_DEVICE_TARGET_API_LEVELS[1])
+                                                                                 .minApi(18);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
         int expectedDevicesSelected = 2;
 
-        List<IDevice> receivedDevicesChangedTargetApiLevel = deviceDao.filterDevicesByParameters(deviceParameters);
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
+
+        assertEquals(DEVICES_LIST_MISMATCH_ERROR_MESSAGE, expectedDevicesSelected, receivedDevices.size());
+
+        deviceSelectorBuilder.minApi(14).maxApi(17).targetApi(TEST_DEVICE_API_LEVELS[0]);
+        deviceSelector = deviceSelectorBuilder.build();
+
+        List<IDevice> receivedDevicesChangedTargetApiLevel = deviceDao.filterDevices(deviceSelector, false);
 
         assertEquals(DEVICES_LIST_MISMATCH_ERROR_MESSAGE,
                      expectedDevicesSelected,
@@ -338,31 +347,34 @@ public class DeviceDaoSelectionIntegrationTest {
 
     @Test
     public void testFilterDevicesWithGivenMaximumAndTargetApi() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setMaxApiLevel(18);
-        deviceParameters.setTargetApiLevel(14);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().maxApi(18)
+                                                                                 .targetApi(NONEXISTENT_DEVICE_TARGET_API_LEVELS[0]);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
         int expectedDevicesSelected = 3;
 
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertEquals(DEVICES_LIST_MISMATCH_ERROR_MESSAGE, expectedDevicesSelected, receivedDevices.size());
 
-        deviceParameters.setMaxApiLevel(21);
-        deviceParameters.setTargetApiLevel(18);
+        deviceSelectorBuilder.maxApi(21).targetApi(TEST_DEVICE_API_LEVELS[3]);
+        deviceSelector = deviceSelectorBuilder.build();
+        expectedDevicesSelected = 1;
 
-        List<IDevice> receivedDevicesChangedTargetApiLevel = deviceDao.filterDevicesByParameters(deviceParameters);
+        List<IDevice> receivedDevicesChangedTargetApiLevel = deviceDao.filterDevices(deviceSelector, false);
 
-        assertEquals(DEVICES_LIST_MISMATCH_ERROR_MESSAGE, 1, receivedDevicesChangedTargetApiLevel.size());
+        assertEquals(DEVICES_LIST_MISMATCH_ERROR_MESSAGE,
+                     expectedDevicesSelected,
+                     receivedDevicesChangedTargetApiLevel.size());
     }
 
     @Test
     public void testFilterDevicesWithGivenRangeForApiLevel() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setMaxApiLevel(21);
-        deviceParameters.setMinApiLevel(18);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().maxApi(21).minApi(18);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+
         int expectedDevicesSelected = 2;
 
-        List<IDevice> receivedDevices = deviceDao.filterDevicesByParameters(deviceParameters);
+        List<IDevice> receivedDevices = deviceDao.filterDevices(deviceSelector, false);
 
         assertEquals(DEVICES_LIST_MISMATCH_ERROR_MESSAGE, expectedDevicesSelected, receivedDevices.size());
     }

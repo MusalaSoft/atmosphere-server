@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.data.dao.db.ormlite;
+package com.musala.atmosphere.server.data.db.ormlite;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

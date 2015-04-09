@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
 import com.musala.atmosphere.server.data.model.IDevice;
 
@@ -43,6 +44,7 @@ public interface IDevicePoolDao {
      * @throws DevicePoolDaoException
      *         - thrown when getting devices with the requested {@link DeviceParameters parameters} fails
      */
+    @Deprecated
     public List<IDevice> getDevices(DeviceParameters parameters) throws DevicePoolDaoException;
 
     /**
@@ -58,6 +60,7 @@ public interface IDevicePoolDao {
      * @throws DevicePoolDaoException
      *         - thrown when getting devices with the requested {@link DeviceParameters parameters} fails
      */
+    @Deprecated
     public List<IDevice> getDevices(DeviceParameters parameters, boolean isAllocated) throws DevicePoolDaoException;
 
     /**
@@ -88,6 +91,7 @@ public interface IDevicePoolDao {
      *        - the parameters to be checked
      * @return <code>true</code> if device matching the given parameters exists, and <code>false</code> otherwise
      */
+    @Deprecated
     public boolean hasDevice(DeviceParameters parameters);
 
     /**
@@ -100,6 +104,7 @@ public interface IDevicePoolDao {
      *        ones
      * @return <code>true</code> if device matching the given parameters exists, and <code>false</code> otherwise
      */
+    @Deprecated
     public boolean hasDevice(DeviceParameters parameters, boolean isAllocated);
 
     /**
@@ -133,4 +138,32 @@ public interface IDevicePoolDao {
      * 
      */
     public void update(IDevice device) throws DevicePoolDaoException;
+
+    /**
+     * Gets all devices that match the given {@link DeviceSelelctro selector} and allocation criterion.
+     * 
+     * @param selector
+     *        - contains all the characteristics that the requested devices should match
+     * @param isAllocated
+     *        - if <code>true</code> only allocated devices are filtered, otherwise devices are selected from the free
+     *        ones
+     * @return a {@link List list} of {@link IDevice devices} that match the passed parameters
+     * @throws DevicePoolDaoException
+     *         when getting devices with the requested {@link DeviceSelelctro selector} fails
+     */
+    public List<IDevice> getDevices(DeviceSelector selector, boolean isAllocated) throws DevicePoolDaoException;
+
+    /**
+     * Checks if the data source contains a device that matches the given {@link DeviceSelelctro selector} and
+     * allocation criterion.
+     * 
+     * @param selector
+     *        - contains all the characteristics that the requested devices should match
+     * @param isAllocated
+     *        - if <code>true</code> only allocated devices are filtered, otherwise devices are selected from the free
+     *        ones
+     * @return <code>true</code> if device matching the given {@link DeviceSelelctro selector} exists, and
+     *         <code>false</code> otherwise
+     */
+    public boolean hasDevice(DeviceSelector selector, boolean isAllocated) throws DevicePoolDaoException;
 }

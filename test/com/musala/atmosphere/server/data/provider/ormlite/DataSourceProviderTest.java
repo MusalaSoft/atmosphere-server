@@ -13,9 +13,9 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.j256.ormlite.support.ConnectionSource;
-import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
-import com.musala.atmosphere.server.data.dao.db.ormlite.DeviceDao;
-import com.musala.atmosphere.server.data.dao.db.ormlite.DevicePoolDao;
+import com.musala.atmosphere.server.data.db.ormlite.AgentDao;
+import com.musala.atmosphere.server.data.db.ormlite.DeviceDao;
+import com.musala.atmosphere.server.data.db.ormlite.DevicePoolDao;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;

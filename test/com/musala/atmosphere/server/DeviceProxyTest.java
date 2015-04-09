@@ -32,7 +32,7 @@ import com.musala.atmosphere.commons.beans.PhoneNumber;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.util.Pair;
-import com.musala.atmosphere.server.data.dao.db.ormlite.DevicePoolDao;
+import com.musala.atmosphere.server.data.db.ormlite.DevicePoolDao;
 import com.musala.atmosphere.server.data.model.IDevice;
 import com.musala.atmosphere.server.data.model.ormilite.Device;
 import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;

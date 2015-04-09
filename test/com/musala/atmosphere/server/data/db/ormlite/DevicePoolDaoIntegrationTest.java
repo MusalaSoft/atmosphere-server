@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.data.dao.db.ormlite;
+package com.musala.atmosphere.server.data.db.ormlite;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -120,9 +121,16 @@ public class DevicePoolDaoIntegrationTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDownTest() throws Exception {
         for (int i = 0; i < 3; i++) {
             testDeviceDao.remove(testRmiIds[i]);
+        }
+    }
+
+    @AfterClass
+    public static void tearDown() throws Exception {
+        for (int i = 0; i < 2; i++) {
+            testAgentDao.remove(testAgentIds[i]);
         }
     }
 

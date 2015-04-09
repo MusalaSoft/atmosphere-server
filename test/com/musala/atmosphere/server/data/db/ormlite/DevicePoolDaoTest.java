@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.data.dao.db.ormlite;
+package com.musala.atmosphere.server.data.db.ormlite;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -20,11 +20,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.musala.atmosphere.commons.DeviceInformation;
-import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelectorBuilder;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.dao.exception.DeviceDaoException;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoRuntimeException;
+import com.musala.atmosphere.server.data.db.ormlite.AgentDao;
+import com.musala.atmosphere.server.data.db.ormlite.DeviceDao;
+import com.musala.atmosphere.server.data.db.ormlite.DevicePoolDao;
 import com.musala.atmosphere.server.data.model.IDevice;
 import com.musala.atmosphere.server.data.model.ormilite.Agent;
 import com.musala.atmosphere.server.data.model.ormilite.Device;
@@ -234,14 +238,15 @@ public class DevicePoolDaoTest {
     public void testGetDevicesByDeviceParameters() throws Exception {
         Device attachedDevice = new Device(TEST_DEVICE_SERIAL_NUMBER, TEST_DEVICE_RMI_ID);
         attachedDevice.setAgent(mockedAgent);
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setSerialNumber(TEST_DEVICE_SERIAL_NUMBER);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().serialNumber(TEST_DEVICE_SERIAL_NUMBER);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
 
         List<IDevice> expectedResultList = new ArrayList<IDevice>();
         expectedResultList.add(attachedDevice);
+        boolean isAllocated = false;
 
-        when(mockedDeviceDao.filterDevicesByParameters(eq(deviceParameters))).thenReturn(expectedResultList);
-        List<IDevice> actualResultList = testDevicePoolDao.getDevices(deviceParameters);
+        when(mockedDeviceDao.filterDevices(eq(deviceSelector), any(Boolean.class))).thenReturn(expectedResultList);
+        List<IDevice> actualResultList = testDevicePoolDao.getDevices(deviceSelector, isAllocated);
 
         assertEquals("Devices found by the given device parameters do not match the expected result.",
                      expectedResultList,
@@ -250,13 +255,14 @@ public class DevicePoolDaoTest {
 
     @Test
     public void testGetDevicesByDeviceParametersWhenNoMatchingDevices() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setSerialNumber(TEST_DEVICE_SERIAL_NUMBER);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().serialNumber(TEST_DEVICE_SERIAL_NUMBER);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
 
         List<IDevice> resultList = new ArrayList<IDevice>();
+        boolean isAllocated = false;
 
-        when(mockedDeviceDao.filterDevicesByParameters(eq(deviceParameters))).thenReturn(resultList);
-        List<IDevice> actualResultList = testDevicePoolDao.getDevices(deviceParameters);
+        when(mockedDeviceDao.filterDevices(eq(deviceSelector), any(Boolean.class))).thenReturn(resultList);
+        List<IDevice> actualResultList = testDevicePoolDao.getDevices(deviceSelector, isAllocated);
 
         assertTrue("Expected that no devices matching the requested parameters would be found.",
                    actualResultList.isEmpty());
@@ -264,13 +270,14 @@ public class DevicePoolDaoTest {
 
     @Test
     public void testHasDevicesByDeviceParametersWhenNoMatchingDevices() throws Exception {
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setSerialNumber(TEST_DEVICE_SERIAL_NUMBER);
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().serialNumber(TEST_DEVICE_SERIAL_NUMBER);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
 
         List<IDevice> resultList = new ArrayList<IDevice>();
+        boolean isAllocated = false;
 
-        when(mockedDeviceDao.filterDevicesByParameters(eq(deviceParameters))).thenReturn(resultList);
-        boolean isDeviceFound = testDevicePoolDao.hasDevice(deviceParameters);
+        when(mockedDeviceDao.filterDevices(eq(deviceSelector), any(Boolean.class))).thenReturn(resultList);
+        boolean isDeviceFound = testDevicePoolDao.hasDevice(deviceSelector, isAllocated);
 
         assertFalse("Expected that device matching the requested parameters would not be found.", isDeviceFound);
     }
@@ -279,14 +286,16 @@ public class DevicePoolDaoTest {
     public void testHasDevicesByDeviceParameters() throws Exception {
         Device attachedDevice = new Device(TEST_DEVICE_SERIAL_NUMBER, TEST_DEVICE_RMI_ID);
         attachedDevice.setAgent(mockedAgent);
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setSerialNumber(TEST_DEVICE_SERIAL_NUMBER);
+
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().serialNumber(TEST_DEVICE_SERIAL_NUMBER);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
 
         List<IDevice> expectedResultList = new ArrayList<IDevice>();
         expectedResultList.add(attachedDevice);
+        boolean isAllocated = false;
 
-        when(mockedDeviceDao.filterDevicesByParameters(eq(deviceParameters), eq(false))).thenReturn(expectedResultList);
-        boolean isDeviceFound = testDevicePoolDao.hasDevice(deviceParameters, false);
+        when(mockedDeviceDao.filterDevices(eq(deviceSelector), any(Boolean.class))).thenReturn(expectedResultList);
+        boolean isDeviceFound = testDevicePoolDao.hasDevice(deviceSelector, isAllocated);
 
         assertTrue("Finding device for the requested parameters failed.", isDeviceFound);
     }

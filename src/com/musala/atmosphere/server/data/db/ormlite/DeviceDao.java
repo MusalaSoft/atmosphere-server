@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.data.dao.db.ormlite;
+package com.musala.atmosphere.server.data.db.ormlite;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -14,27 +14,33 @@ import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
+import com.musala.atmosphere.commons.cs.deviceselection.ApiLevel;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceOs;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceParameter;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceType;
+import com.musala.atmosphere.commons.cs.exception.DeviceSelectionFailedException;
 import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.dao.exception.DeviceDaoException;
 import com.musala.atmosphere.server.dao.exception.DeviceDaoRuntimeException;
 import com.musala.atmosphere.server.data.db.constant.DeviceColumnName;
+import com.musala.atmosphere.server.data.db.ormlite.querybuilder.DeviceQueryBuilder;
+import com.musala.atmosphere.server.data.db.ormlite.querybuilder.DeviceRangeQueryBuilder;
 import com.musala.atmosphere.server.data.model.IDevice;
 import com.musala.atmosphere.server.data.model.ormilite.Device;
 
 /**
  * Common class that provides data access object for executing operations with devices from the data source.
- *
+ * 
  * @author filareta.yordanova
- *
+ * 
  */
 public class DeviceDao {
     private Dao<Device, String> deviceDao;
 
     /**
      * Creates new DeviceDao with the given data access object.
-     *
+     * 
      * @param deviceDao
      *        - data access object responsible for operations with devices from the data source
      */
@@ -44,12 +50,12 @@ public class DeviceDao {
 
     /**
      * Updates device properties in the data source.
-     *
+     * 
      * @param device
      *        - device that will be updated in the data source
      * @throws DeviceDaoException
      *         thrown when updating device fails
-     *
+     * 
      */
     public void update(IDevice device) throws DeviceDaoException {
         if (device == null) {
@@ -68,7 +74,7 @@ public class DeviceDao {
 
     /**
      * Adds new device in the data source.
-     *
+     * 
      * @param device
      *        - device to be added in the data source
      * @throws DeviceDaoException
@@ -91,7 +97,7 @@ public class DeviceDao {
 
     /**
      * Removes a device with the given ID from the data source.
-     *
+     * 
      * @param deviceId
      *        - the ID of the device to be removed
      * @throws DeviceDaoException
@@ -114,7 +120,7 @@ public class DeviceDao {
 
     /**
      * Selects device by its unique ID.
-     *
+     * 
      * @param id
      *        - ID to be used as a match criterion
      * @return {@link IDevice device} matching the requested ID, or <code>null</code> if no device with such ID is found
@@ -133,13 +139,14 @@ public class DeviceDao {
 
     /**
      * Gets all {@link IDevice devices} that match the given parameters.
-     *
+     * 
      * @param parameters
      *        - the parameters to select devices by
      * @return a {@link List list} of devices matching the given parameters
      * @throws DeviceDaoException
      *         thrown when retrieving devices from the data source fails
      */
+    @Deprecated
     public List<IDevice> filterDevicesByParameters(DeviceParameters parameters) throws DeviceDaoException {
         Map<String, Pair<Object, WhereClauseOperator>> queryMap = buildQueryMap(parameters);
 
@@ -148,7 +155,7 @@ public class DeviceDao {
 
     /**
      * Gets all {@link IDevice devices} that match the given parameters and allocation criterion.
-     *
+     * 
      * @param parameters
      *        - the parameters to select devices by
      * @param isAllocated
@@ -158,6 +165,7 @@ public class DeviceDao {
      * @throws DeviceDaoException
      *         thrown when retrieving devices from the data source fails
      */
+    @Deprecated
     public List<IDevice> filterDevicesByParameters(DeviceParameters parameters, boolean isAllocated)
         throws DeviceDaoException {
         Map<String, Pair<Object, WhereClauseOperator>> queryMap = buildQueryMap(parameters);
@@ -387,5 +395,50 @@ public class DeviceDao {
 
         deviceQueryBuilder.prepare();
         return deviceQueryBuilder.query();
+    }
+
+    /**
+     * Gets all {@link IDevice devices} that match the given {@link DeviceSelector selector} and allocation criterion.
+     * 
+     * @param deviceSelector
+     *        - contains all parameters for device filtering
+     * @param isAllocated
+     *        - if <code>true</code> only allocated devices are filtered, otherwise devices are selected from the free
+     *        ones
+     * @return a {@link List list} of devices matching the given parameters
+     * @throws DeviceDaoException
+     *         thrown when retrieving devices from the data source fails
+     */
+    public List<IDevice> filterDevices(DeviceSelector deviceSelector, boolean isAllocated) throws DeviceDaoException {
+        DeviceQueryBuilder deviceQueryBuilder;
+        List<IDevice> devices = new ArrayList<IDevice>();
+        Map<Class<? extends DeviceParameter>, DeviceParameter> deviceParameters = deviceSelector.getParameters();
+
+        try {
+            // Target is with priority, if both target and range are set from the client.
+            if (deviceParameters.containsKey(ApiLevel.Target.class)) {
+                deviceQueryBuilder = new DeviceQueryBuilder(deviceDao, deviceSelector);
+                devices = queryDevices(deviceQueryBuilder, isAllocated);
+            }
+
+            // If there are no results for the given target, try to find matching devices in the given API levels
+            // range.
+            if (devices.isEmpty()) {
+                deviceQueryBuilder = new DeviceRangeQueryBuilder(deviceDao, deviceSelector);
+                devices = queryDevices(deviceQueryBuilder, isAllocated);
+            }
+
+            return devices;
+        } catch (SQLException | DeviceSelectionFailedException e) {
+            String message = String.format("Retrieving devices for the given selector %s failed.", deviceSelector);
+            throw new DeviceDaoException(message, e);
+        }
+    }
+
+    private List<IDevice> queryDevices(DeviceQueryBuilder deviceQueryBuilder, boolean isAllocated) throws SQLException {
+        deviceQueryBuilder.setAllocationCriterion(isAllocated);
+        QueryBuilder<Device, String> queryBuilder = deviceQueryBuilder.prepareQuery();
+
+        return new ArrayList<IDevice>(queryBuilder.query());
     }
 }

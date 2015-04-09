@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.data.dao.db.ormlite;
+package com.musala.atmosphere.server.data.db.ormlite;
 
 import java.util.List;
 
@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.dao.exception.DeviceDaoException;
@@ -17,9 +18,9 @@ import com.musala.atmosphere.server.data.model.ormilite.Device;
 
 /**
  * Common class that provides data access object for executing operations with devices and agents from the data source.
- *
+ * 
  * @author filareta.yordanova
- *
+ * 
  */
 public class DevicePoolDao implements IDevicePoolDao {
     private static final Logger LOGGER = Logger.getLogger(DevicePoolDao.class.getSimpleName());
@@ -172,6 +173,29 @@ public class DevicePoolDao implements IDevicePoolDao {
         } catch (DeviceDaoException e) {
             String allocation = isAllocated ? "Allocated" : "Free";
             String message = String.format("%s device with parameters %s was not found.", allocation, parameters);
+            LOGGER.error(message, e);
+            return false;
+        }
+    }
+
+    @Override
+    public List<IDevice> getDevices(DeviceSelector deviceSelector, boolean isAllocated) throws DevicePoolDaoException {
+        try {
+            return deviceDao.filterDevices(deviceSelector, isAllocated);
+        } catch (DeviceDaoException e) {
+            String message = String.format("Failed to fetch %s devices with the requested parameters %s.",
+                                           deviceSelector);
+            throw new DevicePoolDaoException(message, e);
+        }
+    }
+
+    @Override
+    public boolean hasDevice(DeviceSelector selector, boolean isAllocated) throws DevicePoolDaoException {
+        try {
+            List<IDevice> devices = deviceDao.filterDevices(selector, isAllocated);
+            return !devices.isEmpty();
+        } catch (DeviceDaoException e) {
+            String message = String.format("Device with parameters %s was not found.", selector);
             LOGGER.error(message, e);
             return false;
         }

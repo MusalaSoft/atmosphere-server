@@ -15,6 +15,7 @@ import com.musala.atmosphere.commons.RoutingAction;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.clientbuilder.IClientBuilder;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
 import com.musala.atmosphere.commons.cs.exception.DeviceNotFoundException;
 import com.musala.atmosphere.commons.cs.exception.InvalidPasskeyException;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
@@ -181,6 +182,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
     }
 
     @Override
+    @Deprecated
     public synchronized DeviceAllocationInformation allocateDevice(DeviceParameters deviceParameters)
             throws RemoteException {
         List<IDevice> deviceList = new ArrayList<IDevice>();
@@ -266,6 +268,54 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
             device.release();
             devicePoolDao.update(device);
         }
+    }
+
+    @Override
+    public DeviceAllocationInformation allocateDevice(DeviceSelector deviceSelector) throws RemoteException {
+        List<IDevice> deviceList = new ArrayList<IDevice>();
+        String errorMessage = String.format("No devices matching the requested parameters %s were found",
+                                            deviceSelector);
+        boolean isAllocated = false;
+
+        try {
+            deviceList = devicePoolDao.getDevices(deviceSelector, isAllocated);
+        } catch (DevicePoolDaoException e) {
+            throw new NoAvailableDeviceFoundException(errorMessage, e);
+        }
+
+        if (deviceList.isEmpty()) {
+            throw new NoAvailableDeviceFoundException(errorMessage);
+        }
+
+        IDevice device = deviceList.get(0);
+
+        DeviceInformation deviceInformation = device.getInformation();
+        String deviceSerialNumber = deviceInformation.getSerialNumber();
+        String onAgentId = device.getAgentId();
+
+        String bestMatchDeviceRmiId = buildDeviceIdentifier(onAgentId, deviceSerialNumber);
+
+        device.allocate();
+
+        try {
+            devicePoolDao.update(device);
+        } catch (DevicePoolDaoException e) {
+            String message = String.format("Allocating device with serial number %s failed.",
+                                           deviceInformation.getSerialNumber());
+            LOGGER.error(message, e);
+        }
+
+        String deviceId = device.getDeviceId();
+
+        long devicePasskey = device.getPasskey();
+
+        DeviceAllocationInformation allocatedDeviceDescriptor = new DeviceAllocationInformation(bestMatchDeviceRmiId,
+                                                                                                devicePasskey,
+                                                                                                deviceId);
+        ClientRequestMonitor deviceMonitor = new ClientRequestMonitor();
+        deviceMonitor.restartTimerForDevice(bestMatchDeviceRmiId);
+
+        return allocatedDeviceDescriptor;
     }
 
     public void inform(DevicePoolDaoCreatedEvent event) {

@@ -6,10 +6,10 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.musala.atmosphere.server.data.dao.db.ormlite.AgentDao;
-import com.musala.atmosphere.server.data.dao.db.ormlite.DevicePoolDao;
 import com.musala.atmosphere.server.data.db.flyway.DataSourceCallback;
 import com.musala.atmosphere.server.data.db.flyway.DataSourceManager;
+import com.musala.atmosphere.server.data.db.ormlite.AgentDao;
+import com.musala.atmosphere.server.data.db.ormlite.DevicePoolDao;
 import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;

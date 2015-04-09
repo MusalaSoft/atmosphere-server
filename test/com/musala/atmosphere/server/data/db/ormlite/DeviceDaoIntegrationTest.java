@@ -1,5 +1,6 @@
-package com.musala.atmosphere.server.data.dao.db.ormlite;
+package com.musala.atmosphere.server.data.db.ormlite;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
@@ -74,6 +75,7 @@ public class DeviceDaoIntegrationTest implements Subscriber {
         DataSourceManager dataSourceManager = new DataSourceManager(new DataSourceCallback());
         dataSourceManager.initialize();
 
+        assertNotNull("Initialization of the database failed. ", agentDao);
         // initialize a test agent entry in the data source to attach the devices to
         agentDao.add(TEST_AGENT_ID, TEST_AGENT_IP, TEST_AGENT_PORT);
 

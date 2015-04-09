@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.data.dao.db.ormlite;
+package com.musala.atmosphere.server.data.db.ormlite;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -23,6 +23,7 @@ import com.j256.ormlite.dao.Dao;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.dao.exception.AgentDaoRuntimeException;
 import com.musala.atmosphere.server.data.db.constant.AgentColumnName;
+import com.musala.atmosphere.server.data.db.ormlite.AgentDao;
 import com.musala.atmosphere.server.data.model.IAgent;
 import com.musala.atmosphere.server.data.model.ormilite.Agent;
 
