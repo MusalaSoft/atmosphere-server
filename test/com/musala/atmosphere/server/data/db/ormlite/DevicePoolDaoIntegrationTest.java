@@ -14,7 +14,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.musala.atmosphere.commons.DeviceInformation;
-import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelectorBuilder;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoRuntimeException;
@@ -265,14 +266,14 @@ public class DevicePoolDaoIntegrationTest {
                                                                         testAgentIds[0],
                                                                         testPasskeys[0]);
 
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setRam(testRam[0]);
-        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().ramCapacity(testRam[0])
+                                                                           .targetApi(TEST_API_LEVEL);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
-        List<IDevice> devices = testDevicePoolDao.getDevices(deviceParameters);
-        assertTrue("A device with the given deviceParameters is not present in the received result list.",
+        List<IDevice> devices = testDevicePoolDao.getDevices(deviceSelector, false);
+        assertTrue("A device with the given parameters is not present in the received result list.",
                    devices.contains(firstAddedDevice));
-        assertTrue("A device with the given deviceParameters is not present in the received result list.",
+        assertTrue("A device with the given parameters is not present in the received result list.",
                    devices.contains(secondAddedDevice));
 
     }
@@ -293,14 +294,14 @@ public class DevicePoolDaoIntegrationTest {
                                                                         testAgentIds[1],
                                                                         testPasskeys[0]);
 
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setRam(testRam[0]);
-        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().ramCapacity(testRam[0])
+                                                                           .targetApi(TEST_API_LEVEL);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
-        List<IDevice> devices = testDevicePoolDao.getDevices(deviceParameters);
-        assertTrue("A device with the given deviceParameters is not present in the given List.",
+        List<IDevice> devices = testDevicePoolDao.getDevices(deviceSelector, false);
+        assertTrue("A device with the given parameters is not present in the given List.",
                    devices.contains(firstAddedDevice));
-        assertTrue("A device with the given deviceParameters is not present in the given List.",
+        assertTrue("A device with the given parameters is not present in the given List.",
                    devices.contains(secondAddedDevice));
 
     }
@@ -314,11 +315,11 @@ public class DevicePoolDaoIntegrationTest {
         testDevicePoolDao.addDevice(deviceInformation, testRmiIds[0], testAgentIds[0], testPasskeys[0]);
         testDevicePoolDao.addDevice(deviceInformation, testRmiIds[1], testAgentIds[1], testPasskeys[0]);
 
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setRam(NON_EXISTING_RAM);
-        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().ramCapacity(NON_EXISTING_RAM)
+                                                                           .targetApi(TEST_API_LEVEL);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
-        List<IDevice> devices = testDevicePoolDao.getDevices(deviceParameters);
+        List<IDevice> devices = testDevicePoolDao.getDevices(deviceSelector, false);
         assertTrue("Expected empty result list, but instead received list containig devices when there should be none.",
                    devices.isEmpty());
     }
@@ -331,21 +332,18 @@ public class DevicePoolDaoIntegrationTest {
 
         testDevicePoolDao.addDevice(deviceInformation, testRmiIds[0], testAgentIds[0], testPasskeys[0]);
 
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setRam(testRam[0]);
-        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
-
-        DeviceParameters nonExistentDeviceParameters = new DeviceParameters();
-        nonExistentDeviceParameters.setTargetApiLevel(NON_EXISTENT_API_LEVEL);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder();
+        DeviceSelector deviceSelector = selectorBuilder.ramCapacity(testRam[0]).targetApi(TEST_API_LEVEL).build();
+        DeviceSelector nonExistentDeviceSelector = selectorBuilder.targetApi(NON_EXISTENT_API_LEVEL).build();
 
         assertTrue("The device searched by it's ID is not found when present. ",
                    testDevicePoolDao.hasDevice(testRmiIds[0]));
-        assertTrue("The device searched by deviceParameters is not found when present",
-                   testDevicePoolDao.hasDevice(deviceParameters));
+        assertTrue("The device searched by device selector is not found when present",
+                   testDevicePoolDao.hasDevice(deviceSelector, false));
 
         assertFalse("A device was found when given non existing ID.", testDevicePoolDao.hasDevice(NON_EXISTING_RMI_ID));
         assertFalse("A device was found when given nonexistent DeviceParameters. ",
-                    testDevicePoolDao.hasDevice(nonExistentDeviceParameters));
+                    testDevicePoolDao.hasDevice(nonExistentDeviceSelector, false));
     }
 
     @Test
@@ -354,9 +352,9 @@ public class DevicePoolDaoIntegrationTest {
         deviceInformation.setApiLevel(TEST_API_LEVEL);
         deviceInformation.setRam(testRam[0]);
 
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
-        deviceParameters.setRam(testRam[0]);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().ramCapacity(testRam[0])
+                                                                           .targetApi(TEST_API_LEVEL);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
         IDevice firstAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
                                                                testRmiIds[0],
@@ -365,10 +363,9 @@ public class DevicePoolDaoIntegrationTest {
 
         firstAddedDevice.allocate();
         testDevicePoolDao.update(firstAddedDevice);
-        assertTrue("Can't find allocated Device when it is present.",
-                   testDevicePoolDao.hasDevice(deviceParameters, true));
+        assertTrue("Can't find allocated Device when it is present.", testDevicePoolDao.hasDevice(deviceSelector, true));
         assertFalse("Found not allocated Device when it is not present.",
-                    testDevicePoolDao.hasDevice(deviceParameters, false));
+                    testDevicePoolDao.hasDevice(deviceSelector, false));
     }
 
     @Test
@@ -381,8 +378,8 @@ public class DevicePoolDaoIntegrationTest {
         secondDeviceInformation.setApiLevel(TEST_API_LEVEL);
         secondDeviceInformation.setRam(testRam[1]);
 
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setRam(testRam[1]);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().ramCapacity(testRam[1]);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
         IDevice firstAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
                                                                testRmiIds[0],
@@ -397,7 +394,7 @@ public class DevicePoolDaoIntegrationTest {
                                                                testAgentIds[1],
                                                                testPasskeys[2]);
 
-        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceSelector, false);
         assertTrue("The device was not selected successfully by device parameters.",
                    receivedDevices.contains(secondAddedDevice));
         assertFalse("A device with different device information was selected.",
@@ -417,9 +414,9 @@ public class DevicePoolDaoIntegrationTest {
         secondDeviceInformation.setApiLevel(TEST_API_LEVEL);
         secondDeviceInformation.setRam(testRam[1]);
 
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setRam(testRam[0]);
-        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().ramCapacity(testRam[0])
+                                                                           .targetApi(TEST_API_LEVEL);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
         IDevice firstAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
                                                                testRmiIds[0],
@@ -434,7 +431,7 @@ public class DevicePoolDaoIntegrationTest {
                                                                testAgentIds[1],
                                                                testPasskeys[2]);
 
-        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceSelector, false);
         assertTrue("A device was not selected successfully by device parameters.",
                    receivedDevices.contains(firstAddedDevice));
         assertFalse("A device with different device information was selected.",
@@ -456,8 +453,8 @@ public class DevicePoolDaoIntegrationTest {
         secondDeviceInformation.setApiLevel(TEST_API_LEVEL);
         secondDeviceInformation.setRam(testRam[1]);
 
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setTargetApiLevel(TEST_API_LEVEL);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().targetApi(TEST_API_LEVEL);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
         IDevice firstAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
                                                                testRmiIds[0],
@@ -481,7 +478,7 @@ public class DevicePoolDaoIntegrationTest {
         thirdAddedDevice.allocate();
         testDevicePoolDao.update(thirdAddedDevice);
 
-        List<IDevice> allocatedDevices = testDevicePoolDao.getDevices(deviceParameters, true);
+        List<IDevice> allocatedDevices = testDevicePoolDao.getDevices(deviceSelector, true);
 
         assertTrue("An allocated device with the given deviceParameters is not present in the given List.",
                    allocatedDevices.contains(firstAddedDevice));
@@ -568,12 +565,12 @@ public class DevicePoolDaoIntegrationTest {
     public void testSelectingRangeOfDevicesByApiLevel() throws Exception {
         populateDeviceBase();
 
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setMinApiLevel(15);
-        deviceParameters.setMaxApiLevel(19);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().maxApi(19).minApi(15);
+        DeviceSelector deviceSelector = selectorBuilder.build();
+
         int expectedDevicesSelected = 1;
 
-        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceSelector, false);
 
         assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
                      expectedDevicesSelected,
@@ -584,11 +581,11 @@ public class DevicePoolDaoIntegrationTest {
     public void testSelectingDevicesByMinimumApiLevel() throws Exception {
         populateDeviceBase();
 
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setMinApiLevel(16);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().minApi(16);
+        DeviceSelector deviceSelector = selectorBuilder.build();
         int expectedDevicesSelected = 2;
 
-        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceSelector, false);
 
         assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
                      expectedDevicesSelected,
@@ -599,27 +596,11 @@ public class DevicePoolDaoIntegrationTest {
     public void testSelectingDevicesByMaximumApiLevel() throws Exception {
         populateDeviceBase();
 
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setMaxApiLevel(21);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().maxApi(21);
+        DeviceSelector deviceSelector = selectorBuilder.build();
         int expectedDevicesSelected = 3;
 
-        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
-
-        assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
-                     expectedDevicesSelected,
-                     receivedDevices.size());
-    }
-
-    @Test
-    public void testSelectingDevicesByApiLevelNegativeRange() throws Exception {
-        populateDeviceBase();
-
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setMinApiLevel(19);
-        deviceParameters.setMaxApiLevel(15);
-        int expectedDevicesSelected = 1;
-
-        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceSelector, false);
 
         assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
                      expectedDevicesSelected,
@@ -631,13 +612,14 @@ public class DevicePoolDaoIntegrationTest {
         populateDeviceBase();
 
         int EXPECTED_API_LEVEL = 16;
-        DeviceParameters deviceParameters = new DeviceParameters();
-        deviceParameters.setTargetApiLevel(EXPECTED_API_LEVEL);
-        deviceParameters.setMinApiLevel(9);
-        deviceParameters.setMaxApiLevel(21);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().maxApi(21)
+                                                                           .minApi(9)
+                                                                           .targetApi(EXPECTED_API_LEVEL);
+        DeviceSelector deviceSelector = selectorBuilder.build();
+
         int expectedDevicesSelected = 1;
 
-        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceParameters);
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceSelector, false);
         assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
                      expectedDevicesSelected,
                      receivedDevices.size());
@@ -653,12 +635,12 @@ public class DevicePoolDaoIntegrationTest {
     public void testSelectingDevicesWithTargetApiLevelAndMinimum() throws Exception {
         populateDeviceBase();
 
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setTargetApiLevel(20);
-        parameters.setMinApiLevel(19);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().minApi(19).targetApi(20);
+        DeviceSelector deviceSelector = selectorBuilder.build();
+
         int expectedDevicesSelected = 1;
 
-        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(parameters);
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceSelector, false);
 
         assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
                      expectedDevicesSelected,
@@ -669,26 +651,28 @@ public class DevicePoolDaoIntegrationTest {
     public void testSelectingDevicesWithTargetApiLevelAndMaximum() throws Exception {
         populateDeviceBase();
 
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setTargetApiLevel(12);
-        parameters.setMaxApiLevel(17);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().maxApi(17).targetApi(12);
+        DeviceSelector deviceSelector = selectorBuilder.build();
+
         int expectedDevicesSelected = 2;
 
-        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(parameters);
+        List<IDevice> receivedDevices = testDevicePoolDao.getDevices(deviceSelector, false);
+
+        System.out.println(receivedDevices.get(0).getInformation().getApiLevel());
 
         assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
                      expectedDevicesSelected,
                      receivedDevices.size());
 
-        DeviceParameters changedMaxAndTargetParameters = new DeviceParameters();
-        changedMaxAndTargetParameters.setTargetApiLevel(16);
-        changedMaxAndTargetParameters.setMaxApiLevel(25);
-        int expectedDevicesSelecedAfterSetMinAndTagetApiLevel = 1;
+        selectorBuilder.maxApi(25).targetApi(16);
+        DeviceSelector changedApiCriterionSelector = selectorBuilder.build();
 
-        List<IDevice> receivedDevicesTargetApiLevel = testDevicePoolDao.getDevices(changedMaxAndTargetParameters);
+        expectedDevicesSelected = 1;
+
+        List<IDevice> receivedDevicesTargetApiLevel = testDevicePoolDao.getDevices(changedApiCriterionSelector, false);
 
         assertEquals(SELECTED_DEVICES_COUNT_DIFFERENT_THAN_EXPECTED_ERROR_MESSAGE,
-                     expectedDevicesSelecedAfterSetMinAndTagetApiLevel,
+                     expectedDevicesSelected,
                      receivedDevicesTargetApiLevel.size());
     }
 

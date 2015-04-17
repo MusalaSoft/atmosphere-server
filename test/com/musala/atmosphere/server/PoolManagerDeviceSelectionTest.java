@@ -24,8 +24,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.musala.atmosphere.commons.DeviceInformation;
 import com.musala.atmosphere.commons.RoutingAction;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
-import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceOs;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelectorBuilder;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceType;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.sa.exceptions.NoAvailableDeviceFoundException;
@@ -182,9 +183,9 @@ public class PoolManagerDeviceSelectionTest {
 
     @AfterClass
     public static void tearDown() throws Exception {
-        Class<?> packageManagerClass = PoolManager.class;
+        Class<?> poolManagerClass = PoolManager.class;
 
-        Method deviceIdBuild = packageManagerClass.getDeclaredMethod(BUILD_DEVICE_IDENTIFIER_METHOD_NAME,
+        Method deviceIdBuild = poolManagerClass.getDeclaredMethod(BUILD_DEVICE_IDENTIFIER_METHOD_NAME,
                                                                      String.class,
                                                                      String.class);
         deviceIdBuild.setAccessible(true);
@@ -217,24 +218,24 @@ public class PoolManagerDeviceSelectionTest {
 
     @Test(expected = NoAvailableDeviceFoundException.class)
     public void getNotPresentDevice() throws Exception {
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setOs(DeviceOs.JELLY_BEAN_MR1_4_2_1);
-        parameters.setDeviceType(DeviceType.DEVICE_ONLY);
-        parameters.setRam(256);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().deviceOs(DeviceOs.JELLY_BEAN_MR1_4_2_1)
+                                                                           .deviceType(DeviceType.DEVICE_ONLY)
+                                                                           .ramCapacity(256);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
         List<IDevice> deviceList = Arrays.asList();
-        when(devicePoolDao.getDevices(eq(parameters))).thenReturn(deviceList);
+        when(devicePoolDao.getDevices(eq(deviceSelector), eq(false))).thenReturn(deviceList);
 
-        poolManager.allocateDevice(parameters);
+        poolManager.allocateDevice(deviceSelector);
     }
 
     @Test
     public void getPresentDeviceFirstTestOne() throws Exception {
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setRam(128);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().ramCapacity(128);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
-        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
-        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+        when(devicePoolDao.getDevices(eq(deviceSelector), eq(false))).thenReturn(deviceList);
+        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(deviceSelector);
         String deviceId = deviceDescriptor.getDeviceId();
 
         doNothing().when(devicePoolDao).update(firstDevice);
@@ -246,13 +247,13 @@ public class PoolManagerDeviceSelectionTest {
 
     @Test
     public void getPresentDeviceFirstTestTwo() throws Exception {
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setDeviceType(DeviceType.EMULATOR_PREFERRED);
-        parameters.setResolutionHeight(600);
-        parameters.setResolutionWidth(800);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.EMULATOR_PREFERRED)
+                                                                           .screenHeight(600)
+                                                                           .screenWidth(800);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
-        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
-        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+        when(devicePoolDao.getDevices(eq(deviceSelector), eq(false))).thenReturn(deviceList);
+        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(deviceSelector);
         String deviceId = deviceDescriptor.getDeviceId();
 
         doNothing().when(devicePoolDao).update(firstDevice);
@@ -265,11 +266,11 @@ public class PoolManagerDeviceSelectionTest {
 
     @Test
     public void getPresentDeviceFirstTestThree() throws Exception {
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setRam(128);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().ramCapacity(128);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
-        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
-        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+        when(devicePoolDao.getDevices(eq(deviceSelector), eq(false))).thenReturn(deviceList);
+        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(deviceSelector);
         String deviceId = deviceDescriptor.getDeviceId();
 
         doNothing().when(devicePoolDao).update(firstDevice);
@@ -282,12 +283,12 @@ public class PoolManagerDeviceSelectionTest {
 
     @Test
     public void getPresentDeviceSecond() throws Exception {
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setDpi(240);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().screenDpi(240);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
         List<IDevice> deviceList = Arrays.asList(secondDevice);
-        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
-        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+        when(devicePoolDao.getDevices(eq(deviceSelector), eq(false))).thenReturn(deviceList);
+        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(deviceSelector);
         String deviceId = deviceDescriptor.getDeviceId();
 
         doNothing().when(devicePoolDao).update(secondDevice);
@@ -300,13 +301,13 @@ public class PoolManagerDeviceSelectionTest {
 
     @Test
     public void getPresentDeviceThird() throws Exception {
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setDeviceType(DeviceType.DEVICE_ONLY);
-        parameters.setRam(512);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().ramCapacity(512)
+                                                                           .deviceType(DeviceType.DEVICE_ONLY);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
         List<IDevice> deviceList = Arrays.asList(thirdDevice);
-        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
-        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+        when(devicePoolDao.getDevices(eq(deviceSelector), eq(false))).thenReturn(deviceList);
+        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(deviceSelector);
         String deviceId = deviceDescriptor.getDeviceId();
 
         doNothing().when(devicePoolDao).update(thirdDevice);
@@ -319,13 +320,13 @@ public class PoolManagerDeviceSelectionTest {
 
     @Test
     public void getPresentDeviceFourth() throws Exception {
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setDeviceType(DeviceType.EMULATOR_ONLY);
-        parameters.setDpi(180);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.EMULATOR_ONLY)
+                                                                           .screenDpi(180);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
         List<IDevice> deviceList = Arrays.asList(fourthDevice);
-        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
-        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+        when(devicePoolDao.getDevices(eq(deviceSelector), eq(false))).thenReturn(deviceList);
+        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(deviceSelector);
         String deviceId = deviceDescriptor.getDeviceId();
 
         doNothing().when(devicePoolDao).update(fourthDevice);
@@ -338,13 +339,13 @@ public class PoolManagerDeviceSelectionTest {
 
     @Test
     public void getPresentDeviceWithCamera() throws Exception {
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setDeviceType(DeviceType.EMULATOR_ONLY);
-        parameters.setCameraPresent(true);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.EMULATOR_ONLY)
+                                                                           .isCameraAvailable(true);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
         List<IDevice> deviceList = Arrays.asList(fourthDevice);
-        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
-        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+        when(devicePoolDao.getDevices(eq(deviceSelector), eq(false))).thenReturn(deviceList);
+        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(deviceSelector);
         String deviceId = deviceDescriptor.getDeviceId();
 
         doNothing().when(devicePoolDao).update(fourthDevice);
@@ -357,12 +358,12 @@ public class PoolManagerDeviceSelectionTest {
 
     @Test
     public void getPresentDeviceWithoutCamera() throws Exception {
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setCameraPresent(false);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().isCameraAvailable(false);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
         List<IDevice> deviceList = Arrays.asList(fifthDevice);
-        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
-        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(parameters);
+        when(devicePoolDao.getDevices(eq(deviceSelector), eq(false))).thenReturn(deviceList);
+        DeviceAllocationInformation deviceDescriptor = poolManager.allocateDevice(deviceSelector);
         String deviceId = deviceDescriptor.getDeviceId();
 
         doNothing().when(devicePoolDao).update(fifthDevice);
@@ -375,15 +376,15 @@ public class PoolManagerDeviceSelectionTest {
 
     @Test(expected = NoAvailableDeviceFoundException.class)
     public void getMissingDeviceWithCamera() throws Exception {
-        DeviceParameters parameters = new DeviceParameters();
-        parameters.setDeviceType(DeviceType.DEVICE_ONLY);
-        parameters.setDpi(0xdeadbeef);
-        parameters.setCameraPresent(true);
+        DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.DEVICE_ONLY)
+                                                                           .screenDpi(144)
+                                                                           .isCameraAvailable(true);
+        DeviceSelector deviceSelector = selectorBuilder.build();
 
         List<IDevice> deviceList = Arrays.asList();
-        when(devicePoolDao.getDevices(eq(parameters), eq(false))).thenReturn(deviceList);
+        when(devicePoolDao.getDevices(eq(deviceSelector), eq(false))).thenReturn(deviceList);
 
-        poolManager.allocateDevice(parameters);
+        poolManager.allocateDevice(deviceSelector);
     }
 
     private void assertCorrectDeviceFetched(String expectedDeviceSerialNumber,
