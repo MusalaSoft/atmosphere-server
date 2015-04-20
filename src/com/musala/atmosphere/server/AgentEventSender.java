@@ -32,4 +32,9 @@ public class AgentEventSender extends UnicastRemoteObject implements IAgentEvent
         serverManager.onAgentDeviceListChanged(agentId, changedDeviceRmiId, isNowAvailable);
     }
 
+    @Override
+    public void updateDevice(String agentId, String changedDeviceRmiId) throws RemoteException {
+        serverManager.onDeviceInformationChanged(agentId, changedDeviceRmiId);
+    }
+
 }

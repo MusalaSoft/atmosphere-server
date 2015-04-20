@@ -74,7 +74,7 @@ public class ServerManager implements Subscriber {
      *         - if an attempt is made to remove non-existing device
      */
     void onAgentDeviceListChanged(String onAgent, String changedDeviceRmiId, boolean isConnected)
-        throws RemoteException,
+            throws RemoteException,
             CommandFailedException,
             NotBoundException {
         if (!agentAllocator.hasAgent(onAgent)) {
@@ -97,6 +97,26 @@ public class ServerManager implements Subscriber {
                     LOGGER.error(errorMessage);
                 }
             }
+        }
+    }
+
+    /**
+     * Updates device's information.
+     * 
+     * @param agentId
+     *        - ID of the Agent to which the device is connected
+     * @param changedDeviceRmiId
+     *        - the unique RMI identifier of the device
+     */
+    void onDeviceInformationChanged(String agentId, String changedDeviceRmiId) {
+        if (!agentAllocator.hasAgent(agentId)) {
+            // The agent which sends the event is not registered on server
+            LOGGER.warn("Received device state change event from an Agent that is not registered on the server ("
+                    + agentId + ").");
+        } else {
+            String deviceToUpdateId = rmiIdToDeviceId.get(changedDeviceRmiId);
+            Registry agentRegistry = agentAllocator.getAgentRegistry(agentId);
+            poolManager.updateDevice(changedDeviceRmiId, deviceToUpdateId, agentRegistry);
         }
     }
 
