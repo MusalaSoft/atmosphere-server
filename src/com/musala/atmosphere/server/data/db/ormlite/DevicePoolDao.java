@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.DeviceInformation;
-import com.musala.atmosphere.commons.cs.clientbuilder.DeviceParameters;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
@@ -53,16 +52,6 @@ public class DevicePoolDao implements IDevicePoolDao {
     }
 
     @Override
-    public List<IDevice> getDevices(DeviceParameters parameters) throws DevicePoolDaoException {
-        try {
-            return deviceDao.filterDevicesByParameters(parameters);
-        } catch (DeviceDaoException e) {
-            String message = String.format("Failed to fetch devices with the requested parameters %s.", parameters);
-            throw new DevicePoolDaoException(message, e);
-        }
-    }
-
-    @Override
     public IDevice getDevice(String id) throws DevicePoolDaoException {
         try {
             return deviceDao.selectById(id);
@@ -84,18 +73,6 @@ public class DevicePoolDao implements IDevicePoolDao {
         }
 
         return selectedDevice != null;
-    }
-
-    @Override
-    public boolean hasDevice(DeviceParameters parameters) {
-        try {
-            List<IDevice> devices = deviceDao.filterDevicesByParameters(parameters);
-            return !devices.isEmpty();
-        } catch (DeviceDaoException e) {
-            String message = String.format("Device with parameters %s was not found.", parameters);
-            LOGGER.error(message, e);
-            return false;
-        }
     }
 
     @Override
@@ -149,32 +126,6 @@ public class DevicePoolDao implements IDevicePoolDao {
             String message = String.format("Failed to update device with serial number %s.",
                                            deviceInformation.getSerialNumber());
             throw new DevicePoolDaoException(message, e);
-        }
-    }
-
-    @Override
-    public List<IDevice> getDevices(DeviceParameters parameters, boolean isAllocated) throws DevicePoolDaoException {
-        try {
-            return deviceDao.filterDevicesByParameters(parameters, isAllocated);
-        } catch (DeviceDaoException e) {
-            String allocation = isAllocated ? "allocated" : "free";
-            String message = String.format("Failed to fetch %s devices with the requested parameters %s.",
-                                           allocation,
-                                           parameters);
-            throw new DevicePoolDaoException(message, e);
-        }
-    }
-
-    @Override
-    public boolean hasDevice(DeviceParameters parameters, boolean isAllocated) {
-        try {
-            List<IDevice> devices = deviceDao.filterDevicesByParameters(parameters, isAllocated);
-            return !devices.isEmpty();
-        } catch (DeviceDaoException e) {
-            String allocation = isAllocated ? "Allocated" : "Free";
-            String message = String.format("%s device with parameters %s was not found.", allocation, parameters);
-            LOGGER.error(message, e);
-            return false;
         }
     }
 
