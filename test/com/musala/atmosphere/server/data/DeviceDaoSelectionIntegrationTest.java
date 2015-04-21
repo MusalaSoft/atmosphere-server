@@ -280,8 +280,8 @@ public class DeviceDaoSelectionIntegrationTest {
     }
 
     @Test
-    public void testFilterDevicesWithNoPreferenceWhenNoFreeDevicesAreAvailable() throws Exception {
-        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.NO_PREFERENCE);
+    public void testFilterDevicesWhenNoFreeDevicesAreAvailable() throws Exception {
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder();
         DeviceSelector deviceSelector = deviceSelectorBuilder.build();
         allocateDevices(NONEXISTENT_DEVICE_SERIAL_NUMBER);
 
