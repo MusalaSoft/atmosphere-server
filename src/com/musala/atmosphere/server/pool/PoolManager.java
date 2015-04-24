@@ -191,32 +191,15 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
         PasskeyAuthority.validatePasskey(currentPasskey, deviceId);
 
-        long passkey = PasskeyAuthority.generatePasskey(currentPasskey);
-
         try {
             IDevice device = devicePoolDao.getDevice(deviceId);
-            device.setPasskey(passkey);
-            devicePoolDao.update(device);
+
+            if (device != null) {
+                releaseDevice(device, currentPasskey);
+            }
         } catch (DevicePoolDaoException e) {
-            String errorMessage = String.format("Failed to reset the passkey of a device.");
-            throw new DeviceNotFoundException(errorMessage);
-        }
-
-        try {
-            releaseDevice(deviceId);
-        } catch (DevicePoolDaoException e) {
-            String errorMessage = String.format("Failed to release a device.");
-            throw new DeviceNotFoundException(errorMessage);
-        }
-    }
-
-    public void releaseDevice(String deviceId) throws RemoteException, DevicePoolDaoException {
-
-        IDevice device = devicePoolDao.getDevice(deviceId);
-
-        if (device != null) {
-            device.release();
-            devicePoolDao.update(device);
+            String errorMessage = String.format("Failed to release device with ID %s.", deviceId);
+            LOGGER.fatal(errorMessage);
         }
     }
 
@@ -269,15 +252,20 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
         return allocatedDeviceDescriptor;
     }
 
-    public void inform(DevicePoolDaoCreatedEvent event) {
-        IDataSourceProvider dataSoureceProvider = new DataSourceProvider();
-        devicePoolDao = dataSoureceProvider.getDevicePoolDao();
-    }
+    /**
+     * Releases allocated device by its ID and returns it in the pool.
+     * 
+     * @param deviceId
+     *        - unique identifier for device matching
+     * @throws DevicePoolDaoException
+     *         when the data source is not available
+     */
+    public void releaseDevice(String deviceId) throws DevicePoolDaoException {
+        IDevice device = devicePoolDao.getDevice(deviceId);
 
-    private static String buildDeviceIdentifier(String onAgentId, String deviceSerialNumber) {
-        String deviceIdentifier = String.format(DEVICE_RMI_ID_FORMAT, onAgentId, deviceSerialNumber);
-
-        return deviceIdentifier;
+        if (device != null) {
+            releaseDevice(device, device.getPasskey());
+        }
     }
 
     /**
@@ -323,5 +311,35 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
                                                                  deviceId);
             LOGGER.warn(devicePoolDaoExceptionMessage, e);
         }
+    }
+
+    public void inform(DevicePoolDaoCreatedEvent event) {
+        IDataSourceProvider dataSoureceProvider = new DataSourceProvider();
+        devicePoolDao = dataSoureceProvider.getDevicePoolDao();
+    }
+
+    private static String buildDeviceIdentifier(String onAgentId, String deviceSerialNumber) {
+        String deviceIdentifier = String.format(DEVICE_RMI_ID_FORMAT, onAgentId, deviceSerialNumber);
+
+        return deviceIdentifier;
+    }
+
+    /**
+     * Releases {@link IDevice device instance} and updates its passkey used for requests validation.
+     * 
+     * @param device
+     *        - {@link IDevice device instance} to be released
+     * @param currentPasskey
+     *        - currently used invocation passkey for this device
+     * @throws DevicePoolDaoException
+     *         when data source for device retrieving is not available or operations with data source fails
+     */
+    private void releaseDevice(IDevice device, long currentPasskey) throws DevicePoolDaoException {
+        long passkey = PasskeyAuthority.generatePasskey(currentPasskey);
+
+        device.setPasskey(passkey);
+        device.release();
+
+        devicePoolDao.update(device);
     }
 }

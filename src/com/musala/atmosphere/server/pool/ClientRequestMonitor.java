@@ -2,6 +2,7 @@ package com.musala.atmosphere.server.pool;
 
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -44,7 +45,8 @@ public class ClientRequestMonitor {
     void registerDevice(String deviceId) {
         deviceIdToTimeout.put(deviceId, STARTING_TIMEOUT);
 
-        LOGGER.info("ClientRequestMonitor registered new device with RMI ID [" + deviceId + "].");
+        String message = String.format("ClientRequestMonitor registered new device with RMI ID %s.", deviceId);
+        LOGGER.info(message);
     }
 
     /**
@@ -54,12 +56,16 @@ public class ClientRequestMonitor {
      *        - the device ID
      */
     void unregisterDevice(String deviceId) {
+        String message;
+
         if (deviceIdToTimeout.containsKey(deviceId)) {
             deviceIdToTimeout.remove(deviceId);
-            LOGGER.info("ClientRequestMonitor unregistered device: " + deviceId);
+            message = String.format("ClientRequestMonitor unregistered device with ID %s", deviceId);
         } else {
-            LOGGER.error("Trying to unregister device " + deviceId + " which was not registered for monitoring.");
+            message = String.format("Trying to unregister device %s which was not registered for monitoring.", deviceId);
         }
+
+        LOGGER.info(message);
     }
 
     /**
@@ -131,17 +137,21 @@ public class ClientRequestMonitor {
          * @throws RemoteException
          */
         private void updateTimeoutValues() throws RemoteException {
-            for (Entry<String, Long> entry : deviceIdToTimeout.entrySet()) {
+            Iterator<Entry<String, Long>> iterator = deviceIdToTimeout.entrySet().iterator();
+
+            while (iterator.hasNext()) {
+                Entry<String, Long> entry = iterator.next();
                 String deviceId = entry.getKey();
                 long timeout = entry.getValue();
 
                 if (timeout >= DEVICE_REQUEST_TIMEOUT) {
-                    LOGGER.info("Device proxy with RMI ID: " + deviceId + " released due to invocation timeout.");
-                    entry.setValue(STARTING_TIMEOUT);
+                    String message = String.format("Device proxy with RMI ID %s released due to invocation timeout.",
+                                                   deviceId);
+                    LOGGER.info(message);
 
                     try {
                         poolManager.releaseDevice(deviceId);
-                        deviceIdToTimeout.remove(deviceId);
+                        iterator.remove();
                     } catch (DevicePoolDaoException e) {
                         String errorMessage = String.format("Releasing device due to invocation timeout with ID %s failed.",
                                                             deviceId);
