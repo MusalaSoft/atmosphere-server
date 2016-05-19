@@ -10,12 +10,13 @@ import com.musala.atmosphere.server.data.db.constant.Property;
 /**
  * Class that manages operation with the data source, such as initializing and migrating data, creating objects for data
  * access.
- * 
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 public class DataSourceManager implements IDataSourceManager {
-    private static final String MIGRATIONS_LOCATION_PATTERN = "filesystem:%s%sresources%sdb%smigration";
+    private static final String MIGRATIONS_LOCATION_PATTERN = "filesystem:resources" + File.separator + "db"
+            + File.separator + "migration";
 
     private DataSourceCallback dataSourceCallback;
 
@@ -34,12 +35,7 @@ public class DataSourceManager implements IDataSourceManager {
         flywayDataHandler.clean();
         flywayDataHandler.setCallbacks(dataSourceCallback);
 
-        String currentDir = System.getProperty("user.dir");
-        String migrationsLocation = String.format(MIGRATIONS_LOCATION_PATTERN,
-                                                  currentDir,
-                                                  File.separator,
-                                                  File.separator,
-                                                  File.separator);
+        String migrationsLocation = String.format(MIGRATIONS_LOCATION_PATTERN, File.separator, File.separator);
         flywayDataHandler.setLocations(migrationsLocation);
 
         flywayDataHandler.migrate();

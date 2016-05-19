@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNull;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.data.db.flyway.DataSourceCallback;
 import com.musala.atmosphere.server.data.db.flyway.DataSourceManager;
-import com.musala.atmosphere.server.data.db.ormlite.AgentDao;
 import com.musala.atmosphere.server.data.model.ormilite.Agent;
 import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
@@ -16,9 +15,9 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**
  * Class containing assertions and other useful methods implementing logic for the {@link AgentDao} integration tests.
- * 
+ *
  * @author denis.bialev
- * 
+ *
  */
 public class AgentDaoTestUtils {
 
@@ -39,10 +38,10 @@ public class AgentDaoTestUtils {
 
     /**
      * Initializes the database and creates an {@link AgentDao} instance.
-     * 
+     *
      * @return <@link AgentDao> that manages the table of the agents
      */
-    public void setUpDatabase(){
+    public void setUpDatabase() {
         eventService = new ServerEventService();
         dataSourceProvider = new DataSourceProvider();
 
@@ -61,7 +60,7 @@ public class AgentDaoTestUtils {
 
     /**
      * Asserts that adding of the given agent, in the database, is successful.
-     * 
+     *
      * @param agentToAdd
      *        - the agent that will be added in the database.
      * @throws AgentDaoException
@@ -76,7 +75,7 @@ public class AgentDaoTestUtils {
 
     /**
      * Asserts that removing of the given agent, from the database, is successful.
-     * 
+     *
      * @param agentToRemove
      *        - the agent that will be removed from the database
      * @throws AgentDaoException
@@ -92,7 +91,7 @@ public class AgentDaoTestUtils {
 
     /**
      * Asserts that selecting of an agent that is present in the database is successful.
-     * 
+     *
      * @param testAgentId
      *        - id of the agent that will be selected
      * @throws AgentDaoException
@@ -108,7 +107,7 @@ public class AgentDaoTestUtils {
 
     /**
      * Asserts that selecting of an agent that is not present in the database returns <code>null</code>.
-     * 
+     *
      * @param testAgentId
      *        - id of the agent that will be selected
      * @throws AgentDaoException

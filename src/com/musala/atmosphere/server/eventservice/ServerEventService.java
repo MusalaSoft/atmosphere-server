@@ -20,9 +20,9 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 /**
  * Class, which brokers events between subscriber and publisher. The service manages events, received and published on
  * the server.
- * 
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 public class ServerEventService {
     private static Logger LOGGER = Logger.getLogger(ServerEventService.class);
@@ -37,7 +37,7 @@ public class ServerEventService {
 
     /**
      * Publishes an event to the server event service, that is managed and sent to the subscribers.
-     * 
+     *
      * @param event
      *        - event to be published
      */
@@ -65,7 +65,7 @@ public class ServerEventService {
     /**
      * Adds a subscription on the event service for the requested subscriber for events from the given type and matching
      * the filter.
-     * 
+     *
      * @param eventType
      *        - type of the published event
      * @param filter
@@ -93,10 +93,10 @@ public class ServerEventService {
 
     /**
      * Adds a subscription on the event service for the requested subscriber for events from the given type.
-     * 
+     *
      * @param eventType
      *        - type of the published event
-     * 
+     *
      * @param subscriber
      *        - object, subscribed for the given eventType
      */
@@ -107,7 +107,7 @@ public class ServerEventService {
     /**
      * Removes the subscription from the event service for the requested subscriber for events from the given type and
      * matching the filter.
-     * 
+     *
      * @param eventType
      *        - type of the published event
      * @param filter

@@ -23,14 +23,13 @@ import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.dao.exception.AgentDaoRuntimeException;
 import com.musala.atmosphere.server.data.db.constant.AgentColumnName;
 import com.musala.atmosphere.server.data.db.constant.Property;
-import com.musala.atmosphere.server.data.db.ormlite.AgentDao;
 import com.musala.atmosphere.server.data.model.IAgent;
 import com.musala.atmosphere.server.data.model.ormilite.Agent;
 
 /**
- * 
+ *
  * @author denis.bialev
- * 
+ *
  */
 public class AgentDaoIntegrationTest {
 
@@ -196,7 +195,9 @@ public class AgentDaoIntegrationTest {
         List<IAgent> receivedAgentsList = testAgentDao.getPresentAgents();
 
         IAgent receivedAgent = receivedAgentsList.get(0);
-        assertEquals("The received agent is different from the one added in the data source.", receivedAgent, testAgent);
+        assertEquals("The received agent is different from the one added in the data source.",
+                     receivedAgent,
+                     testAgent);
     }
 
     @Test

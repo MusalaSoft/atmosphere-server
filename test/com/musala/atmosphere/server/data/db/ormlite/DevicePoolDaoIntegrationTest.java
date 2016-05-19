@@ -33,9 +33,9 @@ import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.Dev
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**
- * 
+ *
  * @author denis.bialev
- * 
+ *
  */
 public class DevicePoolDaoIntegrationTest {
 
@@ -363,7 +363,8 @@ public class DevicePoolDaoIntegrationTest {
 
         firstAddedDevice.allocate();
         testDevicePoolDao.update(firstAddedDevice);
-        assertTrue("Can't find allocated Device when it is present.", testDevicePoolDao.hasDevice(deviceSelector, true));
+        assertTrue("Can't find allocated Device when it is present.",
+                   testDevicePoolDao.hasDevice(deviceSelector, true));
         assertFalse("Found not allocated Device when it is not present.",
                     testDevicePoolDao.hasDevice(deviceSelector, false));
     }
@@ -692,7 +693,7 @@ public class DevicePoolDaoIntegrationTest {
 
     /**
      * Asserts that a Device is successfully added in the Database.
-     * 
+     *
      * @param agentId
      *        - Agent's ID of the added Device
      * @param deviceId
@@ -717,7 +718,8 @@ public class DevicePoolDaoIntegrationTest {
                      addedDevice.getInformation());
 
         Agent addedDeviceAgent = (Agent) testAgentDao.selectByAgentId(agentId);
-        assertTrue(String.format(agentUpdatedMessage, deviceId), addedDeviceAgent.getDevices().contains(expectedDevice));
+        assertTrue(String.format(agentUpdatedMessage, deviceId),
+                   addedDeviceAgent.getDevices().contains(expectedDevice));
         Device selectedDevice = (Device) testDeviceDao.selectById(deviceId);
         assertEquals(String.format(deviceDaoUpdatedMessage, deviceId), addedDevice, selectedDevice);
         ;

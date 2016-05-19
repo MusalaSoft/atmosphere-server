@@ -30,9 +30,9 @@ import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.Dev
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**
- * 
+ *
  * @author delyan.dimitrov
- * 
+ *
  */
 public class DeviceDaoIntegrationTest implements Subscriber {
     private static final String[] TEST_DEVICE_SERIAL_NUMBERS = {"test1", "test2"};

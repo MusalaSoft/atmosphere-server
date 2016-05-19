@@ -31,9 +31,9 @@ import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.Dev
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**
- * 
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 public class DeviceDaoSelectionIntegrationTest {
     private static final int[] NONEXISTENT_DEVICE_TARGET_API_LEVELS = {13, 20};

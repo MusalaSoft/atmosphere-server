@@ -34,12 +34,13 @@ import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentDisconnectedEvent;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
+import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
 
 /**
- * 
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 public class ServerManagerIntegrationTest {
     private static final String AGENT_IP = "localhost";
@@ -115,6 +116,7 @@ public class ServerManagerIntegrationTest {
         }
 
         eventService = new ServerEventService();
+        eventService.subscribe(AgentDaoCreatedEvent.class, new AgentAllocator());
         dataSourceManager = new DataSourceManager(new DataSourceCallback());
         dataSourceProvider = new DataSourceProvider();
 

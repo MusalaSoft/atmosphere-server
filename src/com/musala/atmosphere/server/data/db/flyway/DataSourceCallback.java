@@ -10,9 +10,9 @@ import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSou
 
 /**
  * Class that receives callback functions after executing actions with the data source.
- * 
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 public class DataSourceCallback implements FlywayCallback {
     private ServerEventService eventService;

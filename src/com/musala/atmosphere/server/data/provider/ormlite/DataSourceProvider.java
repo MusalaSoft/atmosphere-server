@@ -26,9 +26,9 @@ import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.Dev
 /**
  * Class which creates data access objects for agent, device and device pool and publishes events to the
  * {@link ServerEventService event service} after each Dao is created.
- * 
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 public class DataSourceProvider implements IDataSourceProvider {
     private static final Logger LOGGER = Logger.getLogger(DataSourceProvider.class);
@@ -59,7 +59,7 @@ public class DataSourceProvider implements IDataSourceProvider {
 
     /**
      * Gets data access object for modifying devices in the data source.
-     * 
+     *
      * @return a {@link DeviceDao device data access object}
      */
     public DeviceDao getDeviceDao() {
@@ -69,37 +69,40 @@ public class DataSourceProvider implements IDataSourceProvider {
     /**
      * Informs data source provider for {@link DataSourceInitializedEvent event} received when data source is
      * initialized.
-     * 
+     *
      * @param event
      *        - event, which is received when data source is initialized
      */
     public void inform(DataSourceInitializedEvent event) {
         // TODO: Data AccessObjects can be passed through events.
+        // FIXME: Recreating objects is a dirty fix for unit tests. Because of the monostate pattern the fields are
+        // shared in all test classes. This resulted in an inconsistent event sending and some classed were not
+        // initialized correctly because the events were not send as expected. See #231
         try {
-            if (connectionSource == null) {
-                connectionSource = new JdbcConnectionSource(Property.DATABASE_URL);
-                keepAliveConnection = connectionSource.getReadOnlyConnection();
-            }
+            // if (connectionSource == null) {
+            connectionSource = new JdbcConnectionSource(Property.DATABASE_URL);
+            keepAliveConnection = connectionSource.getReadOnlyConnection();
+            // }
 
-            if (wrappedAgentDao == null) {
-                Dao<Agent, String> agentDao = DaoManager.createDao(connectionSource, Agent.class);
-                wrappedAgentDao = new AgentDao(agentDao);
+            // if (wrappedAgentDao == null) {
+            Dao<Agent, String> agentDao = DaoManager.createDao(connectionSource, Agent.class);
+            wrappedAgentDao = new AgentDao(agentDao);
 
-                publishDataSourceCreatedEvent(new AgentDaoCreatedEvent());
-            }
+            publishDataSourceCreatedEvent(new AgentDaoCreatedEvent());
+            // }
 
-            if (wrappedDeviceDao == null) {
-                Dao<Device, String> deviceDao = DaoManager.createDao(connectionSource, Device.class);
-                wrappedDeviceDao = new DeviceDao(deviceDao);
+            // if (wrappedDeviceDao == null) {
+            Dao<Device, String> deviceDao = DaoManager.createDao(connectionSource, Device.class);
+            wrappedDeviceDao = new DeviceDao(deviceDao);
 
-                publishDataSourceCreatedEvent(new DeviceDaoCreatedEvent());
-            }
+            publishDataSourceCreatedEvent(new DeviceDaoCreatedEvent());
+            // }
 
-            if (devicePoolDao == null) {
-                devicePoolDao = new DevicePoolDao(wrappedDeviceDao, wrappedAgentDao);
+            // if (devicePoolDao == null) {
+            devicePoolDao = new DevicePoolDao(wrappedDeviceDao, wrappedAgentDao);
 
-                publishDataSourceCreatedEvent(new DevicePoolDaoCreatedEvent());
-            }
+            publishDataSourceCreatedEvent(new DevicePoolDaoCreatedEvent());
+            // }
         } catch (SQLException e) {
             LOGGER.error("Connection to the data source failed.", e);
         }

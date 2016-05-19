@@ -25,9 +25,9 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**
  * Keeps track of the connected agents and is responsible for agent allocation.
- * 
+ *
  * @author yordan.petrov
- * 
+ *
  */
 public class AgentAllocator implements Subscriber {
     private static Logger LOGGER = Logger.getLogger(AgentAllocator.class.getCanonicalName());
@@ -38,7 +38,7 @@ public class AgentAllocator implements Subscriber {
 
     /**
      * Registers that an agent has connected to the server.
-     * 
+     *
      * @param agentManager
      *        - the {@link IAgentManager} of the connected agent.
      * @param agentRegistry
@@ -65,7 +65,7 @@ public class AgentAllocator implements Subscriber {
 
     /**
      * Unregisters an agent that has been disconnected.
-     * 
+     *
      * @param agentId
      *        - the unique identifier of the agent.
      * @throws AgentDaoException
@@ -78,7 +78,7 @@ public class AgentAllocator implements Subscriber {
 
     /**
      * Gets the RMI {@link Registry registry} of connected agent by a given unique agent identifier.
-     * 
+     *
      * @param agentId
      *        - the unique agent identifier
      * @return the RMI {@link Registry registry} of connected agent by a given unique agent identifier
@@ -89,7 +89,7 @@ public class AgentAllocator implements Subscriber {
 
     /**
      * Gets the {@link IAgentManager manager} of connected agent by a given unique agent identifier.
-     * 
+     *
      * @param agentId
      *        - the unique agent identifier.
      * @return the {@link IAgentManager manager}of connected agent by a given unique agent identifier.
@@ -112,7 +112,7 @@ public class AgentAllocator implements Subscriber {
 
     /**
      * Checks whether an agent with a given unique identifier has been registered.
-     * 
+     *
      * @param agentId
      *        - the unique agent identifier
      * @return <code>true</code> if an agent with such identifier is registered, <code>false</code> if such agent is not
@@ -124,7 +124,7 @@ public class AgentAllocator implements Subscriber {
 
     /**
      * Gets a list containing the unique identifiers of all connected agents.
-     * 
+     *
      * @return a list containing the unique identifiers of all connected agents.
      */
     public List<String> getAllConnectedAgentsIds() {
@@ -140,7 +140,7 @@ public class AgentAllocator implements Subscriber {
     /**
      * Informs agent allocator for {@link AgentDaoCreatedEvent event} received when an {@link AgentDao data access
      * object} for agents is created.
-     * 
+     *
      * @param event
      *        - event, which is received when data access object for agents is created
      */
