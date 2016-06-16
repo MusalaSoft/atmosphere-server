@@ -15,8 +15,7 @@ import com.musala.atmosphere.server.data.db.constant.Property;
  *
  */
 public class DataSourceManager implements IDataSourceManager {
-    private static final String MIGRATIONS_LOCATION_PATTERN = "filesystem:resources" + File.separator + "db"
-            + File.separator + "migration";
+    private static final String MIGRATIONS_LOCATION_PATTERN = "classpath:db/migration";
 
     private DataSourceCallback dataSourceCallback;
 
