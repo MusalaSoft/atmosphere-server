@@ -39,7 +39,6 @@ dependencies {
 sourceSets {
     main.java.srcDir 'src'
     main.resources.srcDir 'resources'
-    main.resources.include 'server.properties'
 
     test.java.srcDir 'test'
 }
