@@ -23,8 +23,8 @@ repositories {
 }
 
 dependencies {
-    compile 'com.musala.atmosphere:atmosphere-cs-commons:0.0.1'
-    compile 'com.musala.atmosphere:atmosphere-sa-commons:0.0.1'
+    compile 'com.musala.atmosphere:atmosphere-client-server-lib:0.0.1'
+    compile 'com.musala.atmosphere:atmosphere-server-agent-lib:0.0.1'
     compile 'commons-logging:commons-logging:1.2'
 
     compile 'org.flywaydb:flyway-core:3.0'
@@ -38,7 +38,7 @@ dependencies {
 
 publishing {
     publications {
-        atmosphereCommons(MavenPublication) {
+        atmosphereServer(MavenPublication) {
             groupId 'com.musala.atmosphere'
             artifactId 'atmosphere-server'
             version version
