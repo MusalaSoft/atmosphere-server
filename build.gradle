@@ -18,8 +18,9 @@ run {
 }
 
 repositories {
-    mavenCentral()
     mavenLocal()
+    jcenter()
+    mavenCentral()
 }
 
 dependencies {
