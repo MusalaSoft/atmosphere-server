@@ -5,9 +5,9 @@ import com.musala.atmosphere.server.Server;
 /**
  * A {@link ServerCommand ServerCommand} factory. Builds a {@link ServerCommand ServerCommand} For a given
  * {@link ServerConsoleCommands ServerConsoleCommands} enumeration value.
- * 
+ *
  * @author vladimir.vladimirov
- * 
+ *
  */
 public class ServerCommandFactory {
     private final Server server;
@@ -17,8 +17,9 @@ public class ServerCommandFactory {
     }
 
     /**
-     * 
+     *
      * @param consoleCommand
+     *        - a {@link ServerConsoleCommands consoleCommand} object
      * @return {@link ServerCommand ServerCommand} instance associated with the passed consoleCommand.
      */
     public ServerCommand getCommandInstance(ServerConsoleCommands consoleCommand) {

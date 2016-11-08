@@ -19,9 +19,9 @@ import com.musala.atmosphere.server.data.model.ormilite.Agent;
 /**
  * Class that provides a wrapper for ORMLite data access object manager, used for executing operations with agents from
  * the data source.
- * 
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 public class AgentDao implements IAgentDao {
     private static final Logger LOGGER = Logger.getLogger(AgentDao.class);
@@ -30,9 +30,11 @@ public class AgentDao implements IAgentDao {
 
     /**
      * Creates new AgentDao with the given data access object.
-     * 
+     *
      * @param agentDao
      *        - data access object responsible for operations with agents from the data source
+     * @throws SQLException
+     *         An exception that provides information on a database access error or other errors
      */
     public AgentDao(Dao<Agent, String> agentDao) throws SQLException {
         this.agentDao = agentDao;
@@ -87,7 +89,7 @@ public class AgentDao implements IAgentDao {
 
     /**
      * Selects an agent which matches the requested ID.
-     * 
+     *
      * @param agentId
      *        - the agent ID to select by
      * @return {@link IAgent agent} with the requested ID or <code>null</code> if such agent is missing
@@ -104,7 +106,7 @@ public class AgentDao implements IAgentDao {
     }
 
     private Agent getAgentByFieldValue(String fieldName, Object fieldValue) throws SQLException {
-        Map<String, Object> query = new HashMap<String, Object>();
+        Map<String, Object> query = new HashMap<>();
         query.put(fieldName, fieldValue);
 
         List<Agent> resultList = agentDao.queryForFieldValuesArgs(query);
@@ -131,9 +133,9 @@ public class AgentDao implements IAgentDao {
     public List<IAgent> getPresentAgents() {
         try {
             List<Agent> agentsFromDataSource = agentDao.queryForAll();
-            return new ArrayList<IAgent>(agentsFromDataSource);
+            return new ArrayList<>(agentsFromDataSource);
         } catch (SQLException e) {
-            return new ArrayList<IAgent>();
+            return new ArrayList<>();
         }
     }
 }

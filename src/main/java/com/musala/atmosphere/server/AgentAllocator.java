@@ -43,10 +43,14 @@ public class AgentAllocator implements Subscriber {
      *        - the {@link IAgentManager} of the connected agent.
      * @param agentRegistry
      *        - the RMI {@link Registry} of the connected agent.
+     * @param agentIp
+     *        - an IP address of the agent.
+     * @param agentPort
+     *        - the port on which the agent is published in RMI.
      * @throws RemoteException
-     *         - thrown when connection to agent is lost
+     *         - thrown when connection to agent is lost.
      * @throws AgentDaoException
-     *         - thrown when adding agent in the data source fails
+     *         - thrown when adding agent in the data source fails.
      */
     public void registerAgent(IAgentManager agentManager, Registry agentRegistry, String agentIp, int agentPort)
         throws RemoteException,
@@ -129,7 +133,7 @@ public class AgentAllocator implements Subscriber {
      */
     public List<String> getAllConnectedAgentsIds() {
         List<IAgent> agentsList = agentDao.getPresentAgents();
-        List<String> connectedAgentsIds = new ArrayList<String>();
+        List<String> connectedAgentsIds = new ArrayList<>();
         for (IAgent agent : agentsList) {
             connectedAgentsIds.add(agent.getAgentId());
         }

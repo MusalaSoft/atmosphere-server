@@ -12,9 +12,9 @@ import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 
 /**
  * Class whose purpose is to generate and validate passkeys.
- * 
+ *
  * @author yavor.stankov
- * 
+ *
  */
 public class PasskeyAuthority {
     private static final Random generator = new Random();
@@ -23,7 +23,7 @@ public class PasskeyAuthority {
 
     /**
      * Generates new passkey.
-     * 
+     *
      * @return the newly generated passkey
      */
     public static long generatePasskey() {
@@ -32,7 +32,7 @@ public class PasskeyAuthority {
 
     /**
      * Generates new passkey, different from the device's current passkey.
-     * 
+     *
      * @param oldPasskey
      *        - the device's current passkey.
      * @return the newly generated passkey.
@@ -51,13 +51,11 @@ public class PasskeyAuthority {
 
     /**
      * Validates the passkey for the given device.
-     * 
+     *
      * @param invocationPasskey
      *        - the passkey that the device should have
      * @param deviceId
      *        - the unique identifier of the device whose passkey must be validated
-     * @throws DevicePoolDaoException
-     *         if failed to get {@link IDevice} from the {@link DevicePoolDao}
      * @throws InvalidPasskeyException
      *         if the passed passkey is not valid
      * @throws DeviceNotFoundException

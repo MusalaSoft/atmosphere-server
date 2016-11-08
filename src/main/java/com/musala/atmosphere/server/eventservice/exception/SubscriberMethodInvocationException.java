@@ -3,18 +3,18 @@ package com.musala.atmosphere.server.eventservice.exception;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 
 /**
- * An {@link RuntimeException exception} thrown when informing {@link Subscriber subscriber} for certain {@link Event
- * event} fails.
- * 
+ * An {@link java.lang.RuntimeException exception} thrown when informing {@link Subscriber subscriber} for certain
+ * {@link com.musala.atmosphere.server.eventservice.event.Event event} fails.
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 public class SubscriberMethodInvocationException extends RuntimeException {
     private static final long serialVersionUID = 3325987867240575134L;
 
     /**
      * Creates new exception with the given message.
-     * 
+     *
      * @param message
      *        - message representing the error that occurred
      */
@@ -24,7 +24,7 @@ public class SubscriberMethodInvocationException extends RuntimeException {
 
     /**
      * Creates new exception with the given message and {@link Throwable throwable}.
-     * 
+     *
      * @param message
      *        - message representing the error that occurred
      * @param throwable

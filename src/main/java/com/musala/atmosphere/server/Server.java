@@ -59,8 +59,9 @@ public class Server {
 
     /**
      * Creates a Server component bound on specified in the properties file port.
-     * 
+     *
      * @throws RemoteException
+     *         - thrown when an error during the execution of a remote method call.
      */
     public Server() throws RemoteException {
         this(ServerPropertiesLoader.getPoolManagerRmiPort());
@@ -68,10 +69,11 @@ public class Server {
 
     /**
      * Creates a Server component bound on given port.
-     * 
+     *
      * @param serverPort
      *        - port on which the Pool Manager of the Server will be published in RMI.
      * @throws RemoteException
+     *         - thrown when an error during the execution of a remote method call.
      */
     public Server(int serverPort) throws RemoteException {
         serverRmiPort = serverPort;
@@ -106,8 +108,9 @@ public class Server {
 
     /**
      * Sets the server state.
-     * 
+     *
      * @param newState
+     *        - the state of the server
      */
     public void setState(ServerState newState) {
         currentServerState = newState;
@@ -148,7 +151,7 @@ public class Server {
 
     /**
      * Prints a string to the Server's console output.
-     * 
+     *
      * @param message
      *        - the message to be printed.
      */
@@ -158,7 +161,7 @@ public class Server {
 
     /**
      * Prints a line to the Server's console output.
-     * 
+     *
      * @param message
      *        - the message to be printed.
      */
@@ -168,7 +171,7 @@ public class Server {
 
     /**
      * Executes a passed command from the console.
-     * 
+     *
      * @param passedShellCommand
      *        - the passed shell command.
      * @throws IOException
@@ -192,7 +195,7 @@ public class Server {
 
     /**
      * Evaluates a passed command and calls the appropriate Server method.
-     * 
+     *
      * @param commandName
      *        - command for execution.
      * @param params
@@ -211,9 +214,8 @@ public class Server {
     }
 
     /**
-     * Reads one line from the server's console. For more information see
-     * {@link com.musala.atmosphere.server.ServerConsole#readLine() ServerConsole.readLine()}
-     * 
+     * Reads one line from the server's console.
+     *
      * @return the first line in the console buffer as a String.
      * @throws IOException
      *         - when a console reading error occurs.
@@ -224,7 +226,7 @@ public class Server {
     }
 
     /**
-     * 
+     *
      * @return true if the server is closed, false otherwise.
      */
     private boolean isClosed() {
@@ -233,7 +235,7 @@ public class Server {
 
     /**
      * Checks if given agent is connected to the server.
-     * 
+     *
      * @param agentId
      *        - id of agent we are interested in.
      * @return true, if agent with the passed id is connected to the server, and false otherwise.
@@ -265,7 +267,7 @@ public class Server {
 
     /**
      * Waits for expected agent to connect to the server.
-     * 
+     *
      * @param agentId
      *        - id of agent
      */

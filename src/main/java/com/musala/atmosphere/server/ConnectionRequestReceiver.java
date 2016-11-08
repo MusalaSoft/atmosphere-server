@@ -14,9 +14,9 @@ import com.musala.atmosphere.commons.sa.IConnectionRequestReceiver;
 import com.musala.atmosphere.commons.util.Pair;
 
 /**
- * 
+ *
  * @author georgi.gaydarov
- * 
+ *
  */
 public class ConnectionRequestReceiver extends UnicastRemoteObject implements IConnectionRequestReceiver {
 
@@ -35,15 +35,16 @@ public class ConnectionRequestReceiver extends UnicastRemoteObject implements IC
 
     private boolean connectingThreadRunFlag = true;
 
-    private List<Pair<String, Integer>> connectionQueue = new CopyOnWriteArrayList<Pair<String, Integer>>();
+    private List<Pair<String, Integer>> connectionQueue = new CopyOnWriteArrayList<>();
 
     /**
      * Constructs a new request receiver, that commands a passed {@link ServerManager ServerManager} to connect to a
      * remote Agent.
-     * 
+     *
      * @param poolToCommand
      *        {@link ServerManager ServerManager} instance that will be commanded.
      * @throws RemoteException
+     *         - thrown when an error during the execution of a remote method call.
      */
     public ConnectionRequestReceiver(ServerManager poolToCommand) throws RemoteException {
         commandedPool = poolToCommand;
@@ -87,7 +88,7 @@ public class ConnectionRequestReceiver extends UnicastRemoteObject implements IC
     public void postConnectionRequest(int toPort) throws RemoteException {
         try {
             String invokerIp = RemoteServer.getClientHost();
-            Pair<String, Integer> agentAddress = new Pair<String, Integer>(invokerIp, toPort);
+            Pair<String, Integer> agentAddress = new Pair<>(invokerIp, toPort);
             connectionQueue.add(agentAddress);
             LOGGER.info("Received connection request to (" + invokerIp + ":" + toPort + ")");
         } catch (ServerNotActiveException e) {

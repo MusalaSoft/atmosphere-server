@@ -5,9 +5,9 @@ import java.util.List;
 
 /**
  * Enumerates all possible first arguments of shell commands available for Server.
- * 
+ *
  * @author vladimir.vladimirov
- * 
+ *
  */
 public enum ServerConsoleCommands {
     SERVER_RUN("run", "run", "Runs the Server."),
@@ -52,9 +52,11 @@ public enum ServerConsoleCommands {
      * command there is a String which is in the following format: "<b>Command format</b> - <b>Command Description</b>"
      * where <b>"Command format"</b> is pattern how to write the given command and what arguments it can be passed,
      * while the <b>"Command description"</b> says what the command does.
+     *
+     * @return - a list with all the commands that can be passed to the console to manage the Server.
      */
     public static List<String> getListOfCommands() {
-        List<String> allCommandsFullInformation = new ArrayList<String>();
+        List<String> allCommandsFullInformation = new ArrayList<>();
         for (ServerConsoleCommands currentCommand : ServerConsoleCommands.values()) {
             String description = currentCommand.getDescription();
             String syntax = currentCommand.getSyntax();
@@ -66,8 +68,9 @@ public enum ServerConsoleCommands {
 
     /**
      * Searches for command by given command name. Returns null if no corresponding command is not found.
-     * 
+     *
      * @param commandName
+     *        - the name of the command
      * @return a {@link ServerConsoleCommands ServerConsoleCommands} instance.
      */
     public static ServerConsoleCommands findCommand(String commandName) {

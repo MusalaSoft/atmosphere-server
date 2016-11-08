@@ -13,16 +13,16 @@ import com.musala.atmosphere.server.util.ServerPropertiesLoader;
 /**
  * Class that monitors the activity of all devices on the server. It tracks devices that are allocated to Client but are
  * not used, and releases them after some configurable time.
- * 
+ *
  * @author vladimir.vladimirov
- * 
+ *
  */
 public class ClientRequestMonitor {
     private static final Logger LOGGER = Logger.getLogger(ClientRequestMonitor.class.getCanonicalName());
 
     private static final Long STARTING_TIMEOUT = 0L;
 
-    private static HashMap<String, Long> deviceIdToTimeout = new HashMap<String, Long>();
+    private static HashMap<String, Long> deviceIdToTimeout = new HashMap<>();
 
     private static Thread monitorThread;
 
@@ -38,7 +38,7 @@ public class ClientRequestMonitor {
 
     /**
      * This method registers a device for monitoring when it is attached to an Agent.
-     * 
+     *
      * @param deviceId
      *        - the device ID
      */
@@ -51,7 +51,7 @@ public class ClientRequestMonitor {
 
     /**
      * This method removes a device from the {@link ClientRequestMonitor ClientRequestMonitor}.
-     * 
+     *
      * @param deviceId
      *        - the device ID
      */
@@ -62,7 +62,8 @@ public class ClientRequestMonitor {
             deviceIdToTimeout.remove(deviceId);
             message = String.format("ClientRequestMonitor unregistered device with ID %s", deviceId);
         } else {
-            message = String.format("Trying to unregister device %s which was not registered for monitoring.", deviceId);
+            message = String.format("Trying to unregister device %s which was not registered for monitoring.",
+                                    deviceId);
         }
 
         LOGGER.info(message);
@@ -70,7 +71,7 @@ public class ClientRequestMonitor {
 
     /**
      * Restarts timeout value for given device.
-     * 
+     *
      * @param deviceId
      *        - the device ID
      */
@@ -94,9 +95,9 @@ public class ClientRequestMonitor {
     /**
      * Inner runnable class for the ClientRequestMonitor. It holds all the necessary logic for regularly updating the
      * timeout values of all registered devices.
-     * 
+     *
      * @author vladimir.vladimirov
-     * 
+     *
      */
     private static class InnerRunnable implements Runnable {
         private final int DEVICE_REQUEST_TIMEOUT = ServerPropertiesLoader.getDeviceRequestTimeout();
@@ -122,7 +123,7 @@ public class ClientRequestMonitor {
 
         /**
          * Sets the termination flag on this runnable.
-         * 
+         *
          * @param terminate
          *        - true if this runnable should exit, false otherwise.
          */
@@ -133,8 +134,9 @@ public class ClientRequestMonitor {
         /**
          * Checks out all devices for timeouts and updates the map with timeout values. If some device is timed out,
          * it's been released.
-         * 
+         *
          * @throws RemoteException
+         *         - thrown when an error during the execution of a remote method call.
          */
         private void updateTimeoutValues() throws RemoteException {
             Iterator<Entry<String, Long>> iterator = deviceIdToTimeout.entrySet().iterator();

@@ -39,9 +39,9 @@ import com.musala.atmosphere.server.registrymanager.RemoteObjectRegistryManager;
 /**
  * Class which is responsible for iterating with the devices in the pool. It also sending events to
  * {@link RemoteObjectRegistryManager} when e device is add to the pool or removed.
- * 
+ *
  * @author yavor.stankov
- * 
+ *
  */
 public class PoolManager extends UnicastRemoteObject implements IClientBuilder, Subscriber {
     private static final long serialVersionUID = -5077918124351182199L;
@@ -56,14 +56,14 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
     private IDevicePoolDao devicePoolDao;
 
-    private HashMap<String, DeviceProxy> deviceIdToDeviceProxy = new HashMap<String, DeviceProxy>();
+    private HashMap<String, DeviceProxy> deviceIdToDeviceProxy = new HashMap<>();
 
     private PoolManager() throws RemoteException {
     }
 
     /**
      * Creates an instance (or gets the current if such instance already exists) of the {@link PoolManager PoolManager}.
-     * 
+     *
      * @return PoolManager Instance
      */
     public static PoolManager getInstance() {
@@ -89,12 +89,12 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
     /**
      * Refreshes the current state of the device - removes the device from the pool if it is not present on an Agent
      * anymore and remove the device from the server's RMI registry.
-     * 
+     *
      * @param deviceId
      *        - the device ID
      * @throws CommandFailedException
      *         - if failed to get device information, because of shell exception
-     * 
+     *
      * @throws RemoteException
      *         - if failed to get the device information from the DeviceProxy
      * @throws DevicePoolDaoException
@@ -119,15 +119,15 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
     /**
      * Adds a device to the pool.
-     * 
+     *
      * @param deviceRmiId
      *        - RMI string identifier for the device wrapper stub on the Agent registry
      * @param agentRegistry
      *        - the Agent {@link Registry} object that contains the device that will be added
-     * @param agentManager
-     *        - the {@link AgentManager AgentManager} that published the {@link IWrapDevice IWrapDevice} we are wrapping
+     * @param agentId
+     *        - the ID of the agent
      * @return the ID of the device in the pool if it was successfully inserted, or <code>null</code> otherwise
-     * 
+     *
      */
     public String addDevice(String deviceRmiId, Registry agentRegistry, String agentId) {
         try {
@@ -169,13 +169,17 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
     /**
      * Remove all devices from the pool.
-     * 
+     *
      * @throws CommandFailedException
+     *         - when executing command on a connected device fails
      * @throws RemoteException
+     *         - thrown when an error during the execution of a remote method call.
      * @throws DevicePoolDaoException
+     *         - this exception is thrown when operations with the data access object for the device pool in the data
+     *         source fail.
      */
     public void removeAllDevices() throws RemoteException, CommandFailedException, DevicePoolDaoException {
-        List<String> devicesToRemove = new ArrayList<String>(deviceIdToDeviceProxy.keySet());
+        List<String> devicesToRemove = new ArrayList<>(deviceIdToDeviceProxy.keySet());
         for (String deviceId : devicesToRemove) {
             removeDevice(deviceId);
         }
@@ -206,7 +210,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
     @Override
     public synchronized DeviceAllocationInformation allocateDevice(DeviceSelector deviceSelector)
         throws RemoteException {
-        List<IDevice> deviceList = new ArrayList<IDevice>();
+        List<IDevice> deviceList = new ArrayList<>();
         String errorMessage = String.format("No devices matching the requested parameters %s were found",
                                             deviceSelector);
         boolean isAllocated = false;
@@ -254,7 +258,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
     /**
      * Releases allocated device by its ID and returns it in the pool.
-     * 
+     *
      * @param deviceId
      *        - unique identifier for device matching
      * @throws DevicePoolDaoException
@@ -270,7 +274,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
     /**
      * Updates the information of the device.
-     * 
+     *
      * @param deviceRmiId
      *        - RMI string identifier for the device wrapper stub on the Agent {@link Registry}
      * @param deviceId
@@ -326,7 +330,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
     /**
      * Releases {@link IDevice device instance} and updates its passkey used for requests validation.
-     * 
+     *
      * @param device
      *        - {@link IDevice device instance} to be released
      * @param currentPasskey

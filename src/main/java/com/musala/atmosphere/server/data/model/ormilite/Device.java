@@ -14,9 +14,9 @@ import com.musala.atmosphere.server.data.model.IDevice;
 
 /**
  * Entity representing a device, storing all the useful information about it.
- * 
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 @DatabaseTable(tableName = TableName.DEVICE)
 public class Device implements IDevice {
@@ -80,7 +80,7 @@ public class Device implements IDevice {
 
     /**
      * Creates new device with the given serial number and RMI id.
-     * 
+     *
      * @param serialNumber
      *        - the serial number of this device
      * @param rmiRegistryId
@@ -93,13 +93,13 @@ public class Device implements IDevice {
 
     /**
      * Creates new device with the given serial number, RMI id and passkey.
-     * 
+     *
      * @param deviceInformation
      *        - the {@link DeviceInformation information} of this device
-     * @param rmiRegistryId
+     * @param rmiId
      *        - the RMI registry of this device
-     * @param passkey
-     *        - passkey for validating authority
+     * @param passkeyAuthority
+     *        - a passkey for validating authority
      */
     public Device(DeviceInformation deviceInformation, String rmiId, long passkeyAuthority) {
         apiLevel = deviceInformation.getApiLevel();
@@ -122,7 +122,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the agent responsible for this device.
-     * 
+     *
      * @return the agent for this device
      */
     public Agent getAgent() {
@@ -131,7 +131,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the agent responsible for this device.
-     * 
+     *
      * @param agent
      *        - the agent for this device
      */
@@ -141,7 +141,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the ID of the device entry.
-     * 
+     *
      * @return the ID of the device entry
      */
     public Long getId() {
@@ -150,7 +150,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the ID of the device entry.
-     * 
+     *
      * @param id
      *        - the ID of the device entry
      */
@@ -160,7 +160,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the RMI registry id of this device.
-     * 
+     *
      * @return the RMI registry of this device
      */
     public String getRmiRegistryId() {
@@ -169,7 +169,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the RMI registry id of this device.
-     * 
+     *
      * @param rmiRegistryId
      *        - the RMI registry of this device
      */
@@ -179,7 +179,7 @@ public class Device implements IDevice {
 
     /**
      * Gets information whether this device is allocated.
-     * 
+     *
      * @return <code>true</code> if this device is allocated, <code>false</code> otherwise
      */
     @Override
@@ -189,7 +189,7 @@ public class Device implements IDevice {
 
     /**
      * Sets whether this device is allocated.
-     * 
+     *
      * @param isAllocated
      *        - indicates whether this device is allocated
      */
@@ -199,7 +199,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the serial number of this device.
-     * 
+     *
      * @return the serial number of this device
      */
     public String getSerialNumber() {
@@ -208,7 +208,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the serial number for this device.
-     * 
+     *
      * @param serialNumber
      *        - the serial number of this device
      */
@@ -218,7 +218,7 @@ public class Device implements IDevice {
 
     /**
      * Gets information whether this device is an emulator.
-     * 
+     *
      * @return <code>true</code> if this device is an emulator, <code>false</code> otherwise
      */
     public boolean isEmulator() {
@@ -227,7 +227,7 @@ public class Device implements IDevice {
 
     /**
      * Sets whether this device is an emulator.
-     * 
+     *
      * @param isEmulator
      *        - indicates whether this device is an emulator
      */
@@ -237,7 +237,7 @@ public class Device implements IDevice {
 
     /**
      * Gets information whether this device is a tablet.
-     * 
+     *
      * @return <code>true</code> if this device is a tablet, <code>false</code> otherwise
      */
     public Boolean isTablet() {
@@ -246,7 +246,7 @@ public class Device implements IDevice {
 
     /**
      * Sets whether this device is a tablet.
-     * 
+     *
      * @param isTablet
      *        - indicates whether this device is a tablet
      */
@@ -256,7 +256,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the resolution height of this device.
-     * 
+     *
      * @return the resolution height of this device
      */
     public Integer getResolutionHeight() {
@@ -265,7 +265,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the resolution height for this device.
-     * 
+     *
      * @param resolutionHeight
      *        - the resolution height of this device
      */
@@ -275,7 +275,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the resolution width of this device.
-     * 
+     *
      * @return the resolution width of this device
      */
     public Integer getResolutionWidth() {
@@ -284,7 +284,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the resolution width for this device.
-     * 
+     *
      * @param resolutionWidth
      *        - the resolution width of this device
      */
@@ -294,7 +294,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the operating system version of this device.
-     * 
+     *
      * @return the operating system of this device
      */
     public String getOs() {
@@ -303,7 +303,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the operating system for this device.
-     * 
+     *
      * @param os
      *        - the operating system of this device
      */
@@ -313,7 +313,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the model of this device.
-     * 
+     *
      * @return the model of this device
      */
     public String getModel() {
@@ -322,7 +322,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the model for this device.
-     * 
+     *
      * @param model
      *        - the model of this device
      */
@@ -332,7 +332,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the DPI of this device.
-     * 
+     *
      * @return the DPI of this device
      */
     public Integer getDpi() {
@@ -341,7 +341,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the DPI for this device.
-     * 
+     *
      * @param dpi
      *        - the DPI of this device
      */
@@ -351,7 +351,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the RAM of this device.
-     * 
+     *
      * @return the RAM of this device
      */
     public Integer getRam() {
@@ -360,7 +360,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the RAM for this device.
-     * 
+     *
      * @param ram
      *        - the RAM of this device
      */
@@ -370,7 +370,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the CPU of this device.
-     * 
+     *
      * @return the CPU of this device
      */
     public String getCpu() {
@@ -379,7 +379,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the CPU for this device.
-     * 
+     *
      * @param cpu
      *        - the CPU of this device
      */
@@ -389,7 +389,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the API level of this device.
-     * 
+     *
      * @return the API level of this device
      */
     public Integer getApiLevel() {
@@ -398,7 +398,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the API level for this device.
-     * 
+     *
      * @param apiLevel
      *        - the API level of this device
      */
@@ -408,7 +408,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the manufacturer of this device.
-     * 
+     *
      * @return the manufacturer of this device
      */
     public String getManufacturer() {
@@ -417,7 +417,7 @@ public class Device implements IDevice {
 
     /**
      * Sets the manufacturer for this device.
-     * 
+     *
      * @param manufacturer
      *        - the manufacturer of this device
      */
@@ -427,7 +427,7 @@ public class Device implements IDevice {
 
     /**
      * Gets information whether this device has camera.
-     * 
+     *
      * @return <code>true</code> if this device has camera, <code>false</code> otherwise
      */
     public Boolean hasCamera() {
@@ -436,7 +436,7 @@ public class Device implements IDevice {
 
     /**
      * Sets whether this device has camera.
-     * 
+     *
      * @param hasCamera
      *        - indicates whether this device has camera
      */
@@ -446,7 +446,7 @@ public class Device implements IDevice {
 
     /**
      * Gets the passkey for this device.
-     * 
+     *
      * @return the passkey of this device
      */
     @Override
@@ -456,10 +456,11 @@ public class Device implements IDevice {
 
     /**
      * Sets the passkey for this device.
-     * 
+     *
      * @param passkey
      *        - the passkey for this device
      */
+    @Override
     public void setPasskey(long passkey) {
         this.passkey = passkey;
     }
@@ -529,7 +530,7 @@ public class Device implements IDevice {
             deviceInformation.setRam(ram);
         }
         if (resolutionWidth != null && resolutionHeight != null) {
-            Pair<Integer, Integer> resolution = new Pair<Integer, Integer>(resolutionWidth, resolutionWidth);
+            Pair<Integer, Integer> resolution = new Pair<>(resolutionWidth, resolutionWidth);
             deviceInformation.setResolution(resolution);
         }
         if (isTablet != null) {

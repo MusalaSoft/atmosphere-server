@@ -16,9 +16,9 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 /**
  * Class which is responsible for publishing remote objects on the server's RMI registry and unpublish remote objects
  * from it.
- * 
+ *
  * @author yavor.stankov
- * 
+ *
  */
 public class RemoteObjectRegistryManager implements Subscriber {
     private static final Logger LOGGER = Logger.getLogger(RemoteObjectRegistryManager.class);
@@ -27,13 +27,13 @@ public class RemoteObjectRegistryManager implements Subscriber {
 
     private static final String DEVICE_PUBLISHED_MESSAGE_FORMAT = "%s %s %s";
 
-    private HashMap<RemoteObject, String> remoteObjectToDeviceRmiIndetifier = new HashMap<RemoteObject, String>();
+    private HashMap<RemoteObject, String> remoteObjectToDeviceRmiIndetifier = new HashMap<>();
 
     private Registry serverRmiRegistry;
 
     /**
      * Creates a new {@link RemoteObjectRegistryManager} object that use {@link Registry} to manage remote objects.
-     * 
+     *
      * @param serverRmiRegistry
      *        - RMI registry which will be used for publishing devices
      */
@@ -43,7 +43,7 @@ public class RemoteObjectRegistryManager implements Subscriber {
 
     /**
      * Publishes a remote object on the server's RMI registry.
-     * 
+     *
      * @param remoteObject
      *        - the remote object to be published in the registry
      * @param remoteObjectRmiId
@@ -51,7 +51,8 @@ public class RemoteObjectRegistryManager implements Subscriber {
      * @throws RemoteException
      *         - if failed to publish remote object in the server's RMI registry
      */
-    private synchronized void publishObject(RemoteObject remoteObject, String remoteObjectRmiId) throws RemoteException {
+    private synchronized void publishObject(RemoteObject remoteObject, String remoteObjectRmiId)
+        throws RemoteException {
         try {
             serverRmiRegistry.rebind(remoteObjectRmiId, remoteObject);
 
@@ -69,7 +70,7 @@ public class RemoteObjectRegistryManager implements Subscriber {
 
     /**
      * Unpublishes a remote object from the server's RMI registry.
-     * 
+     *
      * @param remoteObject
      *        - the remote object to be unpublished from the registry
      * @param remoteObjectRmiString
@@ -93,7 +94,7 @@ public class RemoteObjectRegistryManager implements Subscriber {
     /**
      * Informs the {@link RemoteObjectRegistryManager} for {@link DevicePublishedEvent event} received when a device is
      * published to the server's registry.
-     * 
+     *
      * @param event
      *        - event, which is received when a device is published.
      * @throws RemoteException
@@ -120,9 +121,14 @@ public class RemoteObjectRegistryManager implements Subscriber {
     /**
      * Informs the {@link RemoteObjectRegistryManager} for {@link DeviceUnpublishedEvent event} received when a device
      * is unpublished from the server's registry.
-     * 
+     *
      * @param event
      *        - event, which is received when a device is unpublished.
+     * @throws RemoteException
+     *         - thrown when an error during the execution of a remote method call.
+     * @throws NotBoundException
+     *         - a NotBoundException is thrown if an attempt is made to lookup or unbind in the registry a name that has
+     *         no associated binding.
      */
     public void inform(DeviceUnpublishedEvent event) throws RemoteException, NotBoundException {
         RemoteObject remoteObject = event.getUnpublishedDeviceProxy();
@@ -139,7 +145,7 @@ public class RemoteObjectRegistryManager implements Subscriber {
 
     /**
      * Builds unique device RMI identifier using agent ID and identifier on the Agent for the device wrapper stub.
-     * 
+     *
      * @param onAgentId
      *        - identifier of the agent on which the device is registered
      * @param deviceWrapperAgentRmiId

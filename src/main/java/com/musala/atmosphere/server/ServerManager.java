@@ -272,7 +272,7 @@ public class ServerManager implements Subscriber {
     /**
      * Gets the list of all connected Agent IDs.
      *
-     * @return List<String> of Agent IDs.
+     * @return List&lt;String&gt; of Agent IDs.
      */
     public List<String> getAllConnectedAgentIds() {
         return agentAllocator.getAllConnectedAgentsIds();
