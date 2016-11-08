@@ -1,3 +1,5 @@
+See our site for better context of this readme. [Click here](http://atmosphereframework.com/)
+
 # atmosphere-server
 The atmosphere-server is the interface the [Clients](https://github.com/MusalaSoft/atmosphere-client) speak to. It establishes connections to [Agents](https://github.com/MusalaSoft/atmosphere-agent) and uses their set of devices to serve client requests.
 
