@@ -133,9 +133,9 @@ public class AgentDao implements IAgentDao {
     public List<IAgent> getPresentAgents() {
         try {
             List<Agent> agentsFromDataSource = agentDao.queryForAll();
-            return new ArrayList<>(agentsFromDataSource);
+            return new ArrayList<IAgent>(agentsFromDataSource);
         } catch (SQLException e) {
-            return new ArrayList<>();
+            return new ArrayList<IAgent>();
         }
     }
 }

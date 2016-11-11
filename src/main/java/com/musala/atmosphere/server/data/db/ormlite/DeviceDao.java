@@ -158,7 +158,7 @@ public class DeviceDao {
      */
     public List<IDevice> filterDevices(DeviceSelector deviceSelector, boolean isAllocated) throws DeviceDaoException {
         DeviceQueryBuilder deviceQueryBuilder;
-        List<IDevice> devices = new ArrayList<>();
+        List<IDevice> devices = new ArrayList<IDevice>();
         Map<Class<? extends DeviceParameter>, DeviceParameter> deviceParameters = deviceSelector.getParameters();
 
         try {
@@ -186,6 +186,6 @@ public class DeviceDao {
         deviceQueryBuilder.setAllocationCriterion(isAllocated);
         QueryBuilder<Device, String> queryBuilder = deviceQueryBuilder.prepareQuery();
 
-        return new ArrayList<>(queryBuilder.query());
+        return new ArrayList<IDevice>(queryBuilder.query());
     }
 }
