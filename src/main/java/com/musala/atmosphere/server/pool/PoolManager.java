@@ -18,6 +18,7 @@ import com.musala.atmosphere.commons.cs.clientbuilder.IClientBuilder;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
 import com.musala.atmosphere.commons.cs.exception.DeviceNotFoundException;
 import com.musala.atmosphere.commons.cs.exception.InvalidPasskeyException;
+import com.musala.atmosphere.commons.cs.exception.NoDeviceMatchingTheGivenSelectorException;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.exceptions.NoAvailableDeviceFoundException;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
@@ -210,22 +211,26 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
     @Override
     public synchronized DeviceAllocationInformation allocateDevice(DeviceSelector deviceSelector)
         throws RemoteException {
-        List<IDevice> deviceList = new ArrayList<>();
+        List<IDevice> availableDevicesList = new ArrayList<>();
         String errorMessage = String.format("No devices matching the requested parameters %s were found",
                                             deviceSelector);
         boolean isAllocated = false;
 
         try {
-            deviceList = devicePoolDao.getDevices(deviceSelector, isAllocated);
+            availableDevicesList = devicePoolDao.getDevices(deviceSelector, isAllocated);
+            if (availableDevicesList.isEmpty()) {
+                List<IDevice> notAvailableDeviceList = devicePoolDao.getDevices(deviceSelector, !isAllocated);
+                if (notAvailableDeviceList.isEmpty()) {
+                    throw new NoDeviceMatchingTheGivenSelectorException();
+                } else {
+                    throw new NoAvailableDeviceFoundException(errorMessage);
+                }
+            }
         } catch (DevicePoolDaoException e) {
-            throw new NoAvailableDeviceFoundException(errorMessage, e);
+            throw new NoDeviceMatchingTheGivenSelectorException();
         }
 
-        if (deviceList.isEmpty()) {
-            throw new NoAvailableDeviceFoundException(errorMessage);
-        }
-
-        IDevice device = deviceList.get(0);
+        IDevice device = availableDevicesList.get(0);
 
         DeviceInformation deviceInformation = device.getInformation();
         String deviceSerialNumber = deviceInformation.getSerialNumber();

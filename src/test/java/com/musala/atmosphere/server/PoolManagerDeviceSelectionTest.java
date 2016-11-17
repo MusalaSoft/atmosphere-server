@@ -28,7 +28,7 @@ import com.musala.atmosphere.commons.cs.deviceselection.DeviceOs;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelectorBuilder;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceType;
-import com.musala.atmosphere.commons.exceptions.NoAvailableDeviceFoundException;
+import com.musala.atmosphere.commons.cs.exception.NoDeviceMatchingTheGivenSelectorException;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.data.db.ormlite.DevicePoolDao;
@@ -186,8 +186,8 @@ public class PoolManagerDeviceSelectionTest {
         Class<?> poolManagerClass = PoolManager.class;
 
         Method deviceIdBuild = poolManagerClass.getDeclaredMethod(BUILD_DEVICE_IDENTIFIER_METHOD_NAME,
-                                                                     String.class,
-                                                                     String.class);
+                                                                  String.class,
+                                                                  String.class);
         deviceIdBuild.setAccessible(true);
 
         String firstDeviceId = (String) deviceIdBuild.invoke(null, AGENT_ID, FIRST_DEVICE_SERIAL_NUMBER);
@@ -216,7 +216,7 @@ public class PoolManagerDeviceSelectionTest {
         poolManager.removeDevice(fifthDeviceId);
     }
 
-    @Test(expected = NoAvailableDeviceFoundException.class)
+    @Test(expected = NoDeviceMatchingTheGivenSelectorException.class)
     public void getNotPresentDevice() throws Exception {
         DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().deviceOs(DeviceOs.JELLY_BEAN_MR1_4_2_1)
                                                                            .deviceType(DeviceType.DEVICE_ONLY)
@@ -374,7 +374,7 @@ public class PoolManagerDeviceSelectionTest {
         assertCorrectDeviceFetched(FIFTH_DEVICE_SERIAL_NUMBER, deviceDescriptor);
     }
 
-    @Test(expected = NoAvailableDeviceFoundException.class)
+    @Test(expected = NoDeviceMatchingTheGivenSelectorException.class)
     public void getMissingDeviceWithCamera() throws Exception {
         DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().deviceType(DeviceType.DEVICE_ONLY)
                                                                            .screenDpi(144)
