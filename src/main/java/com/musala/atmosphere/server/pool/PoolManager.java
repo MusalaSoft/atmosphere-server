@@ -16,12 +16,14 @@ import com.musala.atmosphere.commons.RoutingAction;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
 import com.musala.atmosphere.commons.cs.clientbuilder.IClientBuilder;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
+import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelectorBuilder;
 import com.musala.atmosphere.commons.cs.exception.DeviceNotFoundException;
 import com.musala.atmosphere.commons.cs.exception.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.exception.NoDeviceMatchingTheGivenSelectorException;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.exceptions.NoAvailableDeviceFoundException;
 import com.musala.atmosphere.commons.sa.IWrapDevice;
+import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.DeviceProxy;
 import com.musala.atmosphere.server.PasskeyAuthority;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
@@ -260,6 +262,37 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
         return allocatedDeviceDescriptor;
     }
+    
+    @Override
+    public synchronized List<Pair<String,String>> getAllAvailableDevices() throws RemoteException{
+    	List<IDevice> availableDevicesList = new ArrayList<>();
+    	
+        boolean isAllocated = false;
+
+        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().minApi(17);
+        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
+        
+        try {
+            availableDevicesList = devicePoolDao.getDevices(deviceSelector, isAllocated);
+            
+            if (availableDevicesList.isEmpty()) {
+            	return new ArrayList<Pair<String,String>>();
+            }
+        } catch (DevicePoolDaoException e) {
+            throw new NoDeviceMatchingTheGivenSelectorException();
+        }
+
+        ArrayList<Pair<String,String>> serialNumberAndModelList = new ArrayList<Pair<String,String>>();
+        
+        for(int index = 0; index < availableDevicesList.size(); index++) {
+        	IDevice device = availableDevicesList.get(index);
+        	DeviceInformation deviceInformation = device.getInformation();
+        	
+        	serialNumberAndModelList.add(new Pair<String, String>(deviceInformation.getSerialNumber(), deviceInformation.getModel()));
+        }
+        
+        return serialNumberAndModelList;
+    }
 
     /**
      * Releases allocated device by its ID and returns it in the pool.
@@ -276,7 +309,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
             releaseDevice(device, device.getPasskey());
         }
     }
-
+    
     /**
      * Updates the information of the device.
      *
