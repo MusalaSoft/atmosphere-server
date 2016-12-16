@@ -11,10 +11,18 @@ cache:
     directories:
         - $HOME/.gradle
 
-before_script:
-    - git fetch
+install:
     - chmod +x gradlew
+    - git clone https://github.com/MusalaSoft/atmosphere-commons.git
+    - git clone https://github.com/MusalaSoft/atmosphere-client-server-lib.git
+    - git clone https://github.com/MusalaSoft/atmosphere-server-agent-lib.git
+    - chmod +x travis-scripts/branch-checkout.sh
+    - cd atmosphere-commons && ../travis-scripts/branch-checkout.sh
+    - ./gradlew build publishToMavenLocal && cd ..
+    - cd atmosphere-client-server-lib && ../travis-scripts/branch-checkout.sh
+    - ./gradlew build publishToMavenLocal && cd ..
+    - cd atmosphere-server-agent-lib && ../travis-scripts/branch-checkout.sh
+    - ./gradlew build publishToMavenLocal && cd ..
 
 script:
     - ./gradlew build publishToMavenLocal
-
