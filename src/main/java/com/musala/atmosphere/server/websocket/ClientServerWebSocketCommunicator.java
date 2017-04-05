@@ -14,6 +14,8 @@ public class ClientServerWebSocketCommunicator {
 
     private static ClientServerWebSocketCommunicator instance = null;
 
+    private PoolManager poolManager = PoolManager.getInstance();
+
     private ServerManager serverManager;
 
     private ClientServerWebSocketCommunicator() {
@@ -32,13 +34,38 @@ public class ClientServerWebSocketCommunicator {
         return instance;
     }
 
+    /**
+     * Returns {@link DeviceAllocationInformation} of a device for the provided selector.
+     *
+     * @param deviceSelector
+     *        - the {@link DeviceSelector} with the parameters of the requested device
+     * @return {@link DeviceAllocationInformation}
+     * @throws NoDeviceMatchingTheGivenSelectorException
+     *         - if a device corresponding to the provided selection properties is not present on the server
+     * @throws NoAvailableDeviceFoundException
+     *         - if a device was found but is currently allocated by another client
+     */
     public DeviceAllocationInformation getDeviceAllocationInformation(DeviceSelector deviceSelector)
             throws NoDeviceMatchingTheGivenSelectorException, NoAvailableDeviceFoundException {
-        PoolManager poolManager = PoolManager.getInstance();
-
         return poolManager.allocateDevice(deviceSelector);
     }
 
+    /**
+     * Releases an allocated device.
+     *
+     * @param deviceDescriptor
+     *        - the {@link DeviceAllocationInformation} corresponding to the device which should be released
+     */
+    public void releaseDevice(DeviceAllocationInformation deviceDescriptor) {
+        poolManager.releaseDevice(deviceDescriptor);
+    }
+
+    /**
+     * Sets the server manager for this communicator instance.
+     *
+     * @param serverManager
+     *        - the {@link ServerManager} to be set
+     */
     public void setServerManager(ServerManager serverManager) {
         this.serverManager = serverManager;
     }

@@ -189,16 +189,13 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
     }
 
     @Override
-    public void releaseDevice(DeviceAllocationInformation allocatedDeviceDescriptor)
-        throws RemoteException,
-            InvalidPasskeyException,
-            DeviceNotFoundException {
+    public void releaseDevice(DeviceAllocationInformation allocatedDeviceDescriptor) {
         String deviceId = allocatedDeviceDescriptor.getDeviceId();
         long currentPasskey = allocatedDeviceDescriptor.getProxyPasskey();
 
-        PasskeyAuthority.validatePasskey(currentPasskey, deviceId);
-
         try {
+            PasskeyAuthority.validatePasskey(currentPasskey, deviceId);
+
             IDevice device = devicePoolDao.getDevice(deviceId);
 
             if (device != null) {
@@ -207,6 +204,11 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
         } catch (DevicePoolDaoException e) {
             String errorMessage = String.format("Failed to release device with ID %s.", deviceId);
             LOGGER.fatal(errorMessage);
+        } catch (DeviceNotFoundException e) {
+            String errorMessage = String.format("The device with ID %s was not present on the server.", deviceId);
+            LOGGER.error(errorMessage);
+        } catch (InvalidPasskeyException e) {
+            // The device most likely timed out and got freed. Nothing to do here.
         }
     }
 

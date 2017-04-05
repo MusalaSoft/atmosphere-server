@@ -48,6 +48,9 @@ public class ClientServerWebSocketEndpoint {
             case GET_ALL_DEVICES_REQUEST:
                 break;
             case RELEASE_REQUEST:
+                DeviceAllocationInformation deviceDescriptor = gson.fromJson(request.getData(), DeviceAllocationInformation.class);
+                websocketCommunicator.releaseDevice(deviceDescriptor);
+                response = new ClientServerResponse(sessionId, messageType, null);
                 break;
             case ROUTING_ACTION:
                 break;
@@ -56,7 +59,7 @@ public class ClientServerWebSocketEndpoint {
         }
 
         String jsonResponse = gson.toJson(response);
-        LOGGER.info("Sending string the response back...");
+        LOGGER.info(jsonResponse);
         return jsonResponse;
     }
 }
