@@ -5,6 +5,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import javax.websocket.DeploymentException;
+
 import org.apache.log4j.Logger;
 
 import com.musala.atmosphere.commons.sa.ConsoleControl;
@@ -28,6 +30,8 @@ import com.musala.atmosphere.server.registrymanager.RemoteObjectRegistryManager;
 import com.musala.atmosphere.server.state.ServerState;
 import com.musala.atmosphere.server.state.StoppedServer;
 import com.musala.atmosphere.server.util.ServerPropertiesLoader;
+import com.musala.atmosphere.server.websocket.ClientServerWebSocketCommunicator;
+import com.musala.atmosphere.server.websocket.ClientServerWebSocketEndpoint;
 
 public class Server {
 
@@ -36,6 +40,8 @@ public class Server {
     private static final int AGENT_CONNECTION_CYCLE_WAIT = 300;
 
     private ServerManager serverManager;
+
+    private org.glassfish.tyrus.server.Server server;
 
     private ConsoleControl serverConsole;
 
@@ -78,6 +84,16 @@ public class Server {
     public Server(int serverPort) throws RemoteException {
         serverRmiPort = serverPort;
         serverManager = new ServerManager(serverRmiPort);
+        ClientServerWebSocketCommunicator.getInstance().setServerManager(serverManager);
+
+        // TODO WebSockets: Add support for hostName and port configuration
+        server = new org.glassfish.tyrus.server.Server("localhost", 80, null, null, ClientServerWebSocketEndpoint.class);
+        try {
+            server.start();
+        } catch (DeploymentException e) {
+            LOGGER.error("Could not start WebSocket server.");
+        }
+
         setState(new StoppedServer(this));
 
         serverConsole = new ConsoleControl();
@@ -146,6 +162,7 @@ public class Server {
         eventService.unsubscribe(DataSourceInitializedEvent.class, null, dataSourceProvider);
 
         serverManager.close();
+        server.stop();
         isConnected = true;
     }
 

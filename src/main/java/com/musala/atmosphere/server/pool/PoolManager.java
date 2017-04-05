@@ -211,8 +211,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
     }
 
     @Override
-    public synchronized DeviceAllocationInformation allocateDevice(DeviceSelector deviceSelector)
-        throws RemoteException {
+    public synchronized DeviceAllocationInformation allocateDevice(DeviceSelector deviceSelector) {
         List<IDevice> availableDevicesList = new ArrayList<>();
         String errorMessage = String.format("No devices matching the requested parameters %s were found",
                                             deviceSelector);
@@ -262,19 +261,19 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
 
         return allocatedDeviceDescriptor;
     }
-    
+
     @Override
     public synchronized List<Pair<String,String>> getAllAvailableDevices() throws RemoteException{
     	List<IDevice> availableDevicesList = new ArrayList<>();
-    	
+
         boolean isAllocated = false;
 
         DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().minApi(17);
         DeviceSelector deviceSelector = deviceSelectorBuilder.build();
-        
+
         try {
             availableDevicesList = devicePoolDao.getDevices(deviceSelector, isAllocated);
-            
+
             if (availableDevicesList.isEmpty()) {
             	return new ArrayList<Pair<String,String>>();
             }
@@ -283,14 +282,14 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
         }
 
         ArrayList<Pair<String,String>> serialNumberAndModelList = new ArrayList<Pair<String,String>>();
-        
+
         for(int index = 0; index < availableDevicesList.size(); index++) {
         	IDevice device = availableDevicesList.get(index);
         	DeviceInformation deviceInformation = device.getInformation();
-        	
+
         	serialNumberAndModelList.add(new Pair<String, String>(deviceInformation.getSerialNumber(), deviceInformation.getModel()));
         }
-        
+
         return serialNumberAndModelList;
     }
 
@@ -309,7 +308,7 @@ public class PoolManager extends UnicastRemoteObject implements IClientBuilder, 
             releaseDevice(device, device.getPasskey());
         }
     }
-    
+
     /**
      * Updates the information of the device.
      *
