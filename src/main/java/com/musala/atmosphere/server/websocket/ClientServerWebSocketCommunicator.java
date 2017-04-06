@@ -3,6 +3,7 @@ package com.musala.atmosphere.server.websocket;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -15,6 +16,7 @@ import com.musala.atmosphere.commons.cs.exception.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.exception.NoDeviceMatchingTheGivenSelectorException;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.exceptions.NoAvailableDeviceFoundException;
+import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.ServerManager;
 import com.musala.atmosphere.server.pool.PoolManager;
 
@@ -57,6 +59,17 @@ public class ClientServerWebSocketCommunicator {
     public DeviceAllocationInformation getDeviceAllocationInformation(DeviceSelector deviceSelector)
             throws NoDeviceMatchingTheGivenSelectorException, NoAvailableDeviceFoundException {
         return poolManager.allocateDevice(deviceSelector);
+    }
+
+    /**
+     * Returns a list with serial numbers and models of all available devices.
+     *
+     * @return a list with serial numbers and models of available devices
+     * @throws RemoteException
+     *         - if the RMI connection failed
+     */
+    public List<Pair<String, String>> getAllAvailableDevices() throws RemoteException {
+        return poolManager.getAllAvailableDevices();
     }
 
     /**

@@ -18,6 +18,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import com.musala.atmosphere.commons.RoutingAction;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
@@ -26,6 +27,7 @@ import com.musala.atmosphere.commons.cs.exception.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.exception.NoDeviceMatchingTheGivenSelectorException;
 import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.exceptions.NoAvailableDeviceFoundException;
+import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.commons.websocket.message.ClientServerRequest;
 import com.musala.atmosphere.commons.websocket.message.ClientServerResponse;
 import com.musala.atmosphere.commons.websocket.message.MessageType;
@@ -62,6 +64,15 @@ public class ClientServerWebSocketEndpoint {
                 }
                 break;
             case GET_ALL_DEVICES_REQUEST:
+                LOGGER.info("Received request to get all available devices.");
+                try {
+                    List<Pair<String, String>> availableDevicesList = websocketCommunicator.getAllAvailableDevices();
+                    TypeToken<List<Pair<String, String>>> listTypeToken = new TypeToken<List<Pair<String, String>>>() {};
+                    String responseData = gson.toJson(availableDevicesList, listTypeToken.getType());
+                    response = new ClientServerResponse(sessionId, messageType, responseData);
+                } catch (RemoteException e) {
+                    response = new ClientServerResponse(sessionId, MessageType.ERROR, null);
+                }
                 break;
             case RELEASE_REQUEST:
                 LOGGER.info("Received device release request.");
