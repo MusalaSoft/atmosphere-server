@@ -1,10 +1,19 @@
 package com.musala.atmosphere.server.websocket;
 
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+
 import org.apache.log4j.Logger;
 
+import com.musala.atmosphere.commons.RoutingAction;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
+import com.musala.atmosphere.commons.cs.clientdevice.IClientDevice;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
+import com.musala.atmosphere.commons.cs.exception.DeviceNotFoundException;
+import com.musala.atmosphere.commons.cs.exception.InvalidPasskeyException;
 import com.musala.atmosphere.commons.cs.exception.NoDeviceMatchingTheGivenSelectorException;
+import com.musala.atmosphere.commons.exceptions.CommandFailedException;
 import com.musala.atmosphere.commons.exceptions.NoAvailableDeviceFoundException;
 import com.musala.atmosphere.server.ServerManager;
 import com.musala.atmosphere.server.pool.PoolManager;
@@ -58,6 +67,14 @@ public class ClientServerWebSocketCommunicator {
      */
     public void releaseDevice(DeviceAllocationInformation deviceDescriptor) {
         poolManager.releaseDevice(deviceDescriptor);
+    }
+
+    public Object routeAction(String deviceRmiId, long passkey, RoutingAction action, Object... args)
+            throws AccessException, RemoteException, NotBoundException,
+            CommandFailedException, InvalidPasskeyException, DeviceNotFoundException {
+        IClientDevice device = (IClientDevice) serverManager.getRegistry().lookup(deviceRmiId);
+
+        return device.route(passkey, action, args);
     }
 
     /**
