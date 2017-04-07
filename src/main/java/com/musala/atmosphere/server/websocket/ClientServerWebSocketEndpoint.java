@@ -36,6 +36,7 @@ import com.musala.atmosphere.commons.util.structure.tree.Tree;
 import com.musala.atmosphere.commons.websocket.message.ClientServerRequest;
 import com.musala.atmosphere.commons.websocket.message.ClientServerResponse;
 import com.musala.atmosphere.commons.websocket.message.MessageType;
+import com.musala.atmosphere.server.websocket.deserializer.DeviceSelectorDeserializer;
 
 @ServerEndpoint("/server")
 public class ClientServerWebSocketEndpoint {
@@ -45,7 +46,7 @@ public class ClientServerWebSocketEndpoint {
 
     private RoutingAction routingAction;
 
-    private Gson gson = new GsonBuilder().serializeNulls().create();
+    private Gson gson = new GsonBuilder().serializeNulls().registerTypeAdapter(DeviceSelector.class, new DeviceSelectorDeserializer()).create();
 
     @OnMessage
     public String onMessage(String message, Session session) {
