@@ -1,3 +1,4 @@
+/*
 package com.musala.atmosphere.server;
 
 import static org.junit.Assert.assertEquals;
@@ -37,11 +38,11 @@ import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSou
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
 
-/**
+*//**
  *
  * @author filareta.yordanova
  *
- */
+ *//*
 public class ServerManagerIntegrationTest {
     private static final String AGENT_IP = "localhost";
 
@@ -288,3 +289,4 @@ public class ServerManagerIntegrationTest {
         return deviceIdentifier;
     }
 }
+*/
