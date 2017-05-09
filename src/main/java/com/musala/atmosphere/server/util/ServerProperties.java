@@ -10,7 +10,9 @@ public enum ServerProperties {
     POOL_MANAGER_RMI_PORT("pool.manager.rmi.port"),
     DEVICE_REQUEST_TIMEOUT("device.request.timeout"),
     DEVICE_UPDATE_TIME("device.update.timeout"),
-    EMULATOR_CREATION_TIMEOUT("emulator.creation.timeout");
+    EMULATOR_CREATION_TIMEOUT("emulator.creation.timeout"),
+    WEBSOCKET_PORT("websocket.port"),
+    SERVER_IP("server.ip");
 
     private String value;
 
