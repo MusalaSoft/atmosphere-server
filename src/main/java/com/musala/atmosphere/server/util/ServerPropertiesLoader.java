@@ -66,4 +66,27 @@ public class ServerPropertiesLoader {
         long emulatorCreationTimeout = Long.valueOf(emulatorCreationTimeoutString);
         return emulatorCreationTimeout;
     }
+
+    /**
+     * Gets the Server's WebSocket port from the server config file.
+     *
+     * @return - the WebSocket port
+     */
+    public static int getWebSocketPort() {
+        String webSocketPortString = getPropertyString(ServerProperties.WEBSOCKET_PORT);
+        int websocketPort = Integer.parseInt(webSocketPortString);
+
+        return websocketPort;
+    }
+
+    /**
+     * Gets the Server's IP from the server config file.
+     *
+     * @return - the IP of the Server
+     */
+    public static String getServerIp() {
+        String serverIp = getPropertyString(ServerProperties.SERVER_IP);
+
+        return serverIp;
+    }
 }
