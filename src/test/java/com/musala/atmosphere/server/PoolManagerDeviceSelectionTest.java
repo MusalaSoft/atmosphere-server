@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
-import java.rmi.registry.Registry;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,14 +21,12 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.musala.atmosphere.commons.DeviceInformation;
-import com.musala.atmosphere.commons.RoutingAction;
 import com.musala.atmosphere.commons.cs.clientbuilder.DeviceAllocationInformation;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceOs;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelector;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceSelectorBuilder;
 import com.musala.atmosphere.commons.cs.deviceselection.DeviceType;
 import com.musala.atmosphere.commons.cs.exception.NoDeviceMatchingTheGivenSelectorException;
-import com.musala.atmosphere.commons.sa.IWrapDevice;
 import com.musala.atmosphere.commons.util.Pair;
 import com.musala.atmosphere.server.data.db.ormlite.DevicePoolDao;
 import com.musala.atmosphere.server.data.model.IDevice;
@@ -93,16 +90,12 @@ public class PoolManagerDeviceSelectionTest {
     @Mock
     private static DevicePoolDao devicePoolDao;
 
-    private static Registry mockedRegistry;
-
     @BeforeClass
     public static void setUp() throws Exception {
         mockedAgent = mock(Agent.class);
         when(mockedAgent.getAgentId()).thenReturn(AGENT_ID);
 
         devicePoolDao = mock(DevicePoolDao.class);
-
-        mockedRegistry = mock(Registry.class);
     }
 
     @Before
@@ -165,20 +158,14 @@ public class PoolManagerDeviceSelectionTest {
     }
 
     public static void registerMockedDevice(IDevice device) throws Exception {
-        IWrapDevice mockedDevice = mock(IWrapDevice.class);
         DeviceInformation deviceInformation = device.getInformation();
-
-        String deviceId = deviceInformation.getSerialNumber();
-
-        when(mockedRegistry.lookup(eq(deviceId))).thenReturn(mockedDevice);
-        when(mockedDevice.route(eq(RoutingAction.GET_DEVICE_INFORMATION))).thenReturn(deviceInformation);
 
         when(devicePoolDao.addDevice(any(DeviceInformation.class),
                                      any(String.class),
                                      any(String.class),
                                      any(Long.class))).thenReturn(device);
 
-        poolManager.addDevice(deviceId, mockedRegistry, AGENT_ID);
+        poolManager.addDevice(deviceInformation, AGENT_ID);
     }
 
     @AfterClass
