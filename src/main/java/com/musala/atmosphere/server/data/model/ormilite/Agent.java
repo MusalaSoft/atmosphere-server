@@ -27,12 +27,6 @@ public class Agent implements IAgent {
     @DatabaseField(columnName = AgentColumnName.AGENT_ID, index = true, unique = true, canBeNull = false)
     private String agentId;
 
-    @DatabaseField(columnName = AgentColumnName.HOSTNAME, unique = false, canBeNull = false)
-    private String hostname;
-
-    @DatabaseField(columnName = AgentColumnName.PORT, unique = false, canBeNull = false)
-    private int port;
-
     @ForeignCollectionField(eager = false)
     private ForeignCollection<Device> devices;
 
@@ -85,44 +79,6 @@ public class Agent implements IAgent {
     }
 
     /**
-     * Gets the hostname of this agent.
-     * 
-     * @return the hostname of this agent
-     */
-    public String getHostname() {
-        return hostname;
-    }
-
-    /**
-     * Sets the hostname of this agent.
-     * 
-     * @param hostname
-     *        - the hostname of this agent
-     */
-    public void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
-
-    /**
-     * Gets port of this agent.
-     * 
-     * @return - the port of the agent
-     */
-    public int getPort() {
-        return port;
-    }
-
-    /**
-     * Sets the port of this agent.
-     * 
-     * @param port
-     *        - the port of this agent
-     */
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    /**
      * Gets collection of devices for which the agent is responsible.
      * 
      * @return {@link Collection collection} of devices on this agent.
@@ -143,7 +99,7 @@ public class Agent implements IAgent {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 31).append(agentId).append(hostname).append(port).toHashCode();
+        return new HashCodeBuilder(17, 31).append(agentId).toHashCode();
     }
 
     @Override
@@ -159,8 +115,6 @@ public class Agent implements IAgent {
         Agent agent = (Agent) object;
 
         return new EqualsBuilder().append(agentId, agent.agentId)
-                                  .append(hostname, agent.hostname)
-                                  .append(port, agent.port)
                                   .isEquals();
     }
 }

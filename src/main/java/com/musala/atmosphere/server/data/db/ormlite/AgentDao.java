@@ -41,11 +41,8 @@ public class AgentDao implements IAgentDao {
     }
 
     @Override
-    public void add(String agentId, String agentIp, int agentPort) throws AgentDaoException {
+    public void add(String agentId) throws AgentDaoException {
         Agent agent = new Agent(agentId);
-
-        agent.setHostname(agentIp);
-        agent.setPort(agentPort);
 
         try {
             agentDao.create(agent);

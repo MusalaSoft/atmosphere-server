@@ -88,13 +88,11 @@ public class DevicePoolDaoIntegrationTest {
             testAgentPorts[i] = 1234 + i * 2;
             testRmiIds[i] = "test Rmi Id " + i;
             testPasskeys[i] = 679254132 + i * 5;
-            testAgentDao.add(testAgentIds[i], testAgentIps[i], testAgentPorts[i]);
+            testAgentDao.add(testAgentIds[i]);
         }
 
         for (int i = 0; i < 2; i++) {
             testAgents[i] = new Agent(testAgentIds[i]);
-            testAgents[i].setHostname(testAgentIps[i]);
-            testAgents[i].setPort(testAgentPorts[i]);
             deviceInformation[i] = new DeviceInformation();
             expectedDevices[i] = new Device(deviceInformation[i], testRmiIds[i], testPasskeys[i]);
             expectedDevices[i].setAgent(testAgents[i]);

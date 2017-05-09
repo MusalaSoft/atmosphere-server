@@ -35,21 +35,11 @@ public class AgentDaoIntegrationTest {
 
     private static final String TEST_AGENT_ID = "agent_id";
 
-    private static final String TEST_AGENT_IP = "agent_ip";
-
-    private static final int TEST_AGENT_PORT = 1234;
-
-    private static final int UPDATED_TEST_AGENT_PORT = 2226;
-
     private static final String UPDATED_TEST_AGENT_ID = "updated_agent_id";
 
     private static final String NON_EXISTING_AGENT_ID = "non_existing_agent_id";
 
     private static final String SECOND_TEST_AGENT_ID = "second_agent_id";
-
-    private static final String SECOND_TEST_AGENT_IP = "second_agent_ip";
-
-    private static final int SECOND_TEST_AGENT_PORT = 1236;
 
     private static AgentDao testAgentDao;
 
@@ -76,12 +66,8 @@ public class AgentDaoIntegrationTest {
         ormliteAgentDao = DaoManager.createDao(connectionSource, Agent.class);
 
         testAgent = new Agent(TEST_AGENT_ID);
-        testAgent.setHostname(TEST_AGENT_IP);
-        testAgent.setPort(TEST_AGENT_PORT);
 
         secondTestAgent = new Agent(SECOND_TEST_AGENT_ID);
-        secondTestAgent.setHostname(SECOND_TEST_AGENT_IP);
-        secondTestAgent.setPort(SECOND_TEST_AGENT_PORT);
     }
 
     private void deleteAgent(String agentId) throws SQLException, AgentDaoException {
@@ -125,21 +111,6 @@ public class AgentDaoIntegrationTest {
     }
 
     @Test
-    public void testUpdateExistingAgent() throws Exception {
-        agentDaoTestUtils.assertAddNewAgent(testAgent);
-
-        Agent agentToUpdate = (Agent) testAgentDao.selectByAgentId(TEST_AGENT_ID);
-        agentToUpdate.setPort(UPDATED_TEST_AGENT_PORT);
-
-        testAgentDao.update(agentToUpdate);
-
-        Agent receivedAgent = (Agent) testAgentDao.selectByAgentId(TEST_AGENT_ID);
-        int receivedPort = receivedAgent.getPort();
-
-        assertEquals("The updated filed is different than expected. ", receivedPort, UPDATED_TEST_AGENT_PORT);
-    }
-
-    @Test
     public void testUpdateExistingAgentId() throws Exception {
         agentDaoTestUtils.assertAddNewAgent(testAgent);
 
@@ -180,7 +151,7 @@ public class AgentDaoIntegrationTest {
 
     @Test
     public void testSelectAgentByIdWhenAgentExists() throws Exception {
-        testAgentDao.add(TEST_AGENT_ID, TEST_AGENT_IP, TEST_AGENT_PORT);
+        testAgentDao.add(TEST_AGENT_ID);
         agentDaoTestUtils.assertSelectExistingAgentById(TEST_AGENT_ID);
     }
 
