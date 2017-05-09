@@ -43,10 +43,6 @@ public class DeviceDaoIntegrationTest implements Subscriber {
 
     private static final String TEST_AGENT_ID = "test";
 
-    private static final String TEST_AGENT_IP = "10.0.0.0";
-
-    private static final int TEST_AGENT_PORT = 6000;
-
     private static final String DEVICE_MISMATCH_ERROR_MESSAGE = "The device retrieved from the data source did not match the expected device.";
 
     private static final String FAILED_REMOVE_ERROR_MESSAGE = "Query for removed device returned device, when null was expected.";
@@ -77,7 +73,7 @@ public class DeviceDaoIntegrationTest implements Subscriber {
 
         assertNotNull("Initialization of the database failed. ", agentDao);
         // initialize a test agent entry in the data source to attach the devices to
-        agentDao.add(TEST_AGENT_ID, TEST_AGENT_IP, TEST_AGENT_PORT);
+        agentDao.add(TEST_AGENT_ID);
 
         initializeTestDevices();
 

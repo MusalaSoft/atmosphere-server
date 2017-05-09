@@ -35,10 +35,6 @@ import com.musala.atmosphere.server.data.model.ormilite.Agent;
 public class AgentDaoTest {
     private static final String TEST_AGENT_ID = "agent_id";
 
-    private static final String TEST_AGENT_IP = "agent_ip";
-
-    private static final int TEST_AGENT_PORT = 1234;
-
     private static final String EXISTING_AGENT_ID = "existing_agent_id";
 
     private static AgentDao testAgentDao;
@@ -55,12 +51,10 @@ public class AgentDaoTest {
     @Test
     public void testAddNewAgent() throws Exception {
         Agent expectedAgentToCreate = new Agent(TEST_AGENT_ID);
-        expectedAgentToCreate.setHostname(TEST_AGENT_IP);
-        expectedAgentToCreate.setPort(TEST_AGENT_PORT);
 
         when(mockedAgentDao.create(eq(expectedAgentToCreate))).thenReturn(1);
 
-        testAgentDao.add(TEST_AGENT_ID, TEST_AGENT_IP, TEST_AGENT_PORT);
+        testAgentDao.add(TEST_AGENT_ID);
         verify(mockedAgentDao, times(1)).create(eq(expectedAgentToCreate));
     }
 
@@ -82,12 +76,10 @@ public class AgentDaoTest {
     @Test(expected = AgentDaoException.class)
     public void testAddAgentThatAlreadyExists() throws Exception {
         Agent expectedAgentToCreate = new Agent(TEST_AGENT_ID);
-        expectedAgentToCreate.setHostname(TEST_AGENT_IP);
-        expectedAgentToCreate.setPort(TEST_AGENT_PORT);
 
         when(mockedAgentDao.create(expectedAgentToCreate)).thenThrow(new SQLException());
 
-        testAgentDao.add(TEST_AGENT_ID, TEST_AGENT_IP, TEST_AGENT_PORT);
+        testAgentDao.add(TEST_AGENT_ID);
         verify(mockedAgentDao, times(1)).create(eq(expectedAgentToCreate));
     }
 
@@ -216,15 +208,13 @@ public class AgentDaoTest {
     @Test
     public void testGetAgentsWhenThereAreExistingAgents() throws Exception {
         Agent expectedAgentToCreate = new Agent(TEST_AGENT_ID);
-        expectedAgentToCreate.setHostname(TEST_AGENT_IP);
-        expectedAgentToCreate.setPort(TEST_AGENT_PORT);
         List<Agent> expectedAgentsList = new ArrayList<Agent>();
         expectedAgentsList.add(expectedAgentToCreate);
 
         when(mockedAgentDao.create(eq(expectedAgentToCreate))).thenReturn(1);
         when(mockedAgentDao.queryForAll()).thenReturn(expectedAgentsList);
 
-        testAgentDao.add(TEST_AGENT_ID, TEST_AGENT_IP, TEST_AGENT_PORT);
+        testAgentDao.add(TEST_AGENT_ID);
         final int EXPECTED_AGENTS_COUNT = 1;
         int receivedAgentsCount = testAgentDao.getPresentAgents().size();
         IAgent receivedAgent = testAgentDao.getPresentAgents().get(0);

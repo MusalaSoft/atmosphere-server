@@ -67,7 +67,7 @@ public class AgentDaoTestUtils {
      *         if adding the agent fails
      */
     public void assertAddNewAgent(Agent agentToAdd) throws AgentDaoException {
-        testAgentDao.add(agentToAdd.getAgentId(), agentToAdd.getHostname(), agentToAdd.getPort());
+        testAgentDao.add(agentToAdd.getAgentId());
         Agent receivedAgent = (Agent) testAgentDao.selectByAgentId(agentToAdd.getAgentId());
 
         assertEquals("Expected agent is different than the received one.", agentToAdd, receivedAgent);

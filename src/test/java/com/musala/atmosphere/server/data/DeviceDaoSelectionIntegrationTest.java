@@ -57,10 +57,6 @@ public class DeviceDaoSelectionIntegrationTest {
 
     private static final String TEST_AGENT_ID = "test_agent_id";
 
-    private static final String TEST_AGENT_IP = "10.0.0.0";
-
-    private static final int TEST_AGENT_PORT = 6000;
-
     private static final String EMPTY_RESULT_LIST_MISMATCH_ERROR_MESSAGE = "Expected empty list of results as no device matches the query, but actualy received a non-empty list.";
 
     private static final String DEVICE_MISMATCH_ERROR_MESSAGE = "Expected real device, but received emulator instead.";
@@ -99,7 +95,7 @@ public class DeviceDaoSelectionIntegrationTest {
         assertNotNull("Initialization of the database failed. ", deviceDao);
 
         // initialize a test agent entry in the data source to attach the devices to
-        agentDao.add(TEST_AGENT_ID, TEST_AGENT_IP, TEST_AGENT_PORT);
+        agentDao.add(TEST_AGENT_ID);
 
         testAgent = (Agent) agentDao.selectByAgentId(TEST_AGENT_ID);
         testDevices = new ArrayList<Device>();
