@@ -31,12 +31,12 @@ public class ServerAgentEndpoint {
 
     @OnOpen
     public void onOpen(Session session) {
-        LOGGER.debug("<<< Server: onOpen >>>");
+        LOGGER.debug("Server: onOpen");
     }
 
     @OnMessage
     public void onJsonMessage(String json, Session session) {
-        LOGGER.debug("Server onMessage called");
+        LOGGER.debug("Server: onMessage called");
 
         MessageAction messageAction = (MessageAction) jsonUtil.getProperty(json, "messageAction", MessageAction.class);
 

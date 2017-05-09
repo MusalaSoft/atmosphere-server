@@ -28,6 +28,7 @@ import com.musala.atmosphere.server.registrymanager.RemoteObjectRegistryManager;
 import com.musala.atmosphere.server.state.ServerState;
 import com.musala.atmosphere.server.state.StoppedServer;
 import com.musala.atmosphere.server.util.ServerPropertiesLoader;
+import com.musala.atmosphere.server.websocket.ServerDispatcher;
 
 public class Server {
 
@@ -53,9 +54,9 @@ public class Server {
 
     private IDataSourceProvider dataSourceProvider;
 
-    private int serverRmiPort;
-
     private boolean isConnected;
+
+    private ServerDispatcher dispatcher = ServerDispatcher.getInstance();
 
     /**
      * Creates a Server component bound on specified in the properties file port.
@@ -76,8 +77,10 @@ public class Server {
      *         - thrown when an error during the execution of a remote method call.
      */
     public Server(int serverPort) throws RemoteException {
-        serverRmiPort = serverPort;
-        serverManager = new ServerManager(serverRmiPort);
+        serverManager = new ServerManager(serverPort);
+
+        dispatcher.setServerManager(serverManager);
+
         setState(new StoppedServer(this));
 
         serverConsole = new ConsoleControl();
@@ -122,6 +125,7 @@ public class Server {
     public void run() {
         dataSourceManager.initialize();
         currentServerState.run();
+        dispatcher.startWebSocketServer();
     }
 
     /**
@@ -129,6 +133,7 @@ public class Server {
      */
     public void stop() {
         currentServerState.stop();
+        dispatcher.stopWebsocketServer();
     }
 
     /**

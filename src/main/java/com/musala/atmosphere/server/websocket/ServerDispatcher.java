@@ -110,9 +110,8 @@ public class ServerDispatcher {
         agentIdToAgentSessionMap.put(agentId, agentSession);
         serverManager.registerAgent(agentId);
 
-        LOGGER.debug("<<< " + agentId + " Session added >>>");
-
         serverManager.publishAllDevicesForAgent(devicesInformation, agentId);
+        LOGGER.debug("Agent with ID " + agentId + " registered.");
     }
 
     /**
@@ -190,8 +189,6 @@ public class ServerDispatcher {
 
         webSocketRequest.setSessionId(agentSession.getId());
 
-        LOGGER.debug("<<< Agent Session: " + agentSession + " >>>");
-
         ResponseMessage webSocketResponse = sendRequestForResponse(webSocketRequest, agentSession);
         Object response = webSocketResponse.getData();
 
@@ -267,7 +264,6 @@ public class ServerDispatcher {
      *        - the {@link javax.websocket.Session} session of the Agent
      */
     public void addAgent(String agentId, Session agentSession) {
-        LOGGER.debug("<<< " + agentId + " Session added >>>");
         agentIdToAgentSessionMap.put(agentId, agentSession);
     }
 

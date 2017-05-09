@@ -1,19 +1,10 @@
 package com.musala.atmosphere.server;
 
-import java.rmi.AccessException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.musala.atmosphere.commons.sa.IAgentManager;
-import com.musala.atmosphere.commons.sa.RmiStringConstants;
 import com.musala.atmosphere.server.dao.IAgentDao;
 import com.musala.atmosphere.server.dao.exception.AgentDaoException;
 import com.musala.atmosphere.server.data.db.ormlite.AgentDao;
@@ -22,6 +13,7 @@ import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
 import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.AgentDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
+import com.musala.atmosphere.server.websocket.ServerDispatcher;
 
 /**
  * Keeps track of the connected agents and is responsible for agent allocation.
@@ -32,30 +24,19 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
 public class AgentAllocator implements Subscriber {
     private static Logger LOGGER = Logger.getLogger(AgentAllocator.class.getCanonicalName());
 
-    private static Map<String, Registry> agentIdToRegistry = Collections.synchronizedMap(new HashMap<String, Registry>());
-
     private static IAgentDao agentDao;
+
+    private ServerDispatcher dispatcher = ServerDispatcher.getInstance();
 
     /**
      * Registers that an agent has connected to the server.
      *
-     * @param agentManager
-     *        - the {@link IAgentManager} of the connected agent.
-     * @param agentRegistry
-     *        - the RMI {@link Registry} of the connected agent.
-     * @param agentIp
-     *        - an IP address of the agent.
-     * @param agentPort
-     *        - the port on which the agent is published in RMI.
-     * @throws RemoteException
-     *         - thrown when connection to agent is lost.
+     * @param agentId
+     *        - an identifier of the agent.
      * @throws AgentDaoException
      *         - thrown when adding agent in the data source fails.
      */
-    public void registerAgent(IAgentManager agentManager, Registry agentRegistry, String agentIp, int agentPort)
-        throws RemoteException,
-            AgentDaoException {
-        String agentId = agentManager.getAgentId();
+    public void registerAgent(String agentId) throws AgentDaoException {
 
         if (agentDao.hasAgent(agentId)) {
             String message = String.format("Agent with ID %s is already registered on the server.", agentId);
@@ -63,8 +44,7 @@ public class AgentAllocator implements Subscriber {
             return;
         }
 
-        agentDao.add(agentId, agentIp, agentPort);
-        agentIdToRegistry.put(agentId, agentRegistry);
+        agentDao.add(agentId);
     }
 
     /**
@@ -77,41 +57,7 @@ public class AgentAllocator implements Subscriber {
      */
     public void unregisterAgent(String agentId) throws AgentDaoException {
         agentDao.remove(agentId);
-        agentIdToRegistry.remove(agentId);
-    }
-
-    /**
-     * Gets the RMI {@link Registry registry} of connected agent by a given unique agent identifier.
-     *
-     * @param agentId
-     *        - the unique agent identifier
-     * @return the RMI {@link Registry registry} of connected agent by a given unique agent identifier
-     */
-    public Registry getAgentRegistry(String agentId) {
-        return agentIdToRegistry.get(agentId);
-    }
-
-    /**
-     * Gets the {@link IAgentManager manager} of connected agent by a given unique agent identifier.
-     *
-     * @param agentId
-     *        - the unique agent identifier.
-     * @return the {@link IAgentManager manager}of connected agent by a given unique agent identifier.
-     * @throws AccessException
-     *         - thrown if finding {@link IAgentManager manager} from the RMI {@link Registry agent registry} fails
-     * @throws RemoteException
-     *         - thrown if connection to agent is lost
-     * @throws NotBoundException
-     *         - thrown if finding {@link IAgentManager manager} from the RMI {@link Registry agent registry} fails
-     */
-    public IAgentManager getAgentManager(String agentId) throws AccessException, RemoteException, NotBoundException {
-        Registry agentRegistry = agentIdToRegistry.get(agentId);
-
-        if (agentRegistry == null) {
-            return null;
-        }
-
-        return (IAgentManager) agentRegistry.lookup(RmiStringConstants.AGENT_MANAGER.toString());
+        dispatcher.removeAgent(agentId);
     }
 
     /**
