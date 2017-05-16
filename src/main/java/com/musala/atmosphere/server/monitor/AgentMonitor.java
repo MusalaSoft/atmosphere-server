@@ -1,13 +1,11 @@
 package com.musala.atmosphere.server.monitor;
 
-import java.rmi.registry.Registry;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.musala.atmosphere.commons.sa.IAgentManager;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentConnectedEvent;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentDisconnectedEvent;
 import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
@@ -15,26 +13,38 @@ import com.musala.atmosphere.server.monitor.ping.PingRequestHandler;
 
 /**
  * Common class responsible for monitoring agents. It listens for all agent related events.
- * 
+ *
  * @author filareta.yordanova
- * 
+ *
  */
 public class AgentMonitor implements Subscriber {
     private static final Logger LOGGER = Logger.getLogger(AgentMonitor.class);
 
-    private Map<IAgentManager, PingRequestHandler> pingHandlers = Collections.synchronizedMap(new HashMap<IAgentManager, PingRequestHandler>());
+    private Map<String, PingRequestHandler> pingHandlers = Collections.synchronizedMap(new HashMap<String, PingRequestHandler>());
+
+    /**
+     * Informs agent monitor for {@link AgentConnectedEvent event} received when an agent connects.
+     *
+     * @param event
+     *        - event, which is received when an agent is connected.
+     */
+    public void inform(AgentConnectedEvent event) {
+        LOGGER.info("Start pinging...");
+
+        PingRequestHandler pingRequestHandler = new PingRequestHandler(event.getAgentId());
+        pingHandlers.put(event.getAgentId(), pingRequestHandler);
+        pingRequestHandler.start();
+    }
 
     /**
      * Informs agent monitor for {@link AgentDisconnectedEvent event} received when an agent disconnects.
-     * 
+     *
      * @param event
      *        - event, which is received when an agent is disconnected.
-     * 
+     *
      */
     public void inform(AgentDisconnectedEvent event) {
-        IAgentManager disconnectedAgentManager = event.getDisconnectedAgentManager();
-
-        PingRequestHandler agentPingHandler = pingHandlers.remove(disconnectedAgentManager);
+        PingRequestHandler agentPingHandler = pingHandlers.remove(event.getAgentId());
 
         if (agentPingHandler != null) {
             agentPingHandler.terminate();
@@ -42,18 +52,18 @@ public class AgentMonitor implements Subscriber {
     }
 
     /**
-     * Informs agent monitor for {@link AgentConnectedEvent event} received when an agent connects.
-     * 
-     * @param event
-     *        - event, which is received when an agent is connected.
+     * Terminates the ping request sending for all {@link PingRequestHandler ping request handlers}. The action is
+     * requested when the connection is closed from the server side.
+     *
+     * @see {@link com.musala.atmosphere.server.Server#stop()}
+     *
      */
-    public void inform(AgentConnectedEvent event) {
-        IAgentManager connectedAgentManager = event.getConnectedAgentManager();
-        Registry agentRegistry = event.getAgentRegistry();
+    public void terminate() {
+        for (Map.Entry<String, PingRequestHandler> entry : pingHandlers.entrySet()) {
+            entry.getValue().terminate();
+        }
 
-        PingRequestHandler pingRequestHandler = new PingRequestHandler(connectedAgentManager, agentRegistry);
-        pingHandlers.put(connectedAgentManager, pingRequestHandler);
-        pingRequestHandler.start();
+        pingHandlers = null;
     }
 
 }
