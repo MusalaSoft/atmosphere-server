@@ -1,4 +1,4 @@
-package com.musala.atmosphere.server.registrymanager;
+/*package com.musala.atmosphere.server.registrymanager;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -14,11 +14,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.musala.atmosphere.server.DeviceProxy;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishedEvent;
 
-/**
- * 
+*//**
+ *
  * @author yavor.stankov
- * 
- */
+ *
+ *//*
 @RunWith(MockitoJUnitRunner.class)
 public class RemoteObjectRegistryManagerTest {
     private static String onAgentId = "123";
@@ -50,3 +50,4 @@ public class RemoteObjectRegistryManagerTest {
         verify(serverRmiRegistry).rebind(deviceUniqueIdentifier, deviceProxy);
     }
 }
+*/

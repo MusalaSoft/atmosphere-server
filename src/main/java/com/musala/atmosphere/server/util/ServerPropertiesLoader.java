@@ -23,17 +23,6 @@ public class ServerPropertiesLoader {
     }
 
     /**
-     * Returns the PoolManager RMI port from the server config file.
-     *
-     * @return - the port on which the {@link PoolManager} is published in RMI.
-     */
-    public static int getPoolManagerRmiPort() {
-        String returnValueString = getPropertyString(ServerProperties.POOL_MANAGER_RMI_PORT);
-        int returnValue = Integer.parseInt(returnValueString);
-        return returnValue;
-    }
-
-    /**
      * Returns the time in milliseconds between two consecutive updates on the table with devices' timeout values.
      *
      * @return - a device update time

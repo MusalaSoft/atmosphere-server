@@ -9,7 +9,7 @@ public class ServerPropertiesLoaderTest {
     @Test
     public void testPropertiesLoader() {
         int poolManagerPort = 0;
-        poolManagerPort = ServerPropertiesLoader.getPoolManagerRmiPort();
+        poolManagerPort = ServerPropertiesLoader.getWebSocketPort();
         assertNotSame("Returns property.", 0, poolManagerPort);
     }
 }

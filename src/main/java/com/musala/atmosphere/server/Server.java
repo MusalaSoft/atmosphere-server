@@ -1,8 +1,6 @@
 package com.musala.atmosphere.server;
 
 import java.io.IOException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -22,12 +20,13 @@ import com.musala.atmosphere.server.eventservice.event.agent.AgentEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.device.DeviceEvent;
+import com.musala.atmosphere.server.eventservice.event.device.publish.DeviceUnpublishedEvent;
 import com.musala.atmosphere.server.monitor.AgentMonitor;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
-import com.musala.atmosphere.server.registrymanager.RemoteObjectRegistryManager;
 import com.musala.atmosphere.server.state.ServerState;
 import com.musala.atmosphere.server.state.StoppedServer;
 import com.musala.atmosphere.server.util.ServerPropertiesLoader;
+import com.musala.atmosphere.server.websocket.ServerDispatcher;
 
 public class Server {
 
@@ -47,37 +46,37 @@ public class Server {
 
     private AgentMonitor agentMonitor;
 
-    private RemoteObjectRegistryManager registryManager;
-
     private IDataSourceManager dataSourceManager;
 
     private IDataSourceProvider dataSourceProvider;
 
-    private int serverRmiPort;
-
     private boolean isConnected;
 
+    private String serverIp;
+
+    private int serverPort;
+
+    private ServerDispatcher dispatcher = ServerDispatcher.getInstance();
+
     /**
-     * Creates a Server component bound on specified in the properties file port.
+     * Creates a Server component on specified in the properties file IP and port.
      *
-     * @throws RemoteException
-     *         - thrown when an error during the execution of a remote method call.
      */
-    public Server() throws RemoteException {
-        this(ServerPropertiesLoader.getPoolManagerRmiPort());
+    public Server() {
+        this(ServerPropertiesLoader.getServerIp(), ServerPropertiesLoader.getWebSocketPort());
     }
 
     /**
-     * Creates a Server component bound on given port.
+     * Creates a Server component bound on given IP and port.
      *
-     * @param serverPort
-     *        - port on which the Pool Manager of the Server will be published in RMI.
-     * @throws RemoteException
-     *         - thrown when an error during the execution of a remote method call.
      */
-    public Server(int serverPort) throws RemoteException {
-        serverRmiPort = serverPort;
-        serverManager = new ServerManager(serverRmiPort);
+    public Server(String serverIp, int serverPort) {
+        this.serverIp = serverIp;
+        this.serverPort = serverPort;
+
+        serverManager = new ServerManager();
+        dispatcher.setServerManager(serverManager);
+
         setState(new StoppedServer(this));
 
         serverConsole = new ConsoleControl();
@@ -86,14 +85,12 @@ public class Server {
         eventService = new ServerEventService();
         agentMonitor = new AgentMonitor();
 
-        registryManager = new RemoteObjectRegistryManager(serverManager.getRegistry());
-
         // Add subscribers to the event service for agent events.
         eventService.subscribe(AgentEvent.class, serverManager);
         eventService.subscribe(AgentEvent.class, agentMonitor);
 
-        // Add subscribers to the event service for device events.
-        eventService.subscribe(DeviceEvent.class, registryManager);
+        // TODO: Add subscribers to the event service for device events.
+        eventService.subscribe(DeviceUnpublishedEvent.class, serverManager);
 
         eventService.subscribe(DevicePoolDaoCreatedEvent.class, serverManager);
 
@@ -122,6 +119,7 @@ public class Server {
     public void run() {
         dataSourceManager.initialize();
         currentServerState.run();
+        dispatcher.startWebSocketServer(serverIp, serverPort);
     }
 
     /**
@@ -129,6 +127,8 @@ public class Server {
      */
     public void stop() {
         currentServerState.stop();
+        agentMonitor.terminate();
+        dispatcher.stopWebsocketServer();
     }
 
     /**
@@ -283,15 +283,15 @@ public class Server {
         }
     }
 
-    public static void main(String[] args) throws NotBoundException, IOException, InterruptedException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         // Check if an argument which specifies a port for the Server was passed.
         int portToCreateServerOn = 0;
         try {
             if (args.length == 1) {
-                String passedRmiPort = args[0];
-                portToCreateServerOn = Integer.parseInt(passedRmiPort);
+                String passedWebSocketPort = args[0];
+                portToCreateServerOn = Integer.parseInt(passedWebSocketPort);
             } else {
-                portToCreateServerOn = ServerPropertiesLoader.getPoolManagerRmiPort();
+                portToCreateServerOn = ServerPropertiesLoader.getWebSocketPort();
             }
         } catch (NumberFormatException e) {
             String errorMessage = "Parsing passed port resulted in an exception.";
@@ -299,7 +299,7 @@ public class Server {
             throw new RuntimeException(errorMessage, e);
         }
 
-        Server localServer = new Server(portToCreateServerOn);
+        Server localServer = new Server(ServerPropertiesLoader.getServerIp(), portToCreateServerOn);
         localServer.run();
         do {
             String passedShellCommand = localServer.readCommandFromConsole();
