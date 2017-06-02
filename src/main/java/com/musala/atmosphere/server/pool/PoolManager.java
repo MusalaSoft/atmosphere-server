@@ -37,7 +37,7 @@ import com.musala.atmosphere.server.eventservice.subscriber.Subscriber;
  *
  */
 public class PoolManager implements Subscriber {
-    private static final String DEVICE_ID_FORMAT = "%s_%s";
+    static final String DEVICE_ID_FORMAT = "%s_%s";
 
     private static Logger LOGGER = Logger.getLogger(PoolManager.class.getCanonicalName());
 
@@ -62,7 +62,7 @@ public class PoolManager implements Subscriber {
 
     /**
      * Refreshes the current state of the device - removes the device from the pool if it is not present on an Agent
-     * anymore and remove the device from the server's RMI registry.
+     * anymore and remove the device id from the cache.
      *
      * @param deviceId
      *        - the device ID
@@ -180,10 +180,6 @@ public class PoolManager implements Subscriber {
         IDevice device = availableDevicesList.get(0);
 
         DeviceInformation deviceInformation = device.getInformation();
-        String deviceSerialNumber = deviceInformation.getSerialNumber();
-        String onAgentId = device.getAgentId();
-
-        String bestMatchDeviceRmiId = buildDeviceIdentifier(onAgentId, deviceSerialNumber);
 
         device.allocate();
 
@@ -195,15 +191,14 @@ public class PoolManager implements Subscriber {
             LOGGER.error(message, e);
         }
 
-        String deviceId = device.getDeviceId();
+        final String bestMatchDeviceId = device.getDeviceId();
 
         long devicePasskey = device.getPasskey();
 
-        DeviceAllocationInformation allocatedDeviceDescriptor = new DeviceAllocationInformation(bestMatchDeviceRmiId,
-                                                                                                devicePasskey,
-                                                                                                deviceId);
+        DeviceAllocationInformation allocatedDeviceDescriptor = new DeviceAllocationInformation(devicePasskey,
+                                                                                                bestMatchDeviceId);
         ClientRequestMonitor deviceMonitor = new ClientRequestMonitor();
-        deviceMonitor.restartTimerForDevice(bestMatchDeviceRmiId);
+        deviceMonitor.restartTimerForDevice(bestMatchDeviceId);
 
         return allocatedDeviceDescriptor;
     }
@@ -228,10 +223,8 @@ public class PoolManager implements Subscriber {
 
         ArrayList<Pair<String, String>> serialNumberAndModelList = new ArrayList<>();
 
-        for (int index = 0; index < availableDevicesList.size(); index++) {
-            IDevice device = availableDevicesList.get(index);
+        for (IDevice device : availableDevicesList) {
             DeviceInformation deviceInformation = device.getInformation();
-
             serialNumberAndModelList.add(new Pair<>(deviceInformation.getSerialNumber(), deviceInformation.getModel()));
         }
 
@@ -282,7 +275,7 @@ public class PoolManager implements Subscriber {
         devicePoolDao = dataSoureceProvider.getDevicePoolDao();
     }
 
-    private static String buildDeviceIdentifier(String onAgentId, String deviceSerialNumber) {
+    public static String buildDeviceIdentifier(String onAgentId, String deviceSerialNumber) {
         String deviceIdentifier = String.format(DEVICE_ID_FORMAT, onAgentId, deviceSerialNumber);
 
         return deviceIdentifier;

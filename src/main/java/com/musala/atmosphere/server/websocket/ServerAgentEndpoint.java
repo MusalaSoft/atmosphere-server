@@ -30,8 +30,6 @@ public class ServerAgentEndpoint {
 
     @OnMessage
     public void onJsonMessage(String jsonMessage, Session session) {
-        // LOGGER.debug("Server: onMessage called");
-
         MessageAction messageAction = jsonUtil.getProperty(jsonMessage, JsonConst.MESSAGE_ACTION, MessageAction.class);
 
         switch (messageAction) {

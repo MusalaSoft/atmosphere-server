@@ -15,7 +15,7 @@ CREATE TABLE devices (
     has_camera TINYINT(1),
     is_allocated TINYINT(1) NOT NULL DEFAULT false,
     agent_id BIGINT NOT NULL,
-    rmi_registry_id VARCHAR(255) UNIQUE NOT NULL,
+    device_id VARCHAR(255) UNIQUE NOT NULL,
     passkey BIGINT NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (agent_id) REFERENCES agents (id)

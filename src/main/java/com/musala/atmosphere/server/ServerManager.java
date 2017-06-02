@@ -159,7 +159,6 @@ public class ServerManager implements Subscriber {
             String errorMessage = String.format("Failed to add agent with ID %s in the data source when trying to register the agent.",
                                                 agentId);
             LOGGER.error(errorMessage, e);
-            e.printStackTrace();
         }
     }
 
@@ -174,7 +173,7 @@ public class ServerManager implements Subscriber {
     public void publishAllDevicesForAgent(DeviceInformation[] devicesInformation, String agentId) {
         for (DeviceInformation deviceInformation : devicesInformation) {
             String deviceSerial = deviceInformation.getSerialNumber();
-            String deviceId = agentId + "_" + deviceSerial;
+            String deviceId = PoolManager.buildDeviceIdentifier(agentId, deviceSerial);
             deviceSerialToDeviceId.put(deviceSerial, deviceId);
 
             poolManager.addDevice(deviceInformation, agentId);
@@ -229,7 +228,8 @@ public class ServerManager implements Subscriber {
     }
 
     public void inform(DeviceUnpublishedEvent event) {
-        String deviceId = event.getUnpublishDeviceOnAgentId() + "_" + event.getUnpublishedDeviceSerialNumber();
+        String deviceId = PoolManager.buildDeviceIdentifier(event.getUnpublishDeviceOnAgentId(),
+                                                            event.getUnpublishedDeviceSerialNumber());
         dispatcher.removeCachedSessionByDeviceId(deviceId);
     }
 

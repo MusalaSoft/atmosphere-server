@@ -65,7 +65,7 @@ public class DevicePoolDaoIntegrationTest {
 
     private static Device[] expectedDevices = new Device[2];
 
-    private static final String[] testRmiIds = new String[3];
+    private static final String[] testDeviceIds = new String[3];
 
     private static final long[] testPasskeys = new long[3];
 
@@ -86,7 +86,7 @@ public class DevicePoolDaoIntegrationTest {
             testAgentIds[i] = "test Agent Id " + i;
             testAgentIps[i] = "test Agent IP " + i;
             testAgentPorts[i] = 1234 + i * 2;
-            testRmiIds[i] = "test Rmi Id " + i;
+            testDeviceIds[i] = "test Rmi Id " + i;
             testPasskeys[i] = 679254132 + i * 5;
             testAgentDao.add(testAgentIds[i]);
         }
@@ -94,7 +94,7 @@ public class DevicePoolDaoIntegrationTest {
         for (int i = 0; i < 2; i++) {
             testAgents[i] = new Agent(testAgentIds[i]);
             deviceInformation[i] = new DeviceInformation();
-            expectedDevices[i] = new Device(deviceInformation[i], testRmiIds[i], testPasskeys[i]);
+            expectedDevices[i] = new Device(deviceInformation[i], testDeviceIds[i], testPasskeys[i]);
             expectedDevices[i].setAgent(testAgents[i]);
             testRam[i] = 128 + 128 * i;
         }
@@ -122,7 +122,7 @@ public class DevicePoolDaoIntegrationTest {
     @After
     public void tearDownTest() throws Exception {
         for (int i = 0; i < 3; i++) {
-            testDeviceDao.remove(testRmiIds[i]);
+            testDeviceDao.remove(testDeviceIds[i]);
         }
     }
 
@@ -136,16 +136,16 @@ public class DevicePoolDaoIntegrationTest {
     @Test
     public void testAddDeviceOneDeviceOnly() throws Exception {
         Device addedDevice = (Device) testDevicePoolDao.addDevice(deviceInformation[0],
-                                                                  testRmiIds[0],
+                                                                  testDeviceIds[0],
                                                                   testAgentIds[0],
                                                                   testPasskeys[0]);
-        assertAddDevice(testAgentIds[0], testRmiIds[0], expectedDevices[0], addedDevice);
+        assertAddDevice(testAgentIds[0], testDeviceIds[0], expectedDevices[0], addedDevice);
     }
 
     @Test(expected = DevicePoolDaoException.class)
     public void testAddDeviceWhenTwoDevicesWithSameIdExists() throws Exception {
-        testDevicePoolDao.addDevice(deviceInformation[0], testRmiIds[0], testAgentIds[0], testPasskeys[0]);
-        testDevicePoolDao.addDevice(deviceInformation[0], testRmiIds[0], testAgentIds[0], testPasskeys[1]);
+        testDevicePoolDao.addDevice(deviceInformation[0], testDeviceIds[0], testAgentIds[0], testPasskeys[0]);
+        testDevicePoolDao.addDevice(deviceInformation[0], testDeviceIds[0], testAgentIds[0], testPasskeys[1]);
     }
 
     @Test
@@ -153,17 +153,17 @@ public class DevicePoolDaoIntegrationTest {
         Device[] addedDevices = new Device[2];
         for (int i = 0; i < 2; i++) {
             addedDevices[i] = (Device) testDevicePoolDao.addDevice(deviceInformation[i],
-                                                                   testRmiIds[i],
+                                                                   testDeviceIds[i],
                                                                    testAgentIds[i],
                                                                    testPasskeys[i]);
-            assertAddDevice(testAgentIds[i], testRmiIds[i], expectedDevices[i], addedDevices[i]);
+            assertAddDevice(testAgentIds[i], testDeviceIds[i], expectedDevices[i], addedDevices[i]);
         }
     }
 
     @Test(expected = DevicePoolDaoException.class)
     public void testAddDeviceTwoDevicesHaveTheSameIdAndDifferentAgents() throws Exception {
-        testDevicePoolDao.addDevice(deviceInformation[0], testRmiIds[0], testAgentIds[0], testPasskeys[0]);
-        testDevicePoolDao.addDevice(deviceInformation[1], testRmiIds[0], testAgentIds[1], testPasskeys[1]);
+        testDevicePoolDao.addDevice(deviceInformation[0], testDeviceIds[0], testAgentIds[0], testPasskeys[0]);
+        testDevicePoolDao.addDevice(deviceInformation[1], testDeviceIds[0], testAgentIds[1], testPasskeys[1]);
     }
 
     @Test
@@ -171,32 +171,32 @@ public class DevicePoolDaoIntegrationTest {
         Device[] addedDevices = new Device[2];
         for (int i = 0; i < 2; i++) {
             addedDevices[i] = (Device) testDevicePoolDao.addDevice(deviceInformation[i],
-                                                                   testRmiIds[i],
+                                                                   testDeviceIds[i],
                                                                    testAgentIds[i],
                                                                    testPasskeys[0]);
-            assertAddDevice(testAgentIds[i], testRmiIds[i], expectedDevices[i], addedDevices[i]);
+            assertAddDevice(testAgentIds[i], testDeviceIds[i], expectedDevices[i], addedDevices[i]);
         }
     }
 
     @Test(expected = DevicePoolDaoException.class)
     public void testAddDeviceWithNonExistingAgent() throws Exception {
-        testDevicePoolDao.addDevice(deviceInformation[0], testRmiIds[0], NON_EXISTING_AGENT_ID, testPasskeys[0]);
+        testDevicePoolDao.addDevice(deviceInformation[0], testDeviceIds[0], NON_EXISTING_AGENT_ID, testPasskeys[0]);
     }
 
     @Test(expected = AgentDaoException.class)
     public void testAddDeviceAndThenRemoveItsAgent() throws Exception {
         Device addedDevice = (Device) testDevicePoolDao.addDevice(deviceInformation[0],
-                                                                  testRmiIds[0],
+                                                                  testDeviceIds[0],
                                                                   testAgentIds[0],
                                                                   testPasskeys[0]);
-        assertAddDevice(testAgentIds[0], testRmiIds[0], expectedDevices[0], addedDevice);
+        assertAddDevice(testAgentIds[0], testDeviceIds[0], expectedDevices[0], addedDevice);
         testAgentDao.remove(testAgentIds[0]);
     }
 
     @Test
     public void testUpdateDeviceOneDeviceWithGivenDeviceInformation() throws Exception {
         Device addedDevice = (Device) testDevicePoolDao.addDevice(deviceInformation[0],
-                                                                  testRmiIds[0],
+                                                                  testDeviceIds[0],
                                                                   testAgentIds[0],
                                                                   testPasskeys[0]);
 
@@ -215,37 +215,37 @@ public class DevicePoolDaoIntegrationTest {
         assertFalse("The added device infromation is not updated as expected.",
                     updatedDeviceInformation.equals(deviceInformation[0]));
 
-        Device selectedDevice = (Device) testDeviceDao.selectById(testRmiIds[0]);
+        Device selectedDevice = (Device) testDeviceDao.selectById(testDeviceIds[0]);
         assertEquals("The added device information is not correctly updated.", addedDevice, selectedDevice);
     }
 
     @Test(expected = DevicePoolDaoException.class)
     public void testUpdateDeviceRmiIdWhenItIsAlreadyUsed() throws Exception {
-        testDevicePoolDao.addDevice(deviceInformation[0], testRmiIds[0], testAgentIds[0], testPasskeys[0]);
+        testDevicePoolDao.addDevice(deviceInformation[0], testDeviceIds[0], testAgentIds[0], testPasskeys[0]);
 
         Device addedDevice = (Device) testDevicePoolDao.addDevice(deviceInformation[1],
-                                                                  testRmiIds[1],
+                                                                  testDeviceIds[1],
                                                                   testAgentIds[1],
                                                                   testPasskeys[0]);
 
-        addedDevice.setRmiRegistryId(testRmiIds[0]);
+        addedDevice.setDeviceId(testDeviceIds[0]);
         testDevicePoolDao.update(addedDevice);
     }
 
     @Test
     public void testGetDeviceById() throws Exception {
         Device addedDevice = (Device) testDevicePoolDao.addDevice(deviceInformation[0],
-                                                                  testRmiIds[0],
+                                                                  testDeviceIds[0],
                                                                   testAgentIds[0],
                                                                   testPasskeys[0]);
 
-        Device receivedDevice = (Device) testDevicePoolDao.getDevice(testRmiIds[0]);
+        Device receivedDevice = (Device) testDevicePoolDao.getDevice(testDeviceIds[0]);
         assertEquals("The added device is different from the received one.", addedDevice, receivedDevice);
     }
 
     @Test
     public void testGetDeviceByNonExistentId() throws Exception {
-        assertNull("A device was fetch using nonexistent id.", testDevicePoolDao.getDevice(testRmiIds[0]));
+        assertNull("A device was fetch using nonexistent id.", testDevicePoolDao.getDevice(testDeviceIds[0]));
     }
 
     @Test
@@ -255,12 +255,12 @@ public class DevicePoolDaoIntegrationTest {
         deviceInformation.setRam(testRam[0]);
 
         Device firstAddedDevice = (Device) testDevicePoolDao.addDevice(deviceInformation,
-                                                                       testRmiIds[0],
+                                                                       testDeviceIds[0],
                                                                        testAgentIds[0],
                                                                        testPasskeys[0]);
 
         Device secondAddedDevice = (Device) testDevicePoolDao.addDevice(deviceInformation,
-                                                                        testRmiIds[1],
+                                                                        testDeviceIds[1],
                                                                         testAgentIds[0],
                                                                         testPasskeys[0]);
 
@@ -283,12 +283,12 @@ public class DevicePoolDaoIntegrationTest {
         deviceInformation.setRam(testRam[0]);
 
         Device firstAddedDevice = (Device) testDevicePoolDao.addDevice(deviceInformation,
-                                                                       testRmiIds[0],
+                                                                       testDeviceIds[0],
                                                                        testAgentIds[0],
                                                                        testPasskeys[0]);
 
         Device secondAddedDevice = (Device) testDevicePoolDao.addDevice(deviceInformation,
-                                                                        testRmiIds[1],
+                                                                        testDeviceIds[1],
                                                                         testAgentIds[1],
                                                                         testPasskeys[0]);
 
@@ -310,8 +310,8 @@ public class DevicePoolDaoIntegrationTest {
         deviceInformation.setApiLevel(TEST_API_LEVEL);
         deviceInformation.setRam(testRam[0]);
 
-        testDevicePoolDao.addDevice(deviceInformation, testRmiIds[0], testAgentIds[0], testPasskeys[0]);
-        testDevicePoolDao.addDevice(deviceInformation, testRmiIds[1], testAgentIds[1], testPasskeys[0]);
+        testDevicePoolDao.addDevice(deviceInformation, testDeviceIds[0], testAgentIds[0], testPasskeys[0]);
+        testDevicePoolDao.addDevice(deviceInformation, testDeviceIds[1], testAgentIds[1], testPasskeys[0]);
 
         DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder().ramCapacity(NON_EXISTING_RAM)
                                                                            .targetApi(TEST_API_LEVEL);
@@ -328,14 +328,14 @@ public class DevicePoolDaoIntegrationTest {
         deviceInformation.setApiLevel(TEST_API_LEVEL);
         deviceInformation.setRam(testRam[0]);
 
-        testDevicePoolDao.addDevice(deviceInformation, testRmiIds[0], testAgentIds[0], testPasskeys[0]);
+        testDevicePoolDao.addDevice(deviceInformation, testDeviceIds[0], testAgentIds[0], testPasskeys[0]);
 
         DeviceSelectorBuilder selectorBuilder = new DeviceSelectorBuilder();
         DeviceSelector deviceSelector = selectorBuilder.ramCapacity(testRam[0]).targetApi(TEST_API_LEVEL).build();
         DeviceSelector nonExistentDeviceSelector = selectorBuilder.targetApi(NON_EXISTENT_API_LEVEL).build();
 
         assertTrue("The device searched by it's ID is not found when present. ",
-                   testDevicePoolDao.hasDevice(testRmiIds[0]));
+                   testDevicePoolDao.hasDevice(testDeviceIds[0]));
         assertTrue("The device searched by device selector is not found when present",
                    testDevicePoolDao.hasDevice(deviceSelector, false));
 
@@ -355,7 +355,7 @@ public class DevicePoolDaoIntegrationTest {
         DeviceSelector deviceSelector = selectorBuilder.build();
 
         IDevice firstAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
-                                                               testRmiIds[0],
+                                                               testDeviceIds[0],
                                                                testAgentIds[0],
                                                                testPasskeys[0]);
 
@@ -381,15 +381,15 @@ public class DevicePoolDaoIntegrationTest {
         DeviceSelector deviceSelector = selectorBuilder.build();
 
         IDevice firstAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
-                                                               testRmiIds[0],
+                                                               testDeviceIds[0],
                                                                testAgentIds[0],
                                                                testPasskeys[0]);
         IDevice secondAddedDevice = testDevicePoolDao.addDevice(secondDeviceInformation,
-                                                                testRmiIds[1],
+                                                                testDeviceIds[1],
                                                                 testAgentIds[1],
                                                                 testPasskeys[1]);
         IDevice thirdAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
-                                                               testRmiIds[2],
+                                                               testDeviceIds[2],
                                                                testAgentIds[1],
                                                                testPasskeys[2]);
 
@@ -418,15 +418,15 @@ public class DevicePoolDaoIntegrationTest {
         DeviceSelector deviceSelector = selectorBuilder.build();
 
         IDevice firstAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
-                                                               testRmiIds[0],
+                                                               testDeviceIds[0],
                                                                testAgentIds[0],
                                                                testPasskeys[0]);
         IDevice secondAddedDevice = testDevicePoolDao.addDevice(secondDeviceInformation,
-                                                                testRmiIds[1],
+                                                                testDeviceIds[1],
                                                                 testAgentIds[1],
                                                                 testPasskeys[1]);
         IDevice thirdAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
-                                                               testRmiIds[2],
+                                                               testDeviceIds[2],
                                                                testAgentIds[1],
                                                                testPasskeys[2]);
 
@@ -456,15 +456,15 @@ public class DevicePoolDaoIntegrationTest {
         DeviceSelector deviceSelector = selectorBuilder.build();
 
         IDevice firstAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
-                                                               testRmiIds[0],
+                                                               testDeviceIds[0],
                                                                testAgentIds[0],
                                                                testPasskeys[0]);
         IDevice secondAddedDevice = testDevicePoolDao.addDevice(secondDeviceInformation,
-                                                                testRmiIds[1],
+                                                                testDeviceIds[1],
                                                                 testAgentIds[1],
                                                                 testPasskeys[1]);
         IDevice thirdAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
-                                                               testRmiIds[2],
+                                                               testDeviceIds[2],
                                                                testAgentIds[0],
                                                                testPasskeys[2]);
 
@@ -494,19 +494,19 @@ public class DevicePoolDaoIntegrationTest {
         deviceInformation.setRam(testRam[0]);
 
         IDevice addedDevice = testDevicePoolDao.addDevice(deviceInformation,
-                                                          testRmiIds[0],
+                                                          testDeviceIds[0],
                                                           testAgentIds[0],
                                                           testPasskeys[0]);
         Agent addedDeviceAgent = (Agent) testAgentDao.selectByAgentId(testAgentIds[0]);
         assertTrue("The agent was not updated after adding a device to it.",
                    addedDeviceAgent.getDevices().contains(addedDevice));
-        IDevice selectedDevice = testDeviceDao.selectById(testRmiIds[0]);
+        IDevice selectedDevice = testDeviceDao.selectById(testDeviceIds[0]);
         assertEquals("The device added in the database is different from the device reveived from device dao.",
                      addedDevice,
                      selectedDevice);
 
-        testDevicePoolDao.remove(testRmiIds[0]);
-        assertNull("A device was found when they were removed.", testDevicePoolDao.getDevice(testRmiIds[0]));
+        testDevicePoolDao.remove(testDeviceIds[0]);
+        assertNull("A device was found when they were removed.", testDevicePoolDao.getDevice(testDeviceIds[0]));
     }
 
     @Test
@@ -516,13 +516,13 @@ public class DevicePoolDaoIntegrationTest {
         deviceInformation.setRam(testRam[0]);
 
         IDevice addedDevice = testDevicePoolDao.addDevice(deviceInformation,
-                                                          testRmiIds[0],
+                                                          testDeviceIds[0],
                                                           testAgentIds[0],
                                                           testPasskeys[0]);
         addedDevice.allocate();
         testDevicePoolDao.update(addedDevice);
-        testDevicePoolDao.remove(testRmiIds[0]);
-        assertNull("A device was found when they were removed.", testDevicePoolDao.getDevice(testRmiIds[0]));
+        testDevicePoolDao.remove(testDeviceIds[0]);
+        assertNull("A device was found when they were removed.", testDevicePoolDao.getDevice(testDeviceIds[0]));
     }
 
     @Test
@@ -532,15 +532,15 @@ public class DevicePoolDaoIntegrationTest {
         deviceInformation.setApiLevel(TEST_API_LEVEL);
         deviceInformation.setRam(testRam[0]);
 
-        testDevicePoolDao.addDevice(deviceInformation, testRmiIds[0], testAgentIds[0], testPasskeys[0]);
+        testDevicePoolDao.addDevice(deviceInformation, testDeviceIds[0], testAgentIds[0], testPasskeys[0]);
         IDevice secondAddedDevice = testDevicePoolDao.addDevice(deviceInformation,
-                                                                testRmiIds[1],
+                                                                testDeviceIds[1],
                                                                 testAgentIds[0],
                                                                 testPasskeys[1]);
         secondAddedDevice.allocate();
         testDevicePoolDao.update(secondAddedDevice);
 
-        testDevicePoolDao.addDevice(deviceInformation, testRmiIds[2], testAgentIds[1], testPasskeys[2]);
+        testDevicePoolDao.addDevice(deviceInformation, testDeviceIds[2], testAgentIds[1], testPasskeys[2]);
 
         int numberOfRemovedDevices = testDevicePoolDao.removeDevices(testAgentIds[0]);
         assertTrue("The agent was removed after deleting all devices from it.", testAgentDao.hasAgent(testAgentIds[0]));
@@ -550,9 +550,9 @@ public class DevicePoolDaoIntegrationTest {
                      numberOfRemovedDevices,
                      EXPECTED_NUMBER_OF_REMOVED_DEVICES);
 
-        assertFalse("Removing of the device failed.", testDevicePoolDao.hasDevice(testRmiIds[0]));
-        assertFalse("Removing of the device failed.", testDevicePoolDao.hasDevice(testRmiIds[1]));
-        assertTrue("Device is not present when it was not removed.", testDevicePoolDao.hasDevice(testRmiIds[2]));
+        assertFalse("Removing of the device failed.", testDevicePoolDao.hasDevice(testDeviceIds[0]));
+        assertFalse("Removing of the device failed.", testDevicePoolDao.hasDevice(testDeviceIds[1]));
+        assertTrue("Device is not present when it was not removed.", testDevicePoolDao.hasDevice(testDeviceIds[2]));
     }
 
     @Test(expected = DevicePoolDaoRuntimeException.class)
@@ -678,15 +678,15 @@ public class DevicePoolDaoIntegrationTest {
     private void populateDeviceBase() throws Exception {
         DeviceInformation firstDeviceInformation = new DeviceInformation();
         firstDeviceInformation.setApiLevel(10);
-        testDevicePoolDao.addDevice(firstDeviceInformation, testRmiIds[0], testAgentIds[0], testPasskeys[0]);
+        testDevicePoolDao.addDevice(firstDeviceInformation, testDeviceIds[0], testAgentIds[0], testPasskeys[0]);
 
         DeviceInformation secondDeviceInformation = new DeviceInformation();
         secondDeviceInformation.setApiLevel(16);
-        testDevicePoolDao.addDevice(secondDeviceInformation, testRmiIds[1], testAgentIds[1], testPasskeys[1]);
+        testDevicePoolDao.addDevice(secondDeviceInformation, testDeviceIds[1], testAgentIds[1], testPasskeys[1]);
 
         DeviceInformation thirdDeviceInformation = new DeviceInformation();
         thirdDeviceInformation.setApiLevel(21);
-        testDevicePoolDao.addDevice(thirdDeviceInformation, testRmiIds[2], testAgentIds[1], testPasskeys[2]);
+        testDevicePoolDao.addDevice(thirdDeviceInformation, testDeviceIds[2], testAgentIds[1], testPasskeys[2]);
     }
 
     /**

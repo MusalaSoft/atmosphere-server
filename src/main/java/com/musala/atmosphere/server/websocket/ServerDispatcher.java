@@ -137,7 +137,7 @@ public class ServerDispatcher {
         } catch (CommandFailedException ex) {
             Session agentSession = agentIdToAgentSessionCache.get(agentId);
             sendErrorResponseMessage(ex, agentSession, deviceListChangedRequest.getSessionId());
-            ex.printStackTrace();
+            LOGGER.error(ex);
         }
     }
 
@@ -194,15 +194,12 @@ public class ServerDispatcher {
     }
 
     /**
-     * Returns {@link DeviceAllocationInformation} of a device for the provided selector.
+     * Allocates a device and send back a message with the {@link DeviceAllocationInformation} to the Client.
      *
-     * @param deviceSelector
-     *        - the {@link DeviceSelector} with the parameters of the requested device
-     * @return {@link DeviceAllocationInformation}
-     * @throws NoDeviceMatchingTheGivenSelectorException
-     *         - if a device corresponding to the provided selection properties is not present on the server
-     * @throws NoAvailableDeviceFoundException
-     *         - if a device was found but is currently allocated by another client
+     * @param getDeviceAllocationInformationRequest
+     *        - {@link RequestMessage request message}
+     * @param clientSession
+     *        - the client's {@link Session session}
      */
     void sendGetDeviceAllocationInfoRequest(RequestMessage getDeviceAllocationInformationRequest,
                                             Session clientSession) {
@@ -218,6 +215,7 @@ public class ServerDispatcher {
             sendText(jsonUtil.serialize(response), clientSession);
         } catch (NoDeviceMatchingTheGivenSelectorException | NoAvailableDeviceFoundException ex) {
             sendErrorResponseMessage(ex, clientSession, getDeviceAllocationInformationRequest.getSessionId());
+            LOGGER.error(ex);
         }
 
     }
@@ -230,6 +228,7 @@ public class ServerDispatcher {
     void sendGetAllAvailableDevicesRequest(RequestMessage getAllAvailableDevicesRequres, Session clientSession) {
         List<Pair<String, String>> devices = poolManager.getAllAvailableDevices();
         ResponseMessage response = new ResponseMessage(MessageAction.GET_ALL_AVAILABLE_DEVICES, devices);
+        response.setSessionId(getAllAvailableDevicesRequres.getSessionId());
 
         sendText(jsonUtil.serialize(response), clientSession);
     }
@@ -253,8 +252,8 @@ public class ServerDispatcher {
 
             sendText(jsonUtil.serialize(releseResponse), session);
         } catch (InvalidPasskeyException | DeviceNotFoundException ex) {
-            LOGGER.error("Failed to release a device with id " + deviceId, ex);
             sendErrorResponseMessage(ex, session, requestMessage.getSessionId());
+            LOGGER.error("Failed to release a device with id " + deviceId, ex);
         }
     }
 

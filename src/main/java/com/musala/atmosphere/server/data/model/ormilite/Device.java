@@ -68,8 +68,8 @@ public class Device implements IDevice {
     @DatabaseField(columnName = DeviceColumnName.AGENT, canBeNull = false, foreign = true, foreignAutoRefresh = true, foreignColumnName = AgentColumnName.ID)
     private Agent agent;
 
-    @DatabaseField(columnName = DeviceColumnName.RMI_REGISTRY_ID, unique = true, canBeNull = false)
-    private String rmiRegistryId;
+    @DatabaseField(columnName = DeviceColumnName.DEVICE_ID, unique = true, canBeNull = false)
+    private String deviceId;
 
     @DatabaseField(columnName = DeviceColumnName.PASSKEY, canBeNull = false)
     private long passkey;
@@ -79,29 +79,29 @@ public class Device implements IDevice {
     }
 
     /**
-     * Creates new device with the given serial number and RMI id.
+     * Creates new device with the given serial number and an identifier.
      *
      * @param serialNumber
      *        - the serial number of this device
-     * @param rmiRegistryId
-     *        - the RMI registry of this device
+     * @param deviceId
+     *        - the identifier of this device
      */
-    public Device(String serialNumber, String rmiRegistryId) {
+    public Device(String serialNumber, String deviceId) {
         this.serialNumber = serialNumber;
-        this.rmiRegistryId = rmiRegistryId;
+        this.deviceId = deviceId;
     }
 
     /**
-     * Creates new device with the given serial number, RMI id and passkey.
+     * Creates new device with the given serial number, device identifier and passkey.
      *
      * @param deviceInformation
      *        - the {@link DeviceInformation information} of this device
-     * @param rmiId
-     *        - the RMI registry of this device
+     * @param deviceId
+     *        - the identifier of this device
      * @param passkeyAuthority
      *        - a passkey for validating authority
      */
-    public Device(DeviceInformation deviceInformation, String rmiId, long passkeyAuthority) {
+    public Device(DeviceInformation deviceInformation, String deviceId, long passkeyAuthority) {
         apiLevel = deviceInformation.getApiLevel();
         cpu = deviceInformation.getCpu();
         dpi = deviceInformation.getDpi();
@@ -116,7 +116,7 @@ public class Device implements IDevice {
         isEmulator = deviceInformation.isEmulator();
         isTablet = deviceInformation.isTablet();
         hasCamera = deviceInformation.hasCamera();
-        rmiRegistryId = rmiId;
+        this.deviceId = deviceId;
         passkey = passkeyAuthority;
     }
 
@@ -159,22 +159,13 @@ public class Device implements IDevice {
     }
 
     /**
-     * Gets the RMI registry id of this device.
+     * Sets the identifier of this device.
      *
-     * @return the RMI registry of this device
+     * @param deviceId
+     *        - the identifier of this device
      */
-    public String getRmiRegistryId() {
-        return rmiRegistryId;
-    }
-
-    /**
-     * Sets the RMI registry id of this device.
-     *
-     * @param rmiRegistryId
-     *        - the RMI registry of this device
-     */
-    public void setRmiRegistryId(String rmiRegistryId) {
-        this.rmiRegistryId = rmiRegistryId;
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     /**
@@ -467,7 +458,7 @@ public class Device implements IDevice {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 31).append(agent).append(rmiRegistryId).append(serialNumber).toHashCode();
+        return new HashCodeBuilder(17, 31).append(agent).append(deviceId).append(serialNumber).toHashCode();
     }
 
     @Override
@@ -483,7 +474,7 @@ public class Device implements IDevice {
         Device device = (Device) object;
 
         return new EqualsBuilder().append(agent, device.agent)
-                                  .append(rmiRegistryId, device.rmiRegistryId)
+                                  .append(deviceId, device.deviceId)
                                   .append(serialNumber, device.serialNumber)
                                   .isEquals();
     }
@@ -551,8 +542,8 @@ public class Device implements IDevice {
 
     @Override
     public String getDeviceId() {
-        // For now the unique identifier for the device is its RMI id.
-        return rmiRegistryId;
+        // For now the unique identifier for the device is its device id (agentId + "_" + deviceSerial).
+        return deviceId;
     }
 
     @Override

@@ -99,7 +99,7 @@ public class DeviceDao {
      */
     public void remove(String deviceId) throws DeviceDaoException {
         try {
-            Device deviceToRemove = getDeviceByFieldValue(DeviceColumnName.RMI_REGISTRY_ID, deviceId);
+            Device deviceToRemove = getDeviceByFieldValue(DeviceColumnName.DEVICE_ID, deviceId);
 
             if (deviceToRemove == null) {
                 return;
@@ -123,7 +123,7 @@ public class DeviceDao {
      */
     public IDevice selectById(String id) throws DeviceDaoException {
         try {
-            return getDeviceByFieldValue(DeviceColumnName.RMI_REGISTRY_ID, id);
+            return getDeviceByFieldValue(DeviceColumnName.DEVICE_ID, id);
         } catch (SQLException e) {
             String message = String.format("Getting ID for device with RMI id %s failed, because data source failed.",
                                            id);
