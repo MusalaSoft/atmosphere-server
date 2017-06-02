@@ -34,11 +34,11 @@ import com.musala.atmosphere.server.data.model.ormilite.Device;
 public class DeviceDaoTest {
     private static final String TEST_DEVICE_SERIAL_NUMBER = "serial_number";
 
-    private static final String TEST_DEVICE_RMI_ID = "rmi_registry_id";
+    private static final String TEST_DEVICE_RMI_ID = "device_id";
 
     private static final String EXISTING_DEVICE_SERIAL_NUMBER = "existing_serial_number";
 
-    private static final String EXISTING_DEVICE_RMI_ID = "existing_rmi_registry_id";
+    private static final String EXISTING_DEVICE_ID = "existing_device_id";
 
     private static DeviceDao testDeviceDao;
 
@@ -69,20 +69,20 @@ public class DeviceDaoTest {
     public void testRemoveDeviceWhenDeviceExists() throws Exception {
         List<Device> resultsList = getFakeResultList();
         Map<String, Object> query = new HashMap<String, Object>();
-        query.put(DeviceColumnName.RMI_REGISTRY_ID, EXISTING_DEVICE_RMI_ID);
-        Device deviceToDelete = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_RMI_ID);
+        query.put(DeviceColumnName.DEVICE_ID, EXISTING_DEVICE_ID);
+        Device deviceToDelete = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_ID);
         deviceToDelete.setAgent(mockedAgent);
 
         when(mockedDeviceDao.queryForFieldValuesArgs(eq(query))).thenReturn(resultsList);
         when(mockedDeviceDao.delete(eq(deviceToDelete))).thenReturn(1);
 
-        testDeviceDao.remove(EXISTING_DEVICE_RMI_ID);
+        testDeviceDao.remove(EXISTING_DEVICE_ID);
         verify(mockedDeviceDao, times(1)).delete(eq(deviceToDelete));
     }
 
     @Test(expected = DeviceDaoException.class)
     public void testAddDeviceThatAlreadyExists() throws Exception {
-        Device device = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_RMI_ID);
+        Device device = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_ID);
         device.setAgent(mockedAgent);
 
         when(mockedDeviceDao.create(eq(device))).thenThrow(new SQLException());
@@ -116,15 +116,15 @@ public class DeviceDaoTest {
     @Test(expected = DeviceDaoException.class)
     public void testRemoveDeviceWhenDeleteFailed() throws Exception {
         List<Device> resultsList = getFakeResultList();
-        Device deviceToRemove = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_RMI_ID);
+        Device deviceToRemove = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_ID);
         deviceToRemove.setAgent(mockedAgent);
         Map<String, Object> query = new HashMap<String, Object>();
-        query.put(DeviceColumnName.RMI_REGISTRY_ID, EXISTING_DEVICE_RMI_ID);
+        query.put(DeviceColumnName.DEVICE_ID, EXISTING_DEVICE_ID);
 
         when(mockedDeviceDao.queryForFieldValuesArgs(eq(query))).thenReturn(resultsList);
         when(mockedDeviceDao.delete(eq(deviceToRemove))).thenThrow(new SQLException());
 
-        testDeviceDao.remove(EXISTING_DEVICE_RMI_ID);
+        testDeviceDao.remove(EXISTING_DEVICE_ID);
         verify(mockedDeviceDao, times(1)).delete(eq(deviceToRemove));
     }
 
@@ -133,7 +133,7 @@ public class DeviceDaoTest {
         List<Device> resultsList = new ArrayList<Device>();
         Device deviceToRemove = null;
         Map<String, Object> query = new HashMap<String, Object>();
-        query.put(DeviceColumnName.RMI_REGISTRY_ID, TEST_DEVICE_RMI_ID);
+        query.put(DeviceColumnName.DEVICE_ID, TEST_DEVICE_RMI_ID);
         when(mockedDeviceDao.queryForFieldValuesArgs(eq(query))).thenReturn(resultsList);
 
         testDeviceDao.remove(TEST_DEVICE_RMI_ID);
@@ -160,14 +160,14 @@ public class DeviceDaoTest {
     @Test
     public void testSelectDeviceByRmiId() throws Exception {
         List<Device> resultsList = getFakeResultList();
-        Device expectedDevice = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_RMI_ID);
+        Device expectedDevice = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_ID);
         expectedDevice.setAgent(mockedAgent);
         Map<String, Object> query = new HashMap<String, Object>();
-        query.put(DeviceColumnName.RMI_REGISTRY_ID, EXISTING_DEVICE_RMI_ID);
+        query.put(DeviceColumnName.DEVICE_ID, EXISTING_DEVICE_ID);
 
         when(mockedDeviceDao.queryForFieldValuesArgs(eq(query))).thenReturn(resultsList);
 
-        IDevice receivedDevice = testDeviceDao.selectById(EXISTING_DEVICE_RMI_ID);
+        IDevice receivedDevice = testDeviceDao.selectById(EXISTING_DEVICE_ID);
         verify(mockedDeviceDao, times(1)).queryForFieldValuesArgs(eq(query));
 
         assertEquals("Device found for the requested RMI id is different from the expected one.",
@@ -179,7 +179,7 @@ public class DeviceDaoTest {
     public void testSelectByRmiIdWhenDeviceDoesNotExist() throws Exception {
         List<Device> resultsList = new ArrayList<Device>();
         Map<String, Object> query = new HashMap<String, Object>();
-        query.put(DeviceColumnName.RMI_REGISTRY_ID, TEST_DEVICE_RMI_ID);
+        query.put(DeviceColumnName.DEVICE_ID, TEST_DEVICE_RMI_ID);
 
         when(mockedDeviceDao.queryForFieldValuesArgs(eq(query))).thenReturn(resultsList);
 
@@ -191,7 +191,7 @@ public class DeviceDaoTest {
 
     private List<Device> getFakeResultList() {
         List<Device> resultsList = new ArrayList<Device>();
-        Device existingDevice = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_RMI_ID);
+        Device existingDevice = new Device(EXISTING_DEVICE_SERIAL_NUMBER, EXISTING_DEVICE_ID);
         existingDevice.setAgent(mockedAgent);
 
         resultsList.add(existingDevice);

@@ -39,6 +39,8 @@ public class PoolManagerDeviceSelectionTest {
     private final static String BUILD_DEVICE_IDENTIFIER_METHOD_NAME = "buildDeviceIdentifier";
 
     private final static String AGENT_ID = "mockagent";
+    
+    private static final String DEVICE_ID_FORMAT = AGENT_ID + "_%s";
 
     private final static String FIRST_DEVICE_SERIAL_NUMBER = "mockdevice1";
 
@@ -50,15 +52,15 @@ public class PoolManagerDeviceSelectionTest {
 
     private static final String FIFTH_DEVICE_SERIAL_NUMBER = "mockdevice5";
 
-    private final static String FIRST_DEVICE_RMI_ID = "rmiId1";
+    private final static String FIRST_DEVICE_ID = String.format(DEVICE_ID_FORMAT, FIRST_DEVICE_SERIAL_NUMBER);
 
-    private final static String SECOND_DEVICE_RMI_ID = "rmiId2";
+    private final static String SECOND_DEVICE_ID = String.format(DEVICE_ID_FORMAT, SECOND_DEVICE_SERIAL_NUMBER);
 
-    private final static String THIRD_DEVICE_RMI_ID = "rmiId3";
+    private final static String THIRD_DEVICE_ID = String.format(DEVICE_ID_FORMAT, THIRD_DEVICE_SERIAL_NUMBER);
 
-    private final static String FOURTH_DEVICE_RMI_ID = "rmiId4";
+    private final static String FOURTH_DEVICE_ID = String.format(DEVICE_ID_FORMAT, FOURTH_DEVICE_SERIAL_NUMBER);
 
-    private static final String FIFTH_DEVICE_RMI_ID = "rmiId5";
+    private static final String FIFTH_DEVICE_ID = String.format(DEVICE_ID_FORMAT, FIFTH_DEVICE_SERIAL_NUMBER);
 
     private static final long FIRST_DEVICE_PASSKEY = 1;
 
@@ -142,11 +144,11 @@ public class PoolManagerDeviceSelectionTest {
         mockedDeviceInfoFive.setDpi(314);
         mockedDeviceInfoFive.setCamera(false);
 
-        firstDevice = new Device(mockedDeviceInfoOne, FIRST_DEVICE_RMI_ID, FIRST_DEVICE_PASSKEY);
-        secondDevice = new Device(mockedDeviceInfoTwo, SECOND_DEVICE_RMI_ID, SECOND_DEVICE_PASSKEY);
-        thirdDevice = new Device(mockedDeviceInfoThree, THIRD_DEVICE_RMI_ID, THIRD_DEVICE_PASSKEY);
-        fourthDevice = new Device(mockedDeviceInfoFour, FOURTH_DEVICE_RMI_ID, FOURTH_DEVICE_PASSKEY);
-        fifthDevice = new Device(mockedDeviceInfoFive, FIFTH_DEVICE_RMI_ID, FIFTH_DEVICE_PASSKEY);
+        firstDevice = new Device(mockedDeviceInfoOne, FIRST_DEVICE_ID, FIRST_DEVICE_PASSKEY);
+        secondDevice = new Device(mockedDeviceInfoTwo, SECOND_DEVICE_ID, SECOND_DEVICE_PASSKEY);
+        thirdDevice = new Device(mockedDeviceInfoThree, THIRD_DEVICE_ID, THIRD_DEVICE_PASSKEY);
+        fourthDevice = new Device(mockedDeviceInfoFour, FOURTH_DEVICE_ID, FOURTH_DEVICE_PASSKEY);
+        fifthDevice = new Device(mockedDeviceInfoFive, FIFTH_DEVICE_ID, FIFTH_DEVICE_PASSKEY);
 
         deviceList = Arrays.asList(firstDevice, secondDevice, thirdDevice, fourthDevice, fifthDevice);
 
@@ -376,10 +378,10 @@ public class PoolManagerDeviceSelectionTest {
 
     private void assertCorrectDeviceFetched(String expectedDeviceSerialNumber,
                                             DeviceAllocationInformation allocatedDeviceInformation) {
-        String deviceRmiID = allocatedDeviceInformation.getProxyRmiId();
+        String deviceId = allocatedDeviceInformation.getDeviceId();
         assertEquals("Failed to receive RMI ID of the correct device.",
-                     AGENT_ID + "_" + expectedDeviceSerialNumber,
-                     deviceRmiID);
+                     String.format(DEVICE_ID_FORMAT, expectedDeviceSerialNumber),
+                     deviceId);
     }
 
 }

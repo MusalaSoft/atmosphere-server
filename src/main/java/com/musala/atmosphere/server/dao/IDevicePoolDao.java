@@ -19,8 +19,8 @@ public interface IDevicePoolDao {
      *
      * @param device
      *        - the information about the device
-     * @param rmiId
-     *        - the ID of the device in the RMI registry
+     * @param deviceId
+     *        - the ID of the device
      * @param agentId
      *        - the ID of the agent that the device is connected to
      * @param passkey
@@ -30,7 +30,7 @@ public interface IDevicePoolDao {
      * @throws DevicePoolDaoException
      *         - thrown when adding device fails
      */
-    public IDevice addDevice(DeviceInformation device, String rmiId, String agentId, long passkey)
+    public IDevice addDevice(DeviceInformation device, String deviceId, String agentId, long passkey)
         throws DevicePoolDaoException;
 
     /**

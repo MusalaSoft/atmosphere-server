@@ -93,7 +93,7 @@ public class DevicePoolDao implements IDevicePoolDao {
         }
 
         for (Device device : agent.getDevices()) {
-            String deviceId = device.getRmiRegistryId();
+            String deviceId = device.getDeviceId();
 
             try {
                 deviceDao.remove(deviceId);
