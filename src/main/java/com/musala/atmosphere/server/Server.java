@@ -20,6 +20,8 @@ import com.musala.atmosphere.server.eventservice.event.agent.AgentEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
 import com.musala.atmosphere.server.eventservice.event.device.DeviceEvent;
+import com.musala.atmosphere.server.eventservice.event.device.allocate.DeviceReleasedEvent;
+import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishedEvent;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DeviceUnpublishedEvent;
 import com.musala.atmosphere.server.monitor.AgentMonitor;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
@@ -50,6 +52,8 @@ public class Server {
 
     private IDataSourceProvider dataSourceProvider;
 
+    private DeviceAllocationManager allocationManager;
+
     private boolean isConnected;
 
     private String serverIp;
@@ -75,7 +79,6 @@ public class Server {
         this.serverPort = serverPort;
 
         serverManager = new ServerManager();
-        dispatcher.setServerManager(serverManager);
 
         setState(new StoppedServer(this));
 
@@ -89,15 +92,21 @@ public class Server {
         eventService.subscribe(AgentEvent.class, serverManager);
         eventService.subscribe(AgentEvent.class, agentMonitor);
 
-        // TODO: Add subscribers to the event service for device events.
         eventService.subscribe(DeviceUnpublishedEvent.class, serverManager);
-
         eventService.subscribe(DevicePoolDaoCreatedEvent.class, serverManager);
 
         dataSourceManager = new DataSourceManager(new DataSourceCallback());
         dataSourceProvider = new DataSourceProvider();
 
         eventService.subscribe(DataSourceInitializedEvent.class, dataSourceProvider);
+
+        allocationManager = new DeviceAllocationManager(dataSourceProvider.getDevicePoolDao());
+
+        eventService.subscribe(DeviceReleasedEvent.class, allocationManager);
+        eventService.subscribe(DevicePublishedEvent.class, allocationManager);
+
+        dispatcher.setServerManager(serverManager);
+        dispatcher.setAllocationManager(allocationManager);
 
         isConnected = false;
         LOGGER.info("Server instance created succesfully.");

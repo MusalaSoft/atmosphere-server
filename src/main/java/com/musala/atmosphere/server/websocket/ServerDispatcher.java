@@ -28,6 +28,7 @@ import com.musala.atmosphere.commons.websocket.message.RequestMessage;
 import com.musala.atmosphere.commons.websocket.message.ResponseMessage;
 import com.musala.atmosphere.commons.websocket.util.GsonUtil;
 import com.musala.atmosphere.commons.websocket.util.IJsonUtil;
+import com.musala.atmosphere.server.DeviceAllocationManager;
 import com.musala.atmosphere.server.PasskeyAuthority;
 import com.musala.atmosphere.server.ServerManager;
 import com.musala.atmosphere.server.pool.ClientRequestMonitor;
@@ -42,6 +43,11 @@ import com.musala.atmosphere.server.pool.PoolManager;
  */
 public class ServerDispatcher {
     private final Logger LOGGER = Logger.getLogger(ServerDispatcher.class.getCanonicalName());
+
+    /**
+     * The maximum time the client will wait for an appropriate device
+     */
+    private static final int WAIT_FOR_DEVICE_TIMEOUT = 300_000; // milliseconds(5 minutes)
 
     private ServerManager serverManager;
 
@@ -59,6 +65,8 @@ public class ServerDispatcher {
 
     private ClientRequestMonitor timeoutMonitor = new ClientRequestMonitor();
 
+    private DeviceAllocationManager allocationManager;
+
     private static class DispatcherLoader {
         private static final ServerDispatcher INSTANCE = new ServerDispatcher();
     }
@@ -69,7 +77,7 @@ public class ServerDispatcher {
 
     /**
      * Starts the WebSocket server on the address and port from the config file.
-     * 
+     *
      * @param serverAddress
      *        - an IP address for the WebSocket connection
      * @param websocketPort
@@ -206,7 +214,9 @@ public class ServerDispatcher {
         DeviceSelector deviceSelector = (DeviceSelector) getDeviceAllocationInformationRequest.getArguments()[0];
 
         try {
-            DeviceAllocationInformation deviceAllocationInformation = poolManager.allocateDevice(deviceSelector);
+            DeviceAllocationInformation deviceAllocationInformation = allocationManager.allocateDevice(deviceSelector,
+                                                                                                       clientSession.getId(),
+                                                                                                       WAIT_FOR_DEVICE_TIMEOUT);
             ResponseMessage response = new ResponseMessage(MessageAction.DEVICE_ALLOCATION_INFORMATION,
                                                            deviceAllocationInformation);
             response.setSessionId(getDeviceAllocationInformationRequest.getSessionId());
@@ -330,6 +340,10 @@ public class ServerDispatcher {
      */
     public void setServerManager(ServerManager serverManager) {
         this.serverManager = serverManager;
+    }
+
+    public void setAllocationManager(DeviceAllocationManager allocationManager) {
+        this.allocationManager = allocationManager;
     }
 
     private void sendErrorResponseMessage(Exception ex, Session session, String requestSessionId) {
