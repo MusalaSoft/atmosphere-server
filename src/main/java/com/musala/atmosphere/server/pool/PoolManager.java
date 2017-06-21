@@ -27,6 +27,7 @@ import com.musala.atmosphere.server.data.provider.IDataSourceProvider;
 import com.musala.atmosphere.server.data.provider.ormlite.DataSourceProvider;
 import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
+import com.musala.atmosphere.server.eventservice.event.device.allocate.DeviceReleasedEvent;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishEvent;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishedEvent;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DeviceUnpublishedEvent;
@@ -61,7 +62,7 @@ public class PoolManager implements Subscriber {
     public static PoolManager getInstance() {
         return PoolManagerLoader.INSTANCE;
     }
-    
+
     /**
      * Refreshes the current state of the device - removes the device from the pool if it is not present on an Agent
      * anymore and remove the device id from the cache.
@@ -77,9 +78,11 @@ public class PoolManager implements Subscriber {
         removeDevice(deviceId, true);
     }
 
-    private void removeDevice(String deviceId, boolean removeFromCache) throws CommandFailedException, DevicePoolDaoException {
+    private void removeDevice(String deviceId, boolean removeFromCache)
+        throws CommandFailedException,
+            DevicePoolDaoException {
         IDevice device = devicePoolDao.getDevice(deviceId);
-        if(device != null) {
+        if (device != null) {
             DeviceInformation deviceInformation = device.getInformation();
             String deviceSerialNumber = deviceInformation.getSerialNumber();
             String agentId = device.getAgentId();
@@ -109,15 +112,14 @@ public class PoolManager implements Subscriber {
         String deviceSerialNumber = deviceInformation.getSerialNumber();
         String deviceId = buildDeviceIdentifier(agentId, deviceSerialNumber);
 
-        DevicePublishEvent event = new DevicePublishedEvent(deviceSerialNumber, agentId);
-        eventService.publish(event);
-
         deviceIdsCache.add(deviceId);
-
         long devicePasskey = PasskeyAuthority.generatePasskey();
 
         try {
             devicePoolDao.addDevice(deviceInformation, deviceId, agentId, devicePasskey);
+            DevicePublishEvent event = new DevicePublishedEvent(agentId, deviceInformation);
+            eventService.publish(event);
+
             LOGGER.info("Device with serialNumber = " + deviceSerialNumber + " added to the pool.");
         } catch (DevicePoolDaoException e) {
             String errorMessage = String.format("Failed to add device with ID %s on agent %s.", deviceId, agentId);
@@ -310,6 +312,7 @@ public class PoolManager implements Subscriber {
         device.release();
 
         devicePoolDao.update(device);
+        eventService.publish(new DeviceReleasedEvent(device.getInformation()));
     }
 
     public IDevicePoolDao getDevicePoolDao() {

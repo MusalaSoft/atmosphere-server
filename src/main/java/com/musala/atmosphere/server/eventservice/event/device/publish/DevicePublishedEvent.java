@@ -1,5 +1,7 @@
 package com.musala.atmosphere.server.eventservice.event.device.publish;
 
+import com.musala.atmosphere.commons.DeviceInformation;
+
 /**
  * This event is published when a device is published to the Server.
  *
@@ -10,7 +12,7 @@ public class DevicePublishedEvent implements DevicePublishEvent {
 
     private String onAgentId;
 
-    private String deviceSerialNumber;
+    private DeviceInformation deviceInformation;
 
     /**
      * Creates new event, which is holding information about the published device.
@@ -22,9 +24,9 @@ public class DevicePublishedEvent implements DevicePublishEvent {
      * @param onAgentId
      *        - identifier of the agent on which the device is registered
      */
-    public DevicePublishedEvent(String deviceSerialNumber, String onAgentId) {
+    public DevicePublishedEvent(String onAgentId, DeviceInformation deviceInformation) {
         this.onAgentId = onAgentId;
-        this.deviceSerialNumber = deviceSerialNumber;
+        this.deviceInformation = deviceInformation;
     }
 
     /**
@@ -37,11 +39,11 @@ public class DevicePublishedEvent implements DevicePublishEvent {
     }
 
     /**
-     * Gets the serial number of the registered device.
+     * Gets {@link DeviceInformation information} about the published device.
      *
-     * @return serial number of the device
+     * @return {@link DeviceInformation device information}
      */
-    public String getDeviceSerialNumber() {
-        return deviceSerialNumber;
+    public DeviceInformation getDeviceInformation() {
+        return deviceInformation;
     }
 }
