@@ -1,7 +1,9 @@
 package com.musala.atmosphere.server.pool;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -45,7 +47,7 @@ public class PoolManager implements Subscriber {
 
     private IDevicePoolDao devicePoolDao;
 
-    private Set<String> deviceIdsCache = new HashSet<>();
+    private Set<String> deviceIdsCache = Collections.synchronizedSet(new HashSet<String>());
 
     private static class PoolManagerLoader {
         private static final PoolManager INSTANCE = new PoolManager();
@@ -81,8 +83,6 @@ public class PoolManager implements Subscriber {
         eventService.publish(event);
 
         devicePoolDao.remove(deviceId);
-        deviceIdsCache.remove(deviceId);
-
         LOGGER.info("Device with id " + deviceId + " disconnected and removed.");
     }
 
@@ -130,8 +130,11 @@ public class PoolManager implements Subscriber {
      *         source fail.
      */
     public void removeAllDevices() throws CommandFailedException, DevicePoolDaoException {
-        for (String deviceId : deviceIdsCache) {
-            removeDevice(deviceId);
+        // uses an iterator to prevent the ConcurrentModificationException when trying to remove an item from the cache
+        Iterator<String> deviceCacheIterator = deviceIdsCache.iterator();
+        while (deviceCacheIterator.hasNext()) {
+            removeDevice(deviceCacheIterator.next());
+            deviceCacheIterator.remove();
         }
     }
 
