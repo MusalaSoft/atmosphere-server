@@ -61,7 +61,7 @@ public class PoolManager implements Subscriber {
     public static PoolManager getInstance() {
         return PoolManagerLoader.INSTANCE;
     }
-
+    
     /**
      * Refreshes the current state of the device - removes the device from the pool if it is not present on an Agent
      * anymore and remove the device id from the cache.
@@ -73,17 +73,26 @@ public class PoolManager implements Subscriber {
      * @throws DevicePoolDaoException
      *         - if failed to release device with the given ID
      */
-    public void removeDevice(String deviceId) throws CommandFailedException, DevicePoolDaoException {
+    public void removeDevice(String deviceId) throws DevicePoolDaoException, CommandFailedException {
+        removeDevice(deviceId, true);
+    }
+
+    private void removeDevice(String deviceId, boolean removeFromCache) throws CommandFailedException, DevicePoolDaoException {
         IDevice device = devicePoolDao.getDevice(deviceId);
-        DeviceInformation deviceInformation = device.getInformation();
-        String deviceSerialNumber = deviceInformation.getSerialNumber();
-        String agentId = device.getAgentId();
+        if(device != null) {
+            DeviceInformation deviceInformation = device.getInformation();
+            String deviceSerialNumber = deviceInformation.getSerialNumber();
+            String agentId = device.getAgentId();
 
-        DevicePublishEvent event = new DeviceUnpublishedEvent(deviceSerialNumber, agentId);
-        eventService.publish(event);
+            DevicePublishEvent event = new DeviceUnpublishedEvent(deviceSerialNumber, agentId);
+            eventService.publish(event);
 
-        devicePoolDao.remove(deviceId);
-        LOGGER.info("Device with id " + deviceId + " disconnected and removed.");
+            devicePoolDao.remove(deviceId);
+            if (removeFromCache) {
+                deviceIdsCache.remove(deviceId);
+            }
+            LOGGER.info("Device with id " + deviceId + " disconnected and removed.");
+        }
     }
 
     /**
@@ -133,7 +142,7 @@ public class PoolManager implements Subscriber {
         // uses an iterator to prevent the ConcurrentModificationException when trying to remove an item from the cache
         Iterator<String> deviceCacheIterator = deviceIdsCache.iterator();
         while (deviceCacheIterator.hasNext()) {
-            removeDevice(deviceCacheIterator.next());
+            removeDevice(deviceCacheIterator.next(), false);
             deviceCacheIterator.remove();
         }
     }
