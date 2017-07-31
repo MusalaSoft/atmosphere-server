@@ -34,19 +34,19 @@ public class DevicePoolDao implements IDevicePoolDao {
     }
 
     @Override
-    public IDevice addDevice(DeviceInformation deviceInformation, String rmiId, String agentId, long passkey)
+    public IDevice addDevice(DeviceInformation deviceInformation, String deviceId, String agentId, long passkey)
         throws DevicePoolDaoException {
 
         try {
             Agent agent = (Agent) agentDao.selectByAgentId(agentId);
-            Device device = new Device(deviceInformation, rmiId, passkey);
+            Device device = new Device(deviceInformation, deviceId, passkey);
             device.setAgent(agent);
 
             deviceDao.add(device);
 
             return device;
         } catch (AgentDaoException | DeviceDaoException e) {
-            String message = String.format("Adding device with RMI id %s on agent %s failed.", rmiId, agentId);
+            String message = String.format("Adding device with ID %s on agent %s failed.", deviceId, agentId);
             throw new DevicePoolDaoException(message, e);
         }
     }

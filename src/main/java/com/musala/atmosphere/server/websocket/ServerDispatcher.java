@@ -117,7 +117,6 @@ public class ServerDispatcher {
         serverManager.registerAgent(agentId);
 
         serverManager.publishAllDevicesForAgent(devicesInformation, agentId);
-        LOGGER.debug("Agent with ID " + agentId + " registered.");
     }
 
     /**

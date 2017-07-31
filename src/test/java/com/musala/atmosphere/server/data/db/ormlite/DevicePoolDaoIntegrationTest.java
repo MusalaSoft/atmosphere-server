@@ -86,7 +86,7 @@ public class DevicePoolDaoIntegrationTest {
             testAgentIds[i] = "test Agent Id " + i;
             testAgentIps[i] = "test Agent IP " + i;
             testAgentPorts[i] = 1234 + i * 2;
-            testDeviceIds[i] = "test Rmi Id " + i;
+            testDeviceIds[i] = "test ID " + i;
             testPasskeys[i] = 679254132 + i * 5;
             testAgentDao.add(testAgentIds[i]);
         }

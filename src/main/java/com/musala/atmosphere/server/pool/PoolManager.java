@@ -118,7 +118,7 @@ public class PoolManager implements Subscriber {
 
         try {
             devicePoolDao.addDevice(deviceInformation, deviceId, agentId, devicePasskey);
-            LOGGER.info("Device added: " + deviceSerialNumber);
+            LOGGER.info("Device with serialNumber = " + deviceSerialNumber + " added to the pool.");
         } catch (DevicePoolDaoException e) {
             String errorMessage = String.format("Failed to add device with ID %s on agent %s.", deviceId, agentId);
             LOGGER.error(errorMessage);

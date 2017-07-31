@@ -35,7 +35,7 @@ public class Agent implements IAgent {
     }
 
     /**
-     * Creates new agent with the given agent ID and RMI id.
+     * Creates new agent with the given agent ID.
      * 
      * @param agentId
      *        - the ID of this agent

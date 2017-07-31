@@ -379,7 +379,7 @@ public class PoolManagerDeviceSelectionTest {
     private void assertCorrectDeviceFetched(String expectedDeviceSerialNumber,
                                             DeviceAllocationInformation allocatedDeviceInformation) {
         String deviceId = allocatedDeviceInformation.getDeviceId();
-        assertEquals("Failed to receive RMI ID of the correct device.",
+        assertEquals("Failed to receive the ID of the correct device.",
                      String.format(DEVICE_ID_FORMAT, expectedDeviceSerialNumber),
                      deviceId);
     }

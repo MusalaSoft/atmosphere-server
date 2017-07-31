@@ -45,7 +45,7 @@ public class ClientRequestMonitor {
     void registerDevice(String deviceId) {
         deviceIdToTimeout.put(deviceId, STARTING_TIMEOUT);
 
-        String message = String.format("ClientRequestMonitor registered new device with RMI ID %s.", deviceId);
+        String message = String.format("ClientRequestMonitor registered new device with ID %s.", deviceId);
         LOGGER.info(message);
     }
 
@@ -147,7 +147,7 @@ public class ClientRequestMonitor {
                 long timeout = entry.getValue();
 
                 if (timeout >= DEVICE_REQUEST_TIMEOUT) {
-                    String message = String.format("Device proxy with RMI ID %s released due to invocation timeout.",
+                    String message = String.format("Device with ID %s released due to invocation timeout.",
                                                    deviceId);
                     LOGGER.info(message);
 

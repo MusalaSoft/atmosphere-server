@@ -154,7 +154,7 @@ public class ServerManager implements Subscriber {
             ServerEventService eventService = new ServerEventService();
             eventService.publish(new AgentConnectedEvent(agentId));
 
-            LOGGER.info("Agent with id " + agentId + " registered.");
+            LOGGER.info("Agent with ID " + agentId + " registered.");
         } catch (AgentDaoException e) {
             String errorMessage = String.format("Failed to add agent with ID %s in the data source when trying to register the agent.",
                                                 agentId);

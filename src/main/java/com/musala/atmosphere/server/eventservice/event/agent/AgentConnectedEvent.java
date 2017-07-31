@@ -10,7 +10,7 @@ public class AgentConnectedEvent implements AgentEvent {
     private String agentId;
 
     /**
-     * Creates new event, holding information about the connected agent and it's RMI registry.
+     * Creates new event, holding information about the connected agent.
      * 
      * @param agentId
      *        - the ID of the agent, which is connected.

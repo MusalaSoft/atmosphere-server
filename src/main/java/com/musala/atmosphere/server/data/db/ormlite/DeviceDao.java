@@ -125,7 +125,7 @@ public class DeviceDao {
         try {
             return getDeviceByFieldValue(DeviceColumnName.DEVICE_ID, id);
         } catch (SQLException e) {
-            String message = String.format("Getting ID for device with RMI id %s failed, because data source failed.",
+            String message = String.format("Getting a device with ID %s failed, because data source failed.",
                                            id);
             throw new DeviceDaoException(message, e);
         }
