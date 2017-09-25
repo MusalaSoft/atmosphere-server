@@ -17,12 +17,10 @@ public class DevicePublishedEvent implements DevicePublishEvent {
     /**
      * Creates new event, which is holding information about the published device.
      *
-     * @param deviceProxy
-     *        - the remote device object, that has been published to the server
-     * @param deviceSerialNumber
-     *        - the serial number of the device, that has been published to the server
      * @param onAgentId
      *        - identifier of the agent on which the device is registered
+     * @param deviceInformation
+     *        - {@link DeviceInformation information} about the published device
      */
     public DevicePublishedEvent(String onAgentId, DeviceInformation deviceInformation) {
         this.onAgentId = onAgentId;

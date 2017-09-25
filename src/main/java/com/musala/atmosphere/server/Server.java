@@ -19,7 +19,6 @@ import com.musala.atmosphere.server.eventservice.ServerEventService;
 import com.musala.atmosphere.server.eventservice.event.agent.AgentEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.DataSourceInitializedEvent;
 import com.musala.atmosphere.server.eventservice.event.datasource.create.dao.DevicePoolDaoCreatedEvent;
-import com.musala.atmosphere.server.eventservice.event.device.DeviceEvent;
 import com.musala.atmosphere.server.eventservice.event.device.allocate.DeviceReleasedEvent;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DevicePublishedEvent;
 import com.musala.atmosphere.server.eventservice.event.device.publish.DeviceUnpublishedEvent;
@@ -72,7 +71,11 @@ public class Server {
 
     /**
      * Creates a Server component bound on given IP and port.
-     *
+     * 
+     * @param serverIp
+     *        - the IP of the Server
+     * @param serverPort
+     *        - the port the server is listening to
      */
     public Server(String serverIp, int serverPort) {
         this.serverIp = serverIp;

@@ -15,7 +15,7 @@ import com.musala.atmosphere.commons.cs.deviceselection.ScreenParameter;
 import com.musala.atmosphere.commons.cs.deviceselection.SerialNumber;
 
 /**
- * Checks whether a certain {@link DeviceSelector device selector} is applicable to a given {@link IDevie device}.
+ * Checks whether a certain {@link DeviceSelector device selector} is applicable to a given device.
  *
  * @author dimcho.nedev
  *
@@ -26,7 +26,7 @@ public final class DeviceSelectorApplicabilityChecker {
     private static final int MAX_API = Integer.MAX_VALUE;
 
     /**
-     * Checks whether a {@link DeviceSelector selector} is applicable to a given {@link IDevie device}
+     * Checks whether a {@link DeviceSelector selector} is applicable to a given device.
      *
      * @param dSelector
      *        - a {@link DeviceSelector selector} for a device

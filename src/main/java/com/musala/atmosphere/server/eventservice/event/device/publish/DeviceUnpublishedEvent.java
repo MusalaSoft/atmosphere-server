@@ -14,12 +14,10 @@ public class DeviceUnpublishedEvent implements DevicePublishEvent {
     /**
      * Creates new event, which is holding information about the unpublished device.
      *
-     * @param onAgentId
-     *        - identifier of the agent on which the device is registered
      * @param deviceSerialNumber
      *        - the serial number of the device, that has been unpublished from the server
-     * @param deviceProxy
-     *        - the remote device object, that has been unpublished from the server
+     * @param onAgentId
+     *        - identifier of the agent on which the device is registered
      */
     public DeviceUnpublishedEvent(String deviceSerialNumber, String onAgentId) {
         this.onAgentId = onAgentId;

@@ -268,8 +268,8 @@ public class PoolManager implements Subscriber {
      *
      * @param deviceId
      *        - unique identifier of the device
-     * @param agentRegistry
-     *        - the Agent Registry object that contains the device's changed information
+     * @param deviceInformation
+     *        - {@link DeviceInformation information} about the device
      */
     public void updateDevice(String deviceId, DeviceInformation deviceInformation) {
         try {

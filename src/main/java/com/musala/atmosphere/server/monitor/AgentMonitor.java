@@ -55,7 +55,7 @@ public class AgentMonitor implements Subscriber {
      * Terminates the ping request sending for all {@link PingRequestHandler ping request handlers}. The action is
      * requested when the connection is closed from the server side.
      *
-     * @see {@link com.musala.atmosphere.server.Server#stop()}
+     * @see com.musala.atmosphere.server.Server#stop()
      *
      */
     public void terminate() {

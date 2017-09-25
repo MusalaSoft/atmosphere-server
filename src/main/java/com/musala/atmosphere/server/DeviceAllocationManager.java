@@ -64,6 +64,8 @@ public final class DeviceAllocationManager implements Subscriber {
      *        - a {@link DeviceSelector selector} that match a specific device.
      * @param clientId
      *        - a unique identifier of the client session
+     * @param waitForDeviceTimeout
+     *        - the maximum time the client will wait for an appropriate device     
      * @return an {@link DeviceAllocationInformation information} for the allocated device
      */
     public DeviceAllocationInformation allocateDevice(DeviceSelector deviceSelector, String clientId, final int waitForDeviceTimeout) {

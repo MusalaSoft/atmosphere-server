@@ -337,6 +337,7 @@ public class ServerDispatcher {
      * Sets a {@link ServerManager server manager} to the dispatcher.
      *
      * @param serverManager
+     *        - {@link server manager} instance
      */
     public void setServerManager(ServerManager serverManager) {
         this.serverManager = serverManager;
