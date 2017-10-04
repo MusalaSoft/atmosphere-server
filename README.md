@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/MusalaSoft/atmosphere-server.svg?branch=master)](https://travis-ci.org/MusalaSoft/atmosphere-server) [ ![Download](https://api.bintray.com/packages/musala/atmosphere/atmosphere-server/images/download.svg) ](https://bintray.com/musala/atmosphere/atmosphere-server/_latestVersion)  
 See our site for better context of this readme. [Click here](http://atmosphereframework.com/)
 
 # atmosphere-server
