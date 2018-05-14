@@ -22,3 +22,18 @@ The Server has started successfully.
 ```
 
 You may now connect Agents to it.
+
+## Exit from the Server
+To exit properly from the `Server` use the `exit` command. Otherwise an instance of the `Server` may still run and the next time you try to run a `Server` an error will occur.
+
+```
+>> exit
+...
+May 14, 2018 11:24:53 AM org.glassfish.tyrus.server.Server stop
+INFO: Websocket Server stopped.
+14 May 2018 11:24:54 - ClientRequestMonitor stopped successfully.
+14 May 2018 11:24:54 - AgentMonitor unsubscribes for AgentEvent.
+14 May 2018 11:24:54 - ServerManager unsubscribes for AgentEvent.
+14 May 2018 11:24:54 - DataSourceProvider unsubscribes for DataSourceInitializedEvent.
+14 May 2018 11:24:54 - ServerManager instance closed.
+```
