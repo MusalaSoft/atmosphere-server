@@ -16,32 +16,29 @@
 
 package com.musala.atmosphere.server.command;
 
-import java.util.List;
-
 import com.musala.atmosphere.server.Server;
 
 /**
- * This class executes the "help" command. It prints on the standard output information about all available commands on
- * the Server. The command requires no parameters to be passed, otherwise it will not be executed.
+ * Common class for all server commands that require parameters.
  * 
- * @author vladimir.vladimirov
+ * TODO: I think it is better to validate the arguments using a library like Apache Commons CLI(see the Agent), because
+ * this type of validation is not very convenient and it is a prerequisite for creating many unnecessary classes.
+ *
+ * @author dimcho.nedev
  * 
  */
-public class HelpCommand extends NoParamsServerCommand {
-    public HelpCommand(Server server) {
+public abstract class ParamsServerCommand extends ServerCommand {
+
+    public ParamsServerCommand(Server server) {
         super(server);
     }
 
-    /**
-     * Prints information about every single command on the Server that can be executed.
-     */
     @Override
-    protected void executeCommand(String[] params) {
-        List<String> listOfCommands = ServerConsoleCommands.getListOfCommands();
-        if (listOfCommands != null) {
-            for (String serverConsoleCommand : listOfCommands) {
-                server.writeLineToConsole(serverConsoleCommand);
-            }
+    protected boolean verifyParams(String[] params) {
+        if (params != null && params.length != 0) {
+            return true;
         }
+        return false;
     }
+
 }

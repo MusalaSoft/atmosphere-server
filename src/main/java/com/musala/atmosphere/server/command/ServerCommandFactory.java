@@ -53,6 +53,10 @@ public class ServerCommandFactory {
                 resultCommand = new ExitCommand(server);
                 break;
             }
+            case RELEASE: {
+                resultCommand = new ReleaseCommand(server);
+                break;
+            }
         }
 
         return resultCommand;

@@ -233,23 +233,13 @@ public class PoolManager implements Subscriber {
         return allocatedDeviceDescriptor;
     }
 
+    /**
+     * Gets a list with serial numbers and models of all available devices.
+     *
+     * @return a {@List list} with {@Pair<Strin, String> serial numbers and models} of available devices
+     */
     public synchronized List<Pair<String, String>> getAllAvailableDevices() {
-        List<IDevice> availableDevicesList = new ArrayList<>();
-
-        boolean isAllocated = false;
-
-        DeviceSelectorBuilder deviceSelectorBuilder = new DeviceSelectorBuilder().minApi(17);
-        DeviceSelector deviceSelector = deviceSelectorBuilder.build();
-
-        try {
-            availableDevicesList = devicePoolDao.getDevices(deviceSelector, isAllocated);
-
-            if (availableDevicesList.isEmpty()) {
-                return new ArrayList<>();
-            }
-        } catch (DevicePoolDaoException e) {
-            throw new NoDeviceMatchingTheGivenSelectorException();
-        }
+        List<IDevice> availableDevicesList = getAllDevices(false);
 
         ArrayList<Pair<String, String>> serialNumberAndModelList = new ArrayList<>();
 
@@ -259,6 +249,43 @@ public class PoolManager implements Subscriber {
         }
 
         return serialNumberAndModelList;
+    }
+
+    /**
+     * Gets the IDs of the all allocated devices.
+     *
+     * @return {@List list} of IDs of the all allocated devices
+     */
+    public List<String> getAllAllocatedDevices() {
+        List<IDevice> allocatedDeviceLlist = getAllDevices(true);
+
+        ArrayList<String> allocatedDeviceIds = new ArrayList<>();
+
+        for (IDevice device : allocatedDeviceLlist) {
+            allocatedDeviceIds.add(device.getAgentId() + "_" + device.getInformation().getSerialNumber());
+        }
+
+        return allocatedDeviceIds;
+    }
+
+    /**
+     * Returns a list of devices that meet a certain criteria(allocated or available).
+     *
+     * @param isAllocated
+     *        - <code>true</code> to select the allocated devices, <code>false</code> to select the available devices
+     * @return a {@List list} of {@IDevice devices}
+     */
+    private List<IDevice> getAllDevices(boolean isAllocated) {
+        List<IDevice> deviceList = new ArrayList<>();
+        DeviceSelector deviceSelector = new DeviceSelectorBuilder().minApi(17).build();
+
+        try {
+            deviceList = devicePoolDao.getDevices(deviceSelector, isAllocated);
+        } catch (DevicePoolDaoException e) {
+            throw new NoDeviceMatchingTheGivenSelectorException();
+        }
+
+        return deviceList;
     }
 
     /**
