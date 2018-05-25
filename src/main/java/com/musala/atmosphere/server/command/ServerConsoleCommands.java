@@ -28,7 +28,8 @@ import java.util.List;
 public enum ServerConsoleCommands {
     SERVER_RUN("run", "run", "Runs the Server."),
     SERVER_HELP("help", "help", "Prints all available commands."),
-    SERVER_EXIT("exit", "exit", "Stops and closes the currently running Server component.");
+    SERVER_EXIT("exit", "exit", "Stops and closes the currently running Server component."),
+    RELEASE("release", "release", "Release all devices with \"release all\" or release a specific device with \"release <deviceSerial>\".");
 
     private String command;
 
