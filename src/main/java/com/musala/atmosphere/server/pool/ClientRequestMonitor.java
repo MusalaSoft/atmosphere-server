@@ -71,7 +71,7 @@ public class ClientRequestMonitor {
      * @param deviceId
      *        - the device ID
      */
-    void unregisterDevice(String deviceId) {
+    public void unregisterDevice(String deviceId) {
         String message;
 
         if (deviceIdToTimeout.containsKey(deviceId)) {
