@@ -57,6 +57,9 @@ public class ServerCommandFactory {
                 resultCommand = new ReleaseCommand(server);
                 break;
             }
+            case DEVICES: {
+                resultCommand = new DevicesServerCommand(server);
+            }
         }
 
         return resultCommand;

@@ -29,7 +29,8 @@ public enum ServerConsoleCommands {
     SERVER_RUN("run", "run", "Runs the Server."),
     SERVER_HELP("help", "help", "Prints all available commands."),
     SERVER_EXIT("exit", "exit", "Stops and closes the currently running Server component."),
-    RELEASE("release", "release", "Release all devices with \"release all\" or release a specific device with \"release <deviceSerial>\".");
+    RELEASE("release", "release", "Release all devices with \"release all\" or release a specific device with \"release <deviceSerial>\"."),
+    DEVICES("devices", "devces", "Prints all devices that are registered to the Server");
 
     private String command;
 
