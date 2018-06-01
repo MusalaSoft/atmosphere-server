@@ -187,10 +187,9 @@ public class PoolManager implements Subscriber {
 
     public synchronized DeviceAllocationInformation allocateDevice(DeviceSelector deviceSelector)
         throws NoDeviceMatchingTheGivenSelectorException,
-            NoAvailableDeviceFoundException {
+            NoAvailableDeviceFoundException,
+            DeviceNotFoundException {
         List<IDevice> availableDevicesList = new ArrayList<>();
-        String errorMessage = String.format("No devices matching the requested parameters %s were found",
-                                            deviceSelector);
         boolean isAllocated = false;
 
         try {
@@ -198,13 +197,14 @@ public class PoolManager implements Subscriber {
             if (availableDevicesList.isEmpty()) {
                 List<IDevice> notAvailableDeviceList = devicePoolDao.getDevices(deviceSelector, !isAllocated);
                 if (notAvailableDeviceList.isEmpty()) {
-                    throw new NoDeviceMatchingTheGivenSelectorException();
+                    throw new NoDeviceMatchingTheGivenSelectorException(String.format("No devices matching the requested parameters %s were found",
+                                                                                      deviceSelector));
                 } else {
-                    throw new NoAvailableDeviceFoundException(errorMessage);
+                    throw new NoAvailableDeviceFoundException("the device you are trying to select is not available.");
                 }
             }
         } catch (DevicePoolDaoException e) {
-            throw new NoDeviceMatchingTheGivenSelectorException();
+            throw new DeviceNotFoundException("Failed to find the requested device.");
         }
 
         IDevice device = availableDevicesList.get(0);
