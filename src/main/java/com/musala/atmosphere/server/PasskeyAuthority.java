@@ -18,8 +18,8 @@ package com.musala.atmosphere.server;
 
 import java.util.Random;
 
-import com.musala.atmosphere.commons.cs.exception.DeviceNotFoundException;
 import com.musala.atmosphere.commons.cs.exception.InvalidPasskeyException;
+import com.musala.atmosphere.commons.exceptions.DeviceNotFoundException;
 import com.musala.atmosphere.server.dao.IDevicePoolDao;
 import com.musala.atmosphere.server.dao.exception.DevicePoolDaoException;
 import com.musala.atmosphere.server.data.model.IDevice;
