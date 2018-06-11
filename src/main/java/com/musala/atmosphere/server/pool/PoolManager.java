@@ -236,7 +236,7 @@ public class PoolManager implements Subscriber {
     /**
      * Gets a list with serial numbers and models of all available devices.
      *
-     * @return a {@List list} with {@Pair<Strin, String> serial numbers and models} of available devices
+     * @return a {@link List} with {@link Pair pairs} of serial numbers and models of available devices
      */
     public synchronized List<Pair<String, String>> getAllAvailableDevices() {
         List<IDevice> availableDevicesList = getAllDevices(false);
@@ -254,7 +254,7 @@ public class PoolManager implements Subscriber {
     /**
      * Gets the IDs of the all allocated devices.
      *
-     * @return {@List list} of IDs of the all allocated devices
+     * @return{@link List} of IDs of the all allocated devices
      */
     public List<String> getAllAllocatedDevices() {
         List<IDevice> allocatedDeviceLlist = getAllDevices(true);
@@ -273,7 +273,7 @@ public class PoolManager implements Subscriber {
      *
      * @param isAllocated
      *        - <code>true</code> to select the allocated devices, <code>false</code> to select the available devices
-     * @return a {@List list} of {@IDevice devices}
+     * @return a {@link List} of {@IDevice devices}
      */
     private List<IDevice> getAllDevices(boolean isAllocated) {
         List<IDevice> deviceList = new ArrayList<>();

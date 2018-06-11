@@ -81,6 +81,8 @@ public class ServerManager implements Subscriber {
      * @param isConnected
      *        - this parameter is <code>true</code> if the device is connected to the agent and <code>false</code> if
      *        it's disconnected.
+     * @throws CommandFailedException
+     *        - when fails to remove a device from the {@link PoolManager}
      */
     public void onAgentDeviceListChanged(String agentId,
                                          String deviceSerial,
